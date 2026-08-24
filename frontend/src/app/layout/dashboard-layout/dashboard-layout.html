@@ -1,0 +1,39 @@
+<div class="shell" [class.sidebar-open]="sidebarOpen()">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <p class="brand">FacturaAI</p>
+      <button type="button" class="icon-btn close-btn" (click)="closeSidebar()" aria-label="Cerrar menú">
+        ✕
+      </button>
+    </div>
+
+    <nav class="nav">
+      <a routerLink="/dashboard" routerLinkActive="active" (click)="closeSidebar()">Dashboard</a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <p class="user-name">{{ auth.user()?.nombre }}</p>
+      <p class="user-meta">{{ auth.user()?.rol }}</p>
+    </div>
+  </aside>
+
+  @if (sidebarOpen()) {
+    <button type="button" class="backdrop" (click)="closeSidebar()" aria-label="Cerrar menú"></button>
+  }
+
+  <div class="main">
+    <header class="topbar">
+      <button type="button" class="icon-btn menu-btn" (click)="toggleSidebar()" aria-label="Abrir menú">
+        ☰
+      </button>
+      <div class="topbar-right">
+        <span class="topbar-email">{{ auth.user()?.email }}</span>
+        <button type="button" class="logout-btn" (click)="logout()">Cerrar sesión</button>
+      </div>
+    </header>
+
+    <main class="content">
+      <router-outlet />
+    </main>
+  </div>
+</div>
