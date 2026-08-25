@@ -13,8 +13,69 @@
       [value]="busqueda()"
       (input)="busqueda.set($any($event.target).value)"
     />
-    <button type="button" class="btn">Nuevo producto</button>
+    <button type="button" class="btn" (click)="abrirNuevo()">Nuevo producto</button>
   </div>
+
+  @if (errorMessage()) {
+    <p class="alert-error" role="alert">{{ errorMessage() }}</p>
+  }
+
+  @if (formOpen()) {
+    <form class="form-panel" [formGroup]="form" (ngSubmit)="guardar()">
+      <h2>{{ editingId() ? 'Editar producto' : 'Nuevo producto' }}</h2>
+      <div class="form-grid">
+        <label>
+          <span>SKU *</span>
+          <input type="text" formControlName="sku" />
+        </label>
+        <label>
+          <span>Nombre *</span>
+          <input type="text" formControlName="nombre" />
+        </label>
+        <label>
+          <span>Categoría</span>
+          <input type="text" formControlName="categoria" />
+        </label>
+        <label>
+          <span>Precio de venta *</span>
+          <input type="number" min="0" step="0.01" formControlName="precio_venta" />
+        </label>
+        <label>
+          <span>Costo de compra *</span>
+          <input type="number" min="0" step="0.01" formControlName="costo_compra" />
+        </label>
+        <label>
+          <span>Stock actual</span>
+          <input type="number" min="0" formControlName="stock_actual" />
+        </label>
+        <label>
+          <span>Stock mínimo</span>
+          <input type="number" min="0" formControlName="stock_minimo" />
+        </label>
+        <label>
+          <span>Proveedor</span>
+          <select formControlName="id_proveedor">
+            <option [ngValue]="null">Sin proveedor</option>
+            @for (proveedor of inventario.proveedores(); track proveedor.id) {
+              <option [ngValue]="proveedor.id">{{ proveedor.nombre_comercial }}</option>
+            }
+          </select>
+        </label>
+        <label class="checkbox-row">
+          <input type="checkbox" formControlName="estado" />
+          <span>Activo</span>
+        </label>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn" [disabled]="saving()">
+          {{ saving() ? 'Guardando...' : 'Guardar' }}
+        </button>
+        <button type="button" class="btn btn-ghost" (click)="cancelar()" [disabled]="saving()">
+          Cancelar
+        </button>
+      </div>
+    </form>
+  }
 
   <div class="table-wrap">
     <table>
@@ -23,29 +84,60 @@
           <th>SKU</th>
           <th>Nombre</th>
           <th>Categoría</th>
-          <th>Unidad</th>
-          <th>Precio</th>
+          <th>Precio venta</th>
+          <th>Costo</th>
+          <th>Stock</th>
+          <th>Proveedor</th>
           <th>Estado</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
-        @for (item of filtrados(); track item.id) {
+        @if (loading()) {
           <tr>
-            <td>{{ item.sku }}</td>
-            <td>{{ item.nombre }}</td>
-            <td>{{ item.categoria }}</td>
-            <td>{{ item.unidad }}</td>
-            <td>{{ item.precio | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
-            <td>
-              <span class="badge" [class.badge-ok]="item.activo" [class.badge-off]="!item.activo">
-                {{ item.activo ? 'Activo' : 'Inactivo' }}
-              </span>
-            </td>
+            <td colspan="9" class="muted">Cargando productos...</td>
           </tr>
-        } @empty {
-          <tr>
-            <td colspan="6" class="muted">No hay productos que coincidan.</td>
-          </tr>
+        } @else {
+          @for (item of filtrados(); track item.id) {
+            <tr>
+              <td>{{ item.sku }}</td>
+              <td>{{ item.nombre }}</td>
+              <td>{{ item.categoria || '—' }}</td>
+              <td>{{ item.precio_venta | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
+              <td>{{ item.costo_compra | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
+              <td>
+                {{ item.stock_actual }}
+                @if (item.stock_actual <= item.stock_minimo) {
+                  <span class="badge badge-warn">mín. {{ item.stock_minimo }}</span>
+                }
+              </td>
+              <td>{{ item.proveedor?.nombre_comercial || '—' }}</td>
+              <td>
+                <span class="badge" [class.badge-ok]="item.estado" [class.badge-off]="!item.estado">
+                  {{ item.estado ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <button type="button" class="btn btn-ghost btn-sm" (click)="abrirEditar(item)">Editar</button>
+                  @if (item.estado) {
+                    <button
+                      type="button"
+                      class="btn btn-danger btn-sm"
+                      (click)="desactivar(item)"
+                      [disabled]="saving()"
+                    >
+                      Desactivar
+                    </button>
+                  }
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="9" class="muted">No hay productos que coincidan.</td>
+            </tr>
+          }
         }
       </tbody>
     </table>

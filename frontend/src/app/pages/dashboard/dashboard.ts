@@ -20,6 +20,16 @@ export class Dashboard {
       text: 'Catálogo con SKU, precios y categorías.',
     },
     {
+      path: '/inventario/proveedores',
+      title: 'Proveedores',
+      text: 'Altas y tiempos de entrega para reposición.',
+    },
+    {
+      path: '/inventario/clientes',
+      title: 'Clientes',
+      text: 'Catálogo de clientes con NIT único.',
+    },
+    {
       path: '/inventario/existencias',
       title: 'Existencias',
       text: 'Cantidades actuales y alertas de mínimo.',

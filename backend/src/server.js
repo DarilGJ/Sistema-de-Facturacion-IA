@@ -1,9 +1,13 @@
 import express from 'express';
 import cors from 'cors';
 import { env } from './config/env.js';
-import { testConnection } from './config/db.js';
+import { testSequelize } from './config/sequelize.js';
+import { sequelize } from './models/index.js';
 import authRoutes from './routes/auth.routes.js';
 import aiRoutes from './routes/ai.routes.js';
+import proveedorRoutes from './routes/proveedor.routes.js';
+import clienteRoutes from './routes/cliente.routes.js';
+import productoRoutes from './routes/producto.routes.js';
 
 const app = express();
 
@@ -21,6 +25,9 @@ app.get('/api/health', (_req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/proveedores', proveedorRoutes);
+app.use('/api/clientes', clienteRoutes);
+app.use('/api/productos', productoRoutes);
 
 app.use((err, _req, res, _next) => {
   console.error(err);
@@ -29,8 +36,9 @@ app.use((err, _req, res, _next) => {
 
 async function start() {
   try {
-    await testConnection();
-    console.log('MySQL conectado');
+    await testSequelize();
+    await sequelize.sync();
+    console.log('MySQL (Sequelize) conectado y modelos sincronizados');
   } catch (error) {
     console.warn('Advertencia: no se pudo conectar a MySQL todavía.');
     console.warn(error.message);

@@ -16,5 +16,6 @@ export class InventarioNav {
     { path: '/inventario/existencias', label: 'Existencias', exact: false },
     { path: '/inventario/movimientos', label: 'Movimientos', exact: false },
     { path: '/inventario/proveedores', label: 'Proveedores', exact: false },
+    { path: '/inventario/clientes', label: 'Clientes', exact: false },
   ];
 }

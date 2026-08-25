@@ -20,12 +20,17 @@
     <article class="card">
       <h2>Stock bajo</h2>
       <p class="kpi">{{ stockBajo() }}</p>
-      <p>Productos por debajo del mínimo</p>
+      <p>Productos en o por debajo del mínimo</p>
     </article>
     <article class="card">
       <h2>Proveedores</h2>
       <p class="kpi">{{ inventario.proveedores().length }}</p>
       <p>Fuentes de reposición</p>
+    </article>
+    <article class="card">
+      <h2>Clientes</h2>
+      <p class="kpi">{{ inventario.clientes().length }}</p>
+      <p>Catálogo para facturación</p>
     </article>
   </div>
 
@@ -54,6 +59,10 @@
     <a class="card" routerLink="/inventario/proveedores">
       <h3>Proveedores</h3>
       <p>Contactos para compras y reposición.</p>
+    </a>
+    <a class="card" routerLink="/inventario/clientes">
+      <h3>Clientes</h3>
+      <p>NIT, contacto y estado para facturar.</p>
     </a>
   </div>
 </section>
