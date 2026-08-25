@@ -9,6 +9,19 @@
 
     <nav class="nav">
       <a routerLink="/dashboard" routerLinkActive="active" (click)="closeSidebar()">Dashboard</a>
+
+      <p class="nav-group">Inventario</p>
+      @for (link of inventarioLinks; track link.path) {
+        <a
+          class="nav-sub"
+          [routerLink]="link.path"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: link.exact }"
+          (click)="closeSidebar()"
+        >
+          {{ link.label }}
+        </a>
+      }
     </nav>
 
     <div class="sidebar-footer">

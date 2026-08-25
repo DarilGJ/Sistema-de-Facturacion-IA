@@ -1,0 +1,41 @@
+<section class="module-page">
+  <header class="page-header">
+    <h1>Proveedores</h1>
+    <p>Contactos para compras y reposición de inventario.</p>
+  </header>
+
+  <app-inventario-nav />
+
+  <div class="toolbar">
+    <button type="button" class="btn">Nuevo proveedor</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>RNC</th>
+          <th>Teléfono</th>
+          <th>Correo</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of inventario.proveedores(); track item.id) {
+          <tr>
+            <td>{{ item.nombre }}</td>
+            <td>{{ item.rnc }}</td>
+            <td>{{ item.telefono }}</td>
+            <td>{{ item.correo }}</td>
+            <td>
+              <span class="badge" [class.badge-ok]="item.activo" [class.badge-off]="!item.activo">
+                {{ item.activo ? 'Activo' : 'Inactivo' }}
+              </span>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

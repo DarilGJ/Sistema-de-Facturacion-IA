@@ -1,11 +1,15 @@
 <section class="dashboard">
   <header class="page-header">
     <h1>Dashboard</h1>
-    <p>Panel principal vacío. Aquí irán los widgets y módulos del sistema.</p>
+    <p>Accede a los módulos de inventario desde aquí o desde el menú lateral.</p>
   </header>
 
-  <div class="empty-state">
-    <p class="empty-title">Sin contenido todavía</p>
-    <p class="empty-text">Cuando agregues módulos (facturas, clientes, IA), aparecerán en este espacio.</p>
+  <div class="cards">
+    @for (item of modules; track item.path) {
+      <a class="card" [routerLink]="item.path">
+        <h2>{{ item.title }}</h2>
+        <p>{{ item.text }}</p>
+      </a>
+    }
   </div>
 </section>

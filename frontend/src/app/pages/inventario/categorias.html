@@ -1,0 +1,22 @@
+<section class="module-page">
+  <header class="page-header">
+    <h1>Categorías</h1>
+    <p>Agrupa el catálogo para reportes y filtros de inventario.</p>
+  </header>
+
+  <app-inventario-nav />
+
+  <div class="toolbar">
+    <button type="button" class="btn">Nueva categoría</button>
+  </div>
+
+  <div class="cards">
+    @for (item of inventario.categorias(); track item.id) {
+      <article class="card">
+        <h3>{{ item.nombre }}</h3>
+        <p>{{ item.descripcion }}</p>
+        <p class="card-meta">{{ item.productos }} productos</p>
+      </article>
+    }
+  </div>
+</section>

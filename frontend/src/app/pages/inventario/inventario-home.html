@@ -1,0 +1,59 @@
+<section class="module-page">
+  <header class="page-header">
+    <h1>Inventario</h1>
+    <p>Resumen y acceso a los módulos de control de stock.</p>
+  </header>
+
+  <app-inventario-nav />
+
+  <div class="cards">
+    <article class="card">
+      <h2>Productos</h2>
+      <p class="kpi">{{ inventario.productos().length }}</p>
+      <p>Ítems en catálogo</p>
+    </article>
+    <article class="card">
+      <h2>Almacenes</h2>
+      <p class="kpi">{{ inventario.almacenes().length }}</p>
+      <p>Ubicaciones activas y temporales</p>
+    </article>
+    <article class="card">
+      <h2>Stock bajo</h2>
+      <p class="kpi">{{ stockBajo() }}</p>
+      <p>Productos por debajo del mínimo</p>
+    </article>
+    <article class="card">
+      <h2>Proveedores</h2>
+      <p class="kpi">{{ inventario.proveedores().length }}</p>
+      <p>Fuentes de reposición</p>
+    </article>
+  </div>
+
+  <h2 class="section-title">Módulos</h2>
+  <div class="cards">
+    <a class="card" routerLink="/inventario/productos">
+      <h3>Productos</h3>
+      <p>Catálogo, SKU, precios y estado.</p>
+    </a>
+    <a class="card" routerLink="/inventario/categorias">
+      <h3>Categorías</h3>
+      <p>Clasificación del catálogo.</p>
+    </a>
+    <a class="card" routerLink="/inventario/almacenes">
+      <h3>Almacenes</h3>
+      <p>Ubicaciones y responsables.</p>
+    </a>
+    <a class="card" routerLink="/inventario/existencias">
+      <h3>Existencias</h3>
+      <p>Stock actual por almacén.</p>
+    </a>
+    <a class="card" routerLink="/inventario/movimientos">
+      <h3>Movimientos</h3>
+      <p>Entradas, salidas y ajustes.</p>
+    </a>
+    <a class="card" routerLink="/inventario/proveedores">
+      <h3>Proveedores</h3>
+      <p>Contactos para compras y reposición.</p>
+    </a>
+  </div>
+</section>

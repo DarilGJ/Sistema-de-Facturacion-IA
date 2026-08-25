@@ -11,6 +11,16 @@ import { AuthService } from '../../core/services/auth.service';
 export class DashboardLayout {
   readonly sidebarOpen = signal(false);
 
+  readonly inventarioLinks = [
+    { path: '/inventario', label: 'Resumen', exact: true },
+    { path: '/inventario/productos', label: 'Productos', exact: false },
+    { path: '/inventario/categorias', label: 'Categorías', exact: false },
+    { path: '/inventario/almacenes', label: 'Almacenes', exact: false },
+    { path: '/inventario/existencias', label: 'Existencias', exact: false },
+    { path: '/inventario/movimientos', label: 'Movimientos', exact: false },
+    { path: '/inventario/proveedores', label: 'Proveedores', exact: false },
+  ];
+
   constructor(readonly auth: AuthService) {}
 
   toggleSidebar(): void {

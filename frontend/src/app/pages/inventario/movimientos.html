@@ -1,0 +1,48 @@
+<section class="module-page">
+  <header class="page-header">
+    <h1>Movimientos</h1>
+    <p>Kardex de entradas, salidas y ajustes.</p>
+  </header>
+
+  <app-inventario-nav />
+
+  <div class="toolbar">
+    <button type="button" class="btn">Registrar movimiento</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Tipo</th>
+          <th>Producto</th>
+          <th>Almacén</th>
+          <th>Cantidad</th>
+          <th>Referencia</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of inventario.movimientos(); track item.id) {
+          <tr>
+            <td>{{ item.fecha | date: 'dd/MM/yyyy' }}</td>
+            <td>
+              <span
+                class="badge"
+                [class.badge-in]="item.tipo === 'entrada'"
+                [class.badge-out]="item.tipo === 'salida'"
+                [class.badge-warn]="item.tipo === 'ajuste'"
+              >
+                {{ etiqueta(item.tipo) }}
+              </span>
+            </td>
+            <td>{{ item.producto }}</td>
+            <td>{{ item.almacen }}</td>
+            <td>{{ item.cantidad }}</td>
+            <td>{{ item.referencia }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

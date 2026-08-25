@@ -1,0 +1,41 @@
+<section class="module-page">
+  <header class="page-header">
+    <h1>Existencias</h1>
+    <p>Stock actual por producto y almacén.</p>
+  </header>
+
+  <app-inventario-nav />
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>SKU</th>
+          <th>Producto</th>
+          <th>Almacén</th>
+          <th>Cantidad</th>
+          <th>Mínimo</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of inventario.existencias(); track item.id) {
+          <tr>
+            <td>{{ item.sku }}</td>
+            <td>{{ item.producto }}</td>
+            <td>{{ item.almacen }}</td>
+            <td>{{ item.cantidad }}</td>
+            <td>{{ item.minimo }}</td>
+            <td>
+              @if (item.cantidad < item.minimo) {
+                <span class="badge badge-warn">Bajo mínimo</span>
+              } @else {
+                <span class="badge badge-ok">Disponible</span>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

@@ -1,0 +1,27 @@
+.inv-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 1.15rem 0 1.25rem;
+}
+
+.inv-nav a {
+  text-decoration: none;
+  color: #475569;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.86rem;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.inv-nav a:hover {
+  border-color: #0f766e;
+  color: #0f766e;
+}
+
+.inv-nav a.active {
+  background: #0f766e;
+  border-color: #0f766e;
+  color: #ecfdf5;
+}

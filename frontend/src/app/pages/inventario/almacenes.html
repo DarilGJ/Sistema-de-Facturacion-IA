@@ -1,0 +1,27 @@
+<section class="module-page">
+  <header class="page-header">
+    <h1>Almacenes</h1>
+    <p>Ubicaciones donde se guarda el stock.</p>
+  </header>
+
+  <app-inventario-nav />
+
+  <div class="toolbar">
+    <button type="button" class="btn">Nuevo almacén</button>
+  </div>
+
+  <div class="cards">
+    @for (item of inventario.almacenes(); track item.id) {
+      <article class="card">
+        <h3>{{ item.nombre }}</h3>
+        <p>{{ item.ubicacion }}</p>
+        <p class="card-meta">Responsable: {{ item.responsable }}</p>
+        <p>
+          <span class="badge" [class.badge-ok]="item.activo" [class.badge-off]="!item.activo">
+            {{ item.activo ? 'Activo' : 'Inactivo' }}
+          </span>
+        </p>
+      </article>
+    }
+  </div>
+</section>
