@@ -1,13 +1,13 @@
 <section class="module-page">
   <header class="page-header">
-    <h1>Proveedores</h1>
-    <p>Contactos para compras y reposición de inventario.</p>
+    <h1>Clientes</h1>
+    <p>Catálogo de clientes para facturación, con NIT único.</p>
   </header>
 
   <app-inventario-nav />
 
   <div class="toolbar">
-    <button type="button" class="btn" (click)="abrirNuevo()">Nuevo proveedor</button>
+    <button type="button" class="btn" (click)="abrirNuevo()">Nuevo cliente</button>
   </div>
 
   @if (errorMessage()) {
@@ -16,27 +16,23 @@
 
   @if (formOpen()) {
     <form class="form-panel" [formGroup]="form" (ngSubmit)="guardar()">
-      <h2>{{ editingId() ? 'Editar proveedor' : 'Nuevo proveedor' }}</h2>
+      <h2>{{ editingId() ? 'Editar cliente' : 'Nuevo cliente' }}</h2>
       <div class="form-grid">
         <label>
-          <span>Nombre comercial *</span>
-          <input type="text" formControlName="nombre_comercial" />
+          <span>Nombre *</span>
+          <input type="text" formControlName="nombre" />
         </label>
         <label>
-          <span>Contacto</span>
-          <input type="text" formControlName="contacto" />
-        </label>
-        <label>
-          <span>Teléfono</span>
-          <input type="text" formControlName="telefono" />
+          <span>NIT *</span>
+          <input type="text" formControlName="nit" />
         </label>
         <label>
           <span>Email</span>
           <input type="email" formControlName="email" />
         </label>
         <label>
-          <span>Tiempo de entrega (días) *</span>
-          <input type="number" min="0" formControlName="tiempo_entrega_dias" />
+          <span>Teléfono</span>
+          <input type="text" formControlName="telefono" />
         </label>
         <label class="checkbox-row">
           <input type="checkbox" formControlName="estado" />
@@ -58,11 +54,10 @@
     <table>
       <thead>
         <tr>
-          <th>Nombre comercial</th>
-          <th>Contacto</th>
-          <th>Teléfono</th>
+          <th>Nombre</th>
+          <th>NIT</th>
           <th>Email</th>
-          <th>Entrega (días)</th>
+          <th>Teléfono</th>
           <th>Estado</th>
           <th></th>
         </tr>
@@ -70,16 +65,15 @@
       <tbody>
         @if (loading()) {
           <tr>
-            <td colspan="7" class="muted">Cargando proveedores...</td>
+            <td colspan="6" class="muted">Cargando clientes...</td>
           </tr>
         } @else {
-          @for (item of inventario.proveedores(); track item.id) {
+          @for (item of inventario.clientes(); track item.id) {
             <tr>
-              <td>{{ item.nombre_comercial }}</td>
-              <td>{{ item.contacto || '—' }}</td>
-              <td>{{ item.telefono || '—' }}</td>
+              <td>{{ item.nombre }}</td>
+              <td>{{ item.nit }}</td>
               <td>{{ item.email || '—' }}</td>
-              <td>{{ item.tiempo_entrega_dias }}</td>
+              <td>{{ item.telefono || '—' }}</td>
               <td>
                 <span class="badge" [class.badge-ok]="item.estado" [class.badge-off]="!item.estado">
                   {{ item.estado ? 'Activo' : 'Inactivo' }}
@@ -103,7 +97,7 @@
             </tr>
           } @empty {
             <tr>
-              <td colspan="7" class="muted">Aún no hay proveedores. Crea el primero para empezar.</td>
+              <td colspan="6" class="muted">Aún no hay clientes. Crea el primero para empezar.</td>
             </tr>
           }
         }

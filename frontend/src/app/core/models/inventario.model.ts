@@ -5,16 +5,6 @@ export interface Categoria {
   productos: number;
 }
 
-export interface Producto {
-  id: number;
-  sku: string;
-  nombre: string;
-  categoria: string;
-  precio: number;
-  unidad: string;
-  activo: boolean;
-}
-
 export interface Almacen {
   id: number;
   nombre: string;
@@ -44,9 +34,62 @@ export interface Movimiento {
 
 export interface Proveedor {
   id: number;
+  nombre_comercial: string;
+  contacto: string | null;
+  telefono: string | null;
+  email: string | null;
+  tiempo_entrega_dias: number;
+  estado: boolean;
+}
+
+export interface Cliente {
+  id: number;
   nombre: string;
-  rnc: string;
-  telefono: string;
-  correo: string;
-  activo: boolean;
+  nit: string;
+  email: string | null;
+  telefono: string | null;
+  estado: boolean;
+}
+
+export interface Producto {
+  id: number;
+  sku: string;
+  nombre: string;
+  categoria: string | null;
+  precio_venta: number | string;
+  costo_compra: number | string;
+  stock_actual: number;
+  stock_minimo: number;
+  id_proveedor: number | null;
+  estado: boolean;
+  proveedor?: Pick<Proveedor, 'id' | 'nombre_comercial' | 'tiempo_entrega_dias' | 'estado'> | null;
+}
+
+export interface ProveedorPayload {
+  nombre_comercial: string;
+  contacto?: string | null;
+  telefono?: string | null;
+  email?: string | null;
+  tiempo_entrega_dias: number;
+  estado?: boolean;
+}
+
+export interface ClientePayload {
+  nombre: string;
+  nit: string;
+  email?: string | null;
+  telefono?: string | null;
+  estado?: boolean;
+}
+
+export interface ProductoPayload {
+  sku: string;
+  nombre: string;
+  categoria?: string | null;
+  precio_venta: number;
+  costo_compra: number;
+  stock_actual?: number;
+  stock_minimo?: number;
+  id_proveedor?: number | null;
+  estado?: boolean;
 }

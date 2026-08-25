@@ -1,29 +1,35 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, forkJoin } from 'rxjs';
+import { switchMap, tap } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
 import {
   Almacen,
   Categoria,
+  Cliente,
+  ClientePayload,
   Existencia,
   Movimiento,
   Producto,
+  ProductoPayload,
   Proveedor,
+  ProveedorPayload,
 } from '../models/inventario.model';
 
 @Injectable({ providedIn: 'root' })
 export class InventarioService {
+  private readonly http = inject(HttpClient);
+  private readonly api = environment.apiUrl;
+
+  readonly proveedores = signal<Proveedor[]>([]);
+  readonly clientes = signal<Cliente[]>([]);
+  readonly productos = signal<Producto[]>([]);
+
   readonly categorias = signal<Categoria[]>([
     { id: 1, nombre: 'Papelería', descripcion: 'Hojas, tintas y artículos de oficina', productos: 12 },
     { id: 2, nombre: 'Tecnología', descripcion: 'Equipos y accesorios informáticos', productos: 8 },
     { id: 3, nombre: 'Limpieza', descripcion: 'Insumos de aseo e higiene', productos: 6 },
     { id: 4, nombre: 'Servicios', descripcion: 'Ítems facturables sin stock físico', productos: 3 },
-  ]);
-
-  readonly productos = signal<Producto[]>([
-    { id: 1, sku: 'PAP-001', nombre: 'Resma papel carta', categoria: 'Papelería', precio: 285, unidad: 'resma', activo: true },
-    { id: 2, sku: 'PAP-014', nombre: 'Tinta laser negra', categoria: 'Papelería', precio: 1450, unidad: 'und', activo: true },
-    { id: 3, sku: 'TEC-003', nombre: 'Mouse inalámbrico', categoria: 'Tecnología', precio: 890, unidad: 'und', activo: true },
-    { id: 4, sku: 'TEC-021', nombre: 'Teclado USB', categoria: 'Tecnología', precio: 720, unidad: 'und', activo: true },
-    { id: 5, sku: 'LIM-008', nombre: 'Detergente 5L', categoria: 'Limpieza', precio: 410, unidad: 'gal', activo: true },
-    { id: 6, sku: 'SRV-001', nombre: 'Soporte técnico hora', categoria: 'Servicios', precio: 1200, unidad: 'hora', activo: false },
   ]);
 
   readonly almacenes = signal<Almacen[]>([
@@ -48,9 +54,83 @@ export class InventarioService {
     { id: 14, fecha: '2026-08-20', tipo: 'entrada', producto: 'Detergente 5L', almacen: 'Almacén central', cantidad: 12, referencia: 'OC-1038' },
   ]);
 
-  readonly proveedores = signal<Proveedor[]>([
-    { id: 1, nombre: 'Papelería del Caribe', rnc: '101234567', telefono: '809-555-1200', correo: 'ventas@papeleria.do', activo: true },
-    { id: 2, nombre: 'TecnoPlus SRL', rnc: '130987654', telefono: '809-555-4488', correo: 'compras@tecnoplus.do', activo: true },
-    { id: 3, nombre: 'LimpiaMax', rnc: '401112233', telefono: '829-555-0091', correo: 'info@limpiamax.do', activo: false },
-  ]);
+  listarProveedores(): Observable<Proveedor[]> {
+    return this.http
+      .get<Proveedor[]>(`${this.api}/proveedores`)
+      .pipe(tap((rows) => this.proveedores.set(rows)));
+  }
+
+  crearProveedor(payload: ProveedorPayload): Observable<Proveedor[]> {
+    return this.http
+      .post<Proveedor>(`${this.api}/proveedores`, payload)
+      .pipe(switchMap(() => this.listarProveedores()));
+  }
+
+  actualizarProveedor(id: number, payload: ProveedorPayload): Observable<Proveedor[]> {
+    return this.http
+      .put<Proveedor>(`${this.api}/proveedores/${id}`, payload)
+      .pipe(switchMap(() => this.listarProveedores()));
+  }
+
+  desactivarProveedor(id: number): Observable<Proveedor[]> {
+    return this.http
+      .delete(`${this.api}/proveedores/${id}`)
+      .pipe(switchMap(() => this.listarProveedores()));
+  }
+
+  listarClientes(): Observable<Cliente[]> {
+    return this.http
+      .get<Cliente[]>(`${this.api}/clientes`)
+      .pipe(tap((rows) => this.clientes.set(rows)));
+  }
+
+  crearCliente(payload: ClientePayload): Observable<Cliente[]> {
+    return this.http
+      .post<Cliente>(`${this.api}/clientes`, payload)
+      .pipe(switchMap(() => this.listarClientes()));
+  }
+
+  actualizarCliente(id: number, payload: ClientePayload): Observable<Cliente[]> {
+    return this.http
+      .put<Cliente>(`${this.api}/clientes/${id}`, payload)
+      .pipe(switchMap(() => this.listarClientes()));
+  }
+
+  desactivarCliente(id: number): Observable<Cliente[]> {
+    return this.http
+      .delete(`${this.api}/clientes/${id}`)
+      .pipe(switchMap(() => this.listarClientes()));
+  }
+
+  listarProductos(): Observable<Producto[]> {
+    return this.http
+      .get<Producto[]>(`${this.api}/productos`)
+      .pipe(tap((rows) => this.productos.set(rows)));
+  }
+
+  crearProducto(payload: ProductoPayload): Observable<Producto[]> {
+    return this.http
+      .post<Producto>(`${this.api}/productos`, payload)
+      .pipe(switchMap(() => this.listarProductos()));
+  }
+
+  actualizarProducto(id: number, payload: ProductoPayload): Observable<Producto[]> {
+    return this.http
+      .put<Producto>(`${this.api}/productos/${id}`, payload)
+      .pipe(switchMap(() => this.listarProductos()));
+  }
+
+  desactivarProducto(id: number): Observable<Producto[]> {
+    return this.http
+      .delete(`${this.api}/productos/${id}`)
+      .pipe(switchMap(() => this.listarProductos()));
+  }
+
+  cargarCatalogos(): Observable<{ proveedores: Proveedor[]; clientes: Cliente[]; productos: Producto[] }> {
+    return forkJoin({
+      proveedores: this.listarProveedores(),
+      clientes: this.listarClientes(),
+      productos: this.listarProductos(),
+    });
+  }
 }

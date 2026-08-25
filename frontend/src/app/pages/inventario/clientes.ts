@@ -2,16 +2,16 @@ import { Component, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InventarioNav } from './inventario-nav';
 import { InventarioService } from '../../core/services/inventario.service';
-import { Proveedor } from '../../core/models/inventario.model';
+import { Cliente } from '../../core/models/inventario.model';
 import { apiErrorMessage } from '../../core/utils/api-error';
 
 @Component({
-  selector: 'app-proveedores',
+  selector: 'app-clientes',
   imports: [InventarioNav, ReactiveFormsModule],
-  templateUrl: './proveedores.html',
+  templateUrl: './clientes.html',
   styleUrl: './inventario-shared.css',
 })
-export class Proveedores implements OnInit {
+export class Clientes implements OnInit {
   readonly loading = signal(false);
   readonly saving = signal(false);
   readonly errorMessage = signal('');
@@ -25,11 +25,10 @@ export class Proveedores implements OnInit {
     private readonly fb: FormBuilder
   ) {
     this.form = this.fb.group({
-      nombre_comercial: ['', Validators.required],
-      contacto: [''],
-      telefono: [''],
+      nombre: ['', Validators.required],
+      nit: ['', Validators.required],
       email: ['', Validators.email],
-      tiempo_entrega_dias: [1, [Validators.required, Validators.min(0)]],
+      telefono: [''],
       estado: [true],
     });
   }
@@ -41,11 +40,11 @@ export class Proveedores implements OnInit {
   cargar(): void {
     this.loading.set(true);
     this.errorMessage.set('');
-    this.inventario.listarProveedores().subscribe({
+    this.inventario.listarClientes().subscribe({
       next: () => this.loading.set(false),
       error: (err) => {
         this.loading.set(false);
-        this.errorMessage.set(apiErrorMessage(err, 'No se pudieron cargar los proveedores.'));
+        this.errorMessage.set(apiErrorMessage(err, 'No se pudieron cargar los clientes.'));
       },
     });
   }
@@ -53,25 +52,23 @@ export class Proveedores implements OnInit {
   abrirNuevo(): void {
     this.editingId.set(null);
     this.form.reset({
-      nombre_comercial: '',
-      contacto: '',
-      telefono: '',
+      nombre: '',
+      nit: '',
       email: '',
-      tiempo_entrega_dias: 1,
+      telefono: '',
       estado: true,
     });
     this.errorMessage.set('');
     this.formOpen.set(true);
   }
 
-  abrirEditar(item: Proveedor): void {
+  abrirEditar(item: Cliente): void {
     this.editingId.set(item.id);
     this.form.reset({
-      nombre_comercial: item.nombre_comercial,
-      contacto: item.contacto ?? '',
-      telefono: item.telefono ?? '',
+      nombre: item.nombre,
+      nit: item.nit,
       email: item.email ?? '',
-      tiempo_entrega_dias: item.tiempo_entrega_dias,
+      telefono: item.telefono ?? '',
       estado: !!item.estado,
     });
     this.errorMessage.set('');
@@ -86,17 +83,16 @@ export class Proveedores implements OnInit {
   guardar(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.errorMessage.set('Completa los campos obligatorios.');
+      this.errorMessage.set('Completa nombre y NIT.');
       return;
     }
 
     const value = this.form.getRawValue();
     const payload = {
-      nombre_comercial: String(value.nombre_comercial).trim(),
-      contacto: value.contacto?.trim() || null,
-      telefono: value.telefono?.trim() || null,
+      nombre: String(value.nombre).trim(),
+      nit: String(value.nit).trim(),
       email: value.email?.trim() || null,
-      tiempo_entrega_dias: Number(value.tiempo_entrega_dias),
+      telefono: value.telefono?.trim() || null,
       estado: !!value.estado,
     };
 
@@ -104,8 +100,8 @@ export class Proveedores implements OnInit {
     this.errorMessage.set('');
 
     const request = this.editingId()
-      ? this.inventario.actualizarProveedor(this.editingId()!, payload)
-      : this.inventario.crearProveedor(payload);
+      ? this.inventario.actualizarCliente(this.editingId()!, payload)
+      : this.inventario.crearCliente(payload);
 
     request.subscribe({
       next: () => {
@@ -120,13 +116,13 @@ export class Proveedores implements OnInit {
     });
   }
 
-  desactivar(item: Proveedor): void {
+  desactivar(item: Cliente): void {
     if (!item.estado) {
       return;
     }
     this.saving.set(true);
     this.errorMessage.set('');
-    this.inventario.desactivarProveedor(item.id).subscribe({
+    this.inventario.desactivarCliente(item.id).subscribe({
       next: () => this.saving.set(false),
       error: (err) => {
         this.saving.set(false);
