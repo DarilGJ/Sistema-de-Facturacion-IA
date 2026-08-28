@@ -1,0 +1,52 @@
+.row-menu {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.kebab {
+  border: 0;
+  background: transparent;
+  color: #64748b;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.kebab:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.2rem);
+  z-index: 20;
+  min-width: 140px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+  padding: 0.35rem;
+  display: grid;
+}
+
+.menu button {
+  border: 0;
+  background: transparent;
+  text-align: left;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #0f172a;
+}
+
+.menu button:hover {
+  background: #f8fafc;
+}
+
+.menu .danger {
+  color: #b91c1c;
+}

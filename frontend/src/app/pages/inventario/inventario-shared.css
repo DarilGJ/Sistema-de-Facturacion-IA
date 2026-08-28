@@ -1,33 +1,83 @@
 .module-page {
-  max-width: 1100px;
+  max-width: 1280px;
 }
 
 .page-header h1 {
   margin: 0;
-  font-size: 1.65rem;
+  font-size: 1.45rem;
   color: #0f172a;
 }
 
 .page-header p {
-  margin: 0.4rem 0 0;
+  margin: 0.35rem 0 0;
   color: #64748b;
 }
 
-.toolbar {
+.toolbar,
+.crud-toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 0.65rem;
   align-items: center;
   margin-bottom: 1rem;
 }
 
+.crud-toolbar {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.75rem;
+}
+
+.search-field {
+  position: relative;
+  flex: 1;
+  min-width: 220px;
+}
+
+.search-field app-icon {
+  position: absolute;
+  left: 0.7rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+}
+
+.search-field input,
 .toolbar input,
-.toolbar select {
-  border: 1px solid #cbd5e1;
+.toolbar select,
+.filter-bar select {
+  border: 1px solid #e2e8f0;
   background: #fff;
   color: #0f172a;
   padding: 0.55rem 0.75rem;
-  min-width: 220px;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.search-field input {
+  width: 100%;
+  padding-left: 2.2rem;
+}
+
+.icon-action {
+  width: 2.35rem;
+  height: 2.35rem;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  border-radius: 8px;
+  color: #475569;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.icon-action.accent,
+.icon-action.active {
+  border-color: #fdba74;
+  color: #ea580c;
+  background: #fff7ed;
 }
 
 .btn {
@@ -37,10 +87,23 @@
   padding: 0.55rem 0.9rem;
   cursor: pointer;
   font-weight: 600;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 .btn:hover {
   background: #115e59;
+}
+
+.btn-accent {
+  background: #f97316;
+  color: #fff;
+}
+
+.btn-accent:hover {
+  background: #ea580c;
 }
 
 .btn-ghost {
@@ -55,42 +118,77 @@
   background: #fff;
 }
 
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: -0.35rem 0 1rem;
+}
+
 .table-wrap {
   overflow: auto;
   background: #fff;
   border: 1px solid #e2e8f0;
+  border-radius: 12px;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.92rem;
+  font-size: 0.9rem;
 }
 
 th,
 td {
   text-align: left;
-  padding: 0.75rem 0.85rem;
-  border-bottom: 1px solid #e2e8f0;
+  padding: 0.8rem 0.9rem;
+  border-bottom: 1px solid #f1f5f9;
   white-space: nowrap;
 }
 
 th {
-  background: #f8fafc;
-  color: #475569;
+  background: #fafafa;
+  color: #64748b;
   font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.num {
+  text-align: right;
+}
+
+.item-name {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: #fff7ed;
+  color: #c2410c;
+  display: grid;
+  place-items: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  flex-shrink: 0;
 }
 
 .badge {
   display: inline-block;
-  padding: 0.15rem 0.5rem;
+  padding: 0.18rem 0.55rem;
   font-size: 0.75rem;
   font-weight: 600;
+  border-radius: 999px;
 }
 
 .badge-ok {
-  background: #ccfbf1;
-  color: #0f766e;
+  background: #dcfce7;
+  color: #166534;
 }
 
 .badge-off {
@@ -99,8 +197,8 @@ th {
 }
 
 .badge-warn {
-  background: #fef3c7;
-  color: #b45309;
+  background: #ffedd5;
+  color: #c2410c;
 }
 
 .badge-in {
@@ -111,6 +209,11 @@ th {
 .badge-out {
   background: #ffe4e6;
   color: #be123c;
+}
+
+.badge-muted {
+  background: #f1f5f9;
+  color: #475569;
 }
 
 .cards {
@@ -126,10 +229,11 @@ th {
   text-decoration: none;
   color: inherit;
   display: block;
+  border-radius: 12px;
 }
 
 .card:hover {
-  border-color: #14b8a6;
+  border-color: #fdba74;
 }
 
 .card h2,
@@ -164,6 +268,7 @@ th {
   background: #fef2f2;
   border: 1px solid #fecaca;
   padding: 0.7rem 0.85rem;
+  border-radius: 10px;
 }
 
 .form-panel {
@@ -171,6 +276,7 @@ th {
   border: 1px solid #e2e8f0;
   padding: 1.1rem;
   margin-bottom: 1rem;
+  border-radius: 12px;
 }
 
 .form-panel h2 {
@@ -199,6 +305,7 @@ th {
   color: #0f172a;
   padding: 0.55rem 0.7rem;
   font: inherit;
+  border-radius: 8px;
 }
 
 .checkbox-row {
@@ -244,5 +351,44 @@ th {
 
 .btn:disabled {
   opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.table-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 0.75rem 0.9rem;
+  border-top: 1px solid #f1f5f9;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.pager {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.pager button {
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  min-width: 2rem;
+  height: 2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #334155;
+}
+
+.pager button.active {
+  background: #f97316;
+  border-color: #f97316;
+  color: #fff;
+}
+
+.pager button:disabled {
+  opacity: 0.45;
   cursor: not-allowed;
 }

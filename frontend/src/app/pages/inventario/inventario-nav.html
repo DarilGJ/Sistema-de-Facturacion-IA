@@ -1,7 +1,74 @@
-<nav class="inv-nav" aria-label="Módulos de inventario">
-  @for (link of links; track link.path) {
-    <a [routerLink]="link.path" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: link.exact }">
-      {{ link.label }}
+<div class="inv-shell">
+  <div class="inv-brand">
+    <span class="mark"><app-icon name="box" /></span>
+    <div>
+      <strong>FacturaAI</strong>
+      <span>Inventario</span>
+    </div>
+  </div>
+
+  <nav class="inv-tabs" aria-label="Módulos de inventario">
+    <a routerLink="/inventario" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+      <app-icon name="home" />
+      Inicio
     </a>
-  }
-</nav>
+
+    <div class="drop" (click)="$event.stopPropagation()">
+      <button type="button" [class.open]="openMenu() === 'catalogo'" (click)="toggle('catalogo', $event)">
+        <app-icon name="tag" />
+        Catálogo
+        <app-icon name="chevron" />
+      </button>
+      @if (openMenu() === 'catalogo') {
+        <div class="drop-panel">
+          <a routerLink="/inventario/productos" (click)="openMenu.set(null)">Artículos / Servicios</a>
+          <a routerLink="/inventario/categorias" (click)="openMenu.set(null)">Categorías</a>
+          <a routerLink="/inventario/proveedores" (click)="openMenu.set(null)">Proveedores</a>
+        </div>
+      }
+    </div>
+
+    <div class="drop" (click)="$event.stopPropagation()">
+      <button type="button" [class.open]="openMenu() === 'almacenes'" (click)="toggle('almacenes', $event)">
+        <app-icon name="warehouse" />
+        Almacenes
+        <app-icon name="chevron" />
+      </button>
+      @if (openMenu() === 'almacenes') {
+        <div class="drop-panel">
+          <a routerLink="/inventario/almacenes" (click)="openMenu.set(null)">Bodegas</a>
+          <a routerLink="/inventario/existencias" (click)="openMenu.set(null)">Existencias</a>
+        </div>
+      }
+    </div>
+
+    <a routerLink="/inventario/movimientos" routerLinkActive="active">
+      <app-icon name="swap" />
+      Movimientos
+    </a>
+
+    <div class="drop" (click)="$event.stopPropagation()">
+      <button type="button" [class.open]="openMenu() === 'reportes'" (click)="toggle('reportes', $event)">
+        <app-icon name="clipboard" />
+        Reportes
+        <app-icon name="chevron" />
+      </button>
+      @if (openMenu() === 'reportes') {
+        <div class="drop-panel">
+          <a routerLink="/contabilidad" (click)="openMenu.set(null)">Contabilidad / ITBIS</a>
+          <a routerLink="/inventario" (click)="openMenu.set(null)">Centro de control</a>
+        </div>
+      }
+    </div>
+
+    <a routerLink="/inventario/clientes" routerLinkActive="active">
+      <app-icon name="users" />
+      Receptores
+    </a>
+
+    <a routerLink="/dashboard">
+      <app-icon name="back" />
+      Volver
+    </a>
+  </nav>
+</div>

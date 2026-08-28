@@ -1,20 +1,52 @@
 <section class="module-page">
   <header class="page-header">
-    <h1>Productos</h1>
-    <p>Catálogo de artículos para facturación e inventario.</p>
+    <h1>Artículos y servicios</h1>
+    <p>Catálogo de productos para facturación e inventario.</p>
   </header>
 
   <app-inventario-nav />
 
-  <div class="toolbar">
-    <input
-      type="search"
-      placeholder="Buscar por nombre, SKU o categoría"
-      [value]="busqueda()"
-      (input)="busqueda.set($any($event.target).value)"
-    />
-    <button type="button" class="btn" (click)="abrirNuevo()">Nuevo producto</button>
+  <div class="crud-toolbar">
+    <label class="search-field">
+      <app-icon name="search" />
+      <input
+        type="search"
+        placeholder="Buscar por nombre o código"
+        [value]="busqueda()"
+        (input)="setBusqueda($any($event.target).value)"
+      />
+    </label>
+    <button type="button" class="icon-action" (click)="cargar()" title="Actualizar">
+      <app-icon name="refresh" />
+    </button>
+    <button
+      type="button"
+      class="icon-action accent"
+      [class.active]="filtrosOpen()"
+      (click)="toggleFiltros()"
+      title="Filtros"
+    >
+      <app-icon name="filter" />
+    </button>
+    <button type="button" class="btn btn-accent" (click)="abrirNuevo()">
+      <app-icon name="plus" /> Nuevo producto
+    </button>
   </div>
+
+  @if (filtrosOpen()) {
+    <div class="filter-bar">
+      <select [value]="filtroEstado()" (change)="filtroEstado.set($any($event.target).value); pagina.set(1)">
+        <option value="">Todos los estados</option>
+        <option value="activo">Activado</option>
+        <option value="inactivo">Inactivo</option>
+      </select>
+      <select [value]="filtroTipo()" (change)="filtroTipo.set($any($event.target).value); pagina.set(1)">
+        <option value="">Todos los tipos</option>
+        <option value="Producto">Producto</option>
+        <option value="Servicio">Servicio</option>
+      </select>
+    </div>
+  }
 
   @if (errorMessage()) {
     <p class="alert-error" role="alert">{{ errorMessage() }}</p>
@@ -67,7 +99,7 @@
         </label>
       </div>
       <div class="form-actions">
-        <button type="submit" class="btn" [disabled]="saving()">
+        <button type="submit" class="btn btn-accent" [disabled]="saving()">
           {{ saving() ? 'Guardando...' : 'Guardar' }}
         </button>
         <button type="button" class="btn btn-ghost" (click)="cancelar()" [disabled]="saving()">
@@ -81,65 +113,71 @@
     <table>
       <thead>
         <tr>
-          <th>SKU</th>
           <th>Nombre</th>
-          <th>Categoría</th>
-          <th>Precio venta</th>
-          <th>Costo</th>
-          <th>Stock</th>
-          <th>Proveedor</th>
+          <th>Código</th>
+          <th>Tipo</th>
+          <th>Gravamen</th>
           <th>Estado</th>
+          <th>Unidad</th>
+          <th class="num">Costo</th>
+          <th class="num">Precio s/ITBIS</th>
+          <th class="num">Precio</th>
           <th></th>
         </tr>
       </thead>
       <tbody>
         @if (loading()) {
           <tr>
-            <td colspan="9" class="muted">Cargando productos...</td>
+            <td colspan="10" class="muted">Cargando productos...</td>
           </tr>
         } @else {
-          @for (item of filtrados(); track item.id) {
+          @for (item of visibles(); track item.id) {
             <tr>
-              <td>{{ item.sku }}</td>
-              <td>{{ item.nombre }}</td>
-              <td>{{ item.categoria || '—' }}</td>
-              <td>{{ item.precio_venta | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
-              <td>{{ item.costo_compra | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
               <td>
-                {{ item.stock_actual }}
-                @if (item.stock_actual <= item.stock_minimo) {
-                  <span class="badge badge-warn">mín. {{ item.stock_minimo }}</span>
-                }
+                <div class="item-name">
+                  <span class="avatar">{{ iniciales(item.nombre) }}</span>
+                  <span>{{ item.nombre }}</span>
+                </div>
               </td>
-              <td>{{ item.proveedor?.nombre_comercial || '—' }}</td>
+              <td>{{ item.sku }}</td>
+              <td><span class="badge badge-muted">{{ tipo(item) }}</span></td>
+              <td><span class="badge badge-warn">Gravado</span></td>
               <td>
                 <span class="badge" [class.badge-ok]="item.estado" [class.badge-off]="!item.estado">
-                  {{ item.estado ? 'Activo' : 'Inactivo' }}
+                  {{ item.estado ? 'Activado' : 'Inactivo' }}
                 </span>
               </td>
+              <td>Und.</td>
+              <td class="num">{{ item.costo_compra | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
+              <td class="num">{{ sinItbis(item.precio_venta) | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
+              <td class="num">{{ item.precio_venta | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
               <td>
-                <div class="row-actions">
-                  <button type="button" class="btn btn-ghost btn-sm" (click)="abrirEditar(item)">Editar</button>
-                  @if (item.estado) {
-                    <button
-                      type="button"
-                      class="btn btn-danger btn-sm"
-                      (click)="desactivar(item)"
-                      [disabled]="saving()"
-                    >
-                      Desactivar
-                    </button>
-                  }
-                </div>
+                <app-row-menu
+                  [canDeactivate]="!!item.estado"
+                  (edit)="abrirEditar(item)"
+                  (deactivate)="desactivar(item)"
+                />
               </td>
             </tr>
           } @empty {
             <tr>
-              <td colspan="9" class="muted">No hay productos que coincidan.</td>
+              <td colspan="10" class="muted">No hay productos que coincidan.</td>
             </tr>
           }
         }
       </tbody>
     </table>
+    <footer class="table-footer">
+      <span>Viendo {{ rango().from }} a {{ rango().to }} de {{ filtrados().length }} entradas</span>
+      <div class="pager">
+        <button type="button" [disabled]="paginaActual() === 1" (click)="pagina.set(paginaActual() - 1)">Atrás</button>
+        @for (n of paginas(); track n) {
+          <button type="button" [class.active]="n === paginaActual()" (click)="pagina.set(n)">{{ n }}</button>
+        }
+        <button type="button" [disabled]="paginaActual() === paginas().length" (click)="pagina.set(paginaActual() + 1)">
+          Siguiente
+        </button>
+      </div>
+    </footer>
   </div>
 </section>

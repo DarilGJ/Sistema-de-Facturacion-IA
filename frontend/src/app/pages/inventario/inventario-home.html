@@ -1,68 +1,184 @@
-<section class="module-page">
-  <header class="page-header">
-    <h1>Inventario</h1>
-    <p>Resumen y acceso a los módulos de control de stock.</p>
-  </header>
-
+<section class="inv-home">
   <app-inventario-nav />
 
-  <div class="cards">
-    <article class="card">
-      <h2>Productos</h2>
-      <p class="kpi">{{ inventario.productos().length }}</p>
-      <p>Ítems en catálogo</p>
-    </article>
-    <article class="card">
-      <h2>Almacenes</h2>
-      <p class="kpi">{{ inventario.almacenes().length }}</p>
-      <p>Ubicaciones activas y temporales</p>
-    </article>
-    <article class="card">
-      <h2>Stock bajo</h2>
-      <p class="kpi">{{ stockBajo() }}</p>
-      <p>Productos en o por debajo del mínimo</p>
-    </article>
-    <article class="card">
-      <h2>Proveedores</h2>
-      <p class="kpi">{{ inventario.proveedores().length }}</p>
-      <p>Fuentes de reposición</p>
-    </article>
-    <article class="card">
-      <h2>Clientes</h2>
-      <p class="kpi">{{ inventario.clientes().length }}</p>
-      <p>Catálogo para facturación</p>
-    </article>
-  </div>
+  <section class="control">
+    <header class="control-head">
+      <div>
+        <p class="kicker">Inventario avanzado / Centro de control</p>
+        <h1>Una sola vista para ventas, stock y auditoría</h1>
+      </div>
+      <div class="tabs">
+        <button type="button" [class.active]="vista() === 'estadistica'" (click)="setVista('estadistica')">
+          Estadística
+        </button>
+        <button type="button" [class.active]="vista() === 'auditoria'" (click)="setVista('auditoria')">Auditoría</button>
+      </div>
+    </header>
 
-  <h2 class="section-title">Módulos</h2>
-  <div class="cards">
-    <a class="card" routerLink="/inventario/productos">
-      <h3>Productos</h3>
-      <p>Catálogo, SKU, precios y estado.</p>
-    </a>
-    <a class="card" routerLink="/inventario/categorias">
-      <h3>Categorías</h3>
-      <p>Clasificación del catálogo.</p>
-    </a>
-    <a class="card" routerLink="/inventario/almacenes">
-      <h3>Almacenes</h3>
-      <p>Ubicaciones y responsables.</p>
-    </a>
-    <a class="card" routerLink="/inventario/existencias">
-      <h3>Existencias</h3>
-      <p>Stock actual por almacén.</p>
-    </a>
-    <a class="card" routerLink="/inventario/movimientos">
-      <h3>Movimientos</h3>
-      <p>Entradas, salidas y ajustes.</p>
-    </a>
-    <a class="card" routerLink="/inventario/proveedores">
-      <h3>Proveedores</h3>
-      <p>Contactos para compras y reposición.</p>
-    </a>
-    <a class="card" routerLink="/inventario/clientes">
-      <h3>Clientes</h3>
-      <p>NIT, contacto y estado para facturar.</p>
-    </a>
-  </div>
+    <div class="metric-row">
+      <article class="metric">
+        <span class="icon orange"><app-icon name="box" /></span>
+        <div>
+          <strong>{{ productosActivos() }}</strong>
+          <p>Productos activos en catálogo</p>
+        </div>
+      </article>
+      <article class="metric">
+        <span class="icon navy"><app-icon name="wallet" /></span>
+        <div>
+          <strong>{{ moneda(valorInventario()) }}</strong>
+          <p>Valor de inventario a costo</p>
+        </div>
+      </article>
+      <article class="metric">
+        <span class="icon orange"><app-icon name="layers" /></span>
+        <div>
+          <strong>{{ stockBajo() }}</strong>
+          <p>Requieren reposición</p>
+        </div>
+      </article>
+      <article class="metric">
+        <span class="icon green"><app-icon name="clock" /></span>
+        <div>
+          <strong>0</strong>
+          <p>Próximos a vencer en 30 días</p>
+        </div>
+      </article>
+      <article class="metric">
+        <span class="icon green"><app-icon name="check" /></span>
+        <div>
+          <strong>0</strong>
+          <p>Vencidos sin baja</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  @if (vista() === 'estadistica') {
+    <section class="split">
+      <article class="panel">
+        <div class="panel-head">
+          <h2>Productos más vendidos del mes</h2>
+          <div class="mini-toggle">
+            <button type="button" [class.active]="fuenteVentas() === 'factura'" (click)="fuenteVentas.set('factura')">
+              Factura
+            </button>
+            <button type="button" [class.active]="fuenteVentas() === 'tiquete'" (click)="fuenteVentas.set('tiquete')">
+              Tiquete
+            </button>
+          </div>
+        </div>
+        <div class="chart-row">
+          <svg viewBox="0 0 180 180" class="polar" aria-label="Más vendidos">
+            @for (slice of polarVentas(); track slice.concepto) {
+              <path [attr.d]="slice.path" [attr.fill]="slice.color" opacity="0.88" />
+            }
+          </svg>
+          <ol>
+            <p>Top 10 del mes</p>
+            @for (row of polarVentas(); track row.concepto) {
+              <li>
+                <i [style.background]="row.color"></i>
+                {{ row.concepto }}
+                <span>({{ moneda(row.total) }})</span>
+              </li>
+            } @empty {
+              <li class="empty">Aún no hay ventas este mes.</li>
+            }
+          </ol>
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-head">
+          <h2>Productos más comprados del mes</h2>
+          <div class="mini-toggle">
+            <button type="button" [class.active]="fuenteCompras() === 'compras'" (click)="fuenteCompras.set('compras')">
+              Compras
+            </button>
+            <button
+              type="button"
+              [class.active]="fuenteCompras() === 'confirmar'"
+              (click)="fuenteCompras.set('confirmar')"
+            >
+              Confirmar
+            </button>
+          </div>
+        </div>
+        <div class="chart-row">
+          <svg viewBox="0 0 180 180" class="polar" aria-label="Mayor reposición">
+            @for (slice of polarCompras(); track slice.concepto) {
+              <path [attr.d]="slice.path" [attr.fill]="slice.color" opacity="0.88" />
+            }
+          </svg>
+          <ol>
+            <p>Top 10 por costo de reposición</p>
+            @for (row of polarCompras(); track row.concepto) {
+              <li>
+                <i [style.background]="row.color"></i>
+                {{ row.concepto }}
+                <span>({{ moneda(row.total) }})</span>
+              </li>
+            } @empty {
+              <li class="empty">No hay productos en catálogo.</li>
+            }
+          </ol>
+        </div>
+      </article>
+    </section>
+  } @else {
+    <section class="panel">
+      <h2>Auditoría de movimientos</h2>
+      <p class="hint">Entradas, salidas y ajustes registrados en el kardex.</p>
+      <ul class="audit">
+        @for (item of inventario.movimientos(); track item.id) {
+          <li>
+            <strong>{{ item.fecha }}</strong>
+            <span>{{ item.tipo }} · {{ item.producto }}</span>
+            <em>{{ item.cantidad }} · {{ item.referencia }}</em>
+          </li>
+        }
+      </ul>
+      <a class="link" routerLink="/inventario/movimientos">Ver kardex completo</a>
+    </section>
+  }
+
+  <section class="ops">
+    <h2>Resumen operativo</h2>
+    <div class="ops-grid">
+      <a class="op" routerLink="/inventario/productos">
+        <span class="icon orange"><app-icon name="box" /></span>
+        <div>
+          <strong>{{ productosActivos() }}</strong>
+          <p>Catálogo</p>
+        </div>
+      </a>
+      <a class="op" routerLink="/inventario/almacenes">
+        <span class="icon green"><app-icon name="warehouse" /></span>
+        <div>
+          <strong>{{ inventario.almacenes().length }}</strong>
+          <p>Bodegas / puntos de stock</p>
+        </div>
+      </a>
+      <a class="op" routerLink="/inventario/movimientos">
+        <span class="icon orange"><app-icon name="swap" /></span>
+        <div>
+          <strong>{{ inventario.movimientos().length }}</strong>
+          <p>Ajustes, transferencias y salidas</p>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <section class="compras">
+    <span class="icon green"><app-icon name="cart" /></span>
+    <div>
+      <h2>Compras</h2>
+      <p>Registra reposición de inventario y consulta el historial de proveedores.</p>
+    </div>
+    <div class="compras-actions">
+      <a class="btn-green" routerLink="/inventario/proveedores">Nueva compra de inventario</a>
+      <a class="btn-outline" routerLink="/inventario/movimientos">Ver compras</a>
+    </div>
+  </section>
 </section>

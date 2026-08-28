@@ -6,17 +6,54 @@
 
   <app-inventario-nav />
 
-  <div class="toolbar">
-    <button type="button" class="btn">Nueva categoría</button>
+  <div class="crud-toolbar">
+    <label class="search-field">
+      <app-icon name="search" />
+      <input
+        type="search"
+        placeholder="Buscar por nombre"
+        [value]="busqueda()"
+        (input)="setBusqueda($any($event.target).value)"
+      />
+    </label>
   </div>
 
-  <div class="cards">
-    @for (item of inventario.categorias(); track item.id) {
-      <article class="card">
-        <h3>{{ item.nombre }}</h3>
-        <p>{{ item.descripcion }}</p>
-        <p class="card-meta">{{ item.productos }} productos</p>
-      </article>
-    }
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Descripción</th>
+          <th>Tipo</th>
+          <th class="num">Productos</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of visibles(); track item.id) {
+          <tr>
+            <td>{{ item.nombre }}</td>
+            <td>{{ item.descripcion }}</td>
+            <td><span class="badge badge-muted">Categoría</span></td>
+            <td class="num">{{ item.productos }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4" class="muted">No hay categorías que coincidan.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <footer class="table-footer">
+      <span>Viendo {{ rango().from }} a {{ rango().to }} de {{ filtrados().length }} entradas</span>
+      <div class="pager">
+        <button type="button" [disabled]="paginaActual() === 1" (click)="pagina.set(paginaActual() - 1)">Atrás</button>
+        @for (n of paginas(); track n) {
+          <button type="button" [class.active]="n === paginaActual()" (click)="pagina.set(n)">{{ n }}</button>
+        }
+        <button type="button" [disabled]="paginaActual() === paginas().length" (click)="pagina.set(paginaActual() + 1)">
+          Siguiente
+        </button>
+      </div>
+    </footer>
   </div>
 </section>

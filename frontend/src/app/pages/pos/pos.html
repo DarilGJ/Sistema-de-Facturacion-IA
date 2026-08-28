@@ -1,0 +1,149 @@
+<section class="pos">
+  <header class="page-header">
+    <h1>Punto de venta</h1>
+    <p>Arma el ticket, elige el cliente y emite la factura. El ITBIS (18%) se calcula automáticamente.</p>
+  </header>
+
+  <div class="pos-grid">
+    <section class="catalogo">
+      <div class="toolbar">
+        <input
+          type="search"
+          placeholder="Buscar por nombre, SKU o categoría"
+          [ngModel]="busqueda()"
+          (ngModelChange)="busqueda.set($event)"
+        />
+      </div>
+
+      @if (loading()) {
+        <p class="muted">Cargando catálogo…</p>
+      } @else if (!productosVisibles().length) {
+        <p class="muted">No hay productos activos para vender. Cárgalos en Inventario.</p>
+      } @else {
+        <div class="product-grid">
+          @for (item of productosVisibles(); track item.id) {
+            <button
+              type="button"
+              class="product-card"
+              [disabled]="item.stock_actual < 1"
+              (click)="agregar(item)"
+            >
+              <span class="sku">{{ item.sku }}</span>
+              <strong>{{ item.nombre }}</strong>
+              <span class="price">{{ precio(item) | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</span>
+              <span class="stock" [class.low]="item.stock_actual <= item.stock_minimo">
+                Stock: {{ item.stock_actual }}
+              </span>
+            </button>
+          }
+        </div>
+      }
+    </section>
+
+    <aside class="ticket">
+      <h2>Ticket</h2>
+
+      <label class="field">
+        <span>Cliente</span>
+        <select [ngModel]="clienteId()" (ngModelChange)="setCliente($event)">
+          <option [ngValue]="null">Selecciona un cliente</option>
+          @for (cliente of clientesActivos(); track cliente.id) {
+            <option [ngValue]="cliente.id">{{ cliente.nombre }} · {{ cliente.nit }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Método de pago</span>
+        <select [ngModel]="metodoPago()" (ngModelChange)="metodoPago.set($event)">
+          <option value="efectivo">Efectivo</option>
+          <option value="tarjeta">Tarjeta</option>
+          <option value="transferencia">Transferencia</option>
+        </select>
+      </label>
+
+      @if (errorMessage()) {
+        <p class="alert-error" role="alert">{{ errorMessage() }}</p>
+      }
+
+      @if (facturas.ultima(); as ultima) {
+        <p class="ok">Factura {{ ultima.numero }} emitida · {{ ultima.total | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</p>
+      }
+
+      @if (!carrito().length) {
+        <p class="muted">Toca un producto para agregarlo al ticket.</p>
+      } @else {
+        <ul class="lineas">
+          @for (linea of carrito(); track linea.id_producto) {
+            <li>
+              <div>
+                <strong>{{ linea.nombre }}</strong>
+                <small>{{ linea.sku }} · {{ linea.precio | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</small>
+              </div>
+              <div class="qty">
+                <button type="button" (click)="cambiarCantidad(linea.id_producto, -1)">−</button>
+                <span>{{ linea.cantidad }}</span>
+                <button type="button" (click)="cambiarCantidad(linea.id_producto, 1)">+</button>
+              </div>
+              <button type="button" class="link-danger" (click)="quitar(linea.id_producto)">Quitar</button>
+            </li>
+          }
+        </ul>
+      }
+
+      <dl class="totales">
+        <div>
+          <dt>Subtotal</dt>
+          <dd>{{ subtotal() | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</dd>
+        </div>
+        <div>
+          <dt>ITBIS 18%</dt>
+          <dd>{{ itbis() | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</dd>
+        </div>
+        <div class="grand">
+          <dt>Total</dt>
+          <dd>{{ total() | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</dd>
+        </div>
+      </dl>
+
+      <div class="ticket-actions">
+        <button type="button" class="btn-ghost" (click)="vaciar()" [disabled]="!carrito().length">Vaciar</button>
+        <button type="button" class="btn" (click)="emitir()" [disabled]="emitting() || !carrito().length">
+          {{ emitting() ? 'Emitiendo…' : 'Emitir factura' }}
+        </button>
+      </div>
+    </aside>
+  </div>
+
+  <section class="recientes">
+    <h2>Facturas recientes</h2>
+    @if (!facturas.facturas().length) {
+      <p class="muted">Aún no hay facturas emitidas.</p>
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Número</th>
+              <th>Fecha</th>
+              <th>Cliente</th>
+              <th>Pago</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of facturas.facturas(); track item.id) {
+              <tr>
+                <td>{{ item.numero }}</td>
+                <td>{{ item.fecha | date: 'short' }}</td>
+                <td>{{ item.cliente?.nombre || '—' }}</td>
+                <td class="cap">{{ item.metodo_pago }}</td>
+                <td>{{ item.total | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+</section>

@@ -6,8 +6,22 @@
 
   <app-inventario-nav />
 
-  <div class="toolbar">
-    <button type="button" class="btn" (click)="abrirNuevo()">Nuevo proveedor</button>
+  <div class="crud-toolbar">
+    <label class="search-field">
+      <app-icon name="search" />
+      <input
+        type="search"
+        placeholder="Buscar por nombre o contacto"
+        [value]="busqueda()"
+        (input)="setBusqueda($any($event.target).value)"
+      />
+    </label>
+    <button type="button" class="icon-action" (click)="cargar()" title="Actualizar">
+      <app-icon name="refresh" />
+    </button>
+    <button type="button" class="btn btn-accent" (click)="abrirNuevo()">
+      <app-icon name="plus" /> Nuevo proveedor
+    </button>
   </div>
 
   @if (errorMessage()) {
@@ -44,7 +58,7 @@
         </label>
       </div>
       <div class="form-actions">
-        <button type="submit" class="btn" [disabled]="saving()">
+        <button type="submit" class="btn btn-accent" [disabled]="saving()">
           {{ saving() ? 'Guardando...' : 'Guardar' }}
         </button>
         <button type="button" class="btn btn-ghost" (click)="cancelar()" [disabled]="saving()">
@@ -62,7 +76,7 @@
           <th>Contacto</th>
           <th>Teléfono</th>
           <th>Email</th>
-          <th>Entrega (días)</th>
+          <th>Entrega</th>
           <th>Estado</th>
           <th></th>
         </tr>
@@ -73,32 +87,29 @@
             <td colspan="7" class="muted">Cargando proveedores...</td>
           </tr>
         } @else {
-          @for (item of inventario.proveedores(); track item.id) {
+          @for (item of visibles(); track item.id) {
             <tr>
-              <td>{{ item.nombre_comercial }}</td>
+              <td>
+                <div class="item-name">
+                  <span class="avatar">{{ iniciales(item.nombre_comercial) }}</span>
+                  {{ item.nombre_comercial }}
+                </div>
+              </td>
               <td>{{ item.contacto || '—' }}</td>
               <td>{{ item.telefono || '—' }}</td>
               <td>{{ item.email || '—' }}</td>
-              <td>{{ item.tiempo_entrega_dias }}</td>
+              <td>{{ item.tiempo_entrega_dias }} días</td>
               <td>
                 <span class="badge" [class.badge-ok]="item.estado" [class.badge-off]="!item.estado">
-                  {{ item.estado ? 'Activo' : 'Inactivo' }}
+                  {{ item.estado ? 'Activado' : 'Inactivo' }}
                 </span>
               </td>
               <td>
-                <div class="row-actions">
-                  <button type="button" class="btn btn-ghost btn-sm" (click)="abrirEditar(item)">Editar</button>
-                  @if (item.estado) {
-                    <button
-                      type="button"
-                      class="btn btn-danger btn-sm"
-                      (click)="desactivar(item)"
-                      [disabled]="saving()"
-                    >
-                      Desactivar
-                    </button>
-                  }
-                </div>
+                <app-row-menu
+                  [canDeactivate]="!!item.estado"
+                  (edit)="abrirEditar(item)"
+                  (deactivate)="desactivar(item)"
+                />
               </td>
             </tr>
           } @empty {
@@ -109,5 +120,17 @@
         }
       </tbody>
     </table>
+    <footer class="table-footer">
+      <span>Viendo {{ rango().from }} a {{ rango().to }} de {{ filtrados().length }} entradas</span>
+      <div class="pager">
+        <button type="button" [disabled]="paginaActual() === 1" (click)="pagina.set(paginaActual() - 1)">Atrás</button>
+        @for (n of paginas(); track n) {
+          <button type="button" [class.active]="n === paginaActual()" (click)="pagina.set(n)">{{ n }}</button>
+        }
+        <button type="button" [disabled]="paginaActual() === paginas().length" (click)="pagina.set(paginaActual() + 1)">
+          Siguiente
+        </button>
+      </div>
+    </footer>
   </div>
 </section>

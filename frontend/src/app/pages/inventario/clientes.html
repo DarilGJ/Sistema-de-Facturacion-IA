@@ -1,13 +1,27 @@
 <section class="module-page">
   <header class="page-header">
     <h1>Clientes</h1>
-    <p>Catálogo de clientes para facturación, con NIT único.</p>
+    <p>Catálogo de receptores para facturación, con NIT único.</p>
   </header>
 
   <app-inventario-nav />
 
-  <div class="toolbar">
-    <button type="button" class="btn" (click)="abrirNuevo()">Nuevo cliente</button>
+  <div class="crud-toolbar">
+    <label class="search-field">
+      <app-icon name="search" />
+      <input
+        type="search"
+        placeholder="Buscar por nombre o NIT"
+        [value]="busqueda()"
+        (input)="setBusqueda($any($event.target).value)"
+      />
+    </label>
+    <button type="button" class="icon-action" (click)="cargar()" title="Actualizar">
+      <app-icon name="refresh" />
+    </button>
+    <button type="button" class="btn btn-accent" (click)="abrirNuevo()">
+      <app-icon name="plus" /> Nuevo cliente
+    </button>
   </div>
 
   @if (errorMessage()) {
@@ -40,7 +54,7 @@
         </label>
       </div>
       <div class="form-actions">
-        <button type="submit" class="btn" [disabled]="saving()">
+        <button type="submit" class="btn btn-accent" [disabled]="saving()">
           {{ saving() ? 'Guardando...' : 'Guardar' }}
         </button>
         <button type="button" class="btn btn-ghost" (click)="cancelar()" [disabled]="saving()">
@@ -68,31 +82,28 @@
             <td colspan="6" class="muted">Cargando clientes...</td>
           </tr>
         } @else {
-          @for (item of inventario.clientes(); track item.id) {
+          @for (item of visibles(); track item.id) {
             <tr>
-              <td>{{ item.nombre }}</td>
+              <td>
+                <div class="item-name">
+                  <span class="avatar">{{ iniciales(item.nombre) }}</span>
+                  {{ item.nombre }}
+                </div>
+              </td>
               <td>{{ item.nit }}</td>
               <td>{{ item.email || '—' }}</td>
               <td>{{ item.telefono || '—' }}</td>
               <td>
                 <span class="badge" [class.badge-ok]="item.estado" [class.badge-off]="!item.estado">
-                  {{ item.estado ? 'Activo' : 'Inactivo' }}
+                  {{ item.estado ? 'Activado' : 'Inactivo' }}
                 </span>
               </td>
               <td>
-                <div class="row-actions">
-                  <button type="button" class="btn btn-ghost btn-sm" (click)="abrirEditar(item)">Editar</button>
-                  @if (item.estado) {
-                    <button
-                      type="button"
-                      class="btn btn-danger btn-sm"
-                      (click)="desactivar(item)"
-                      [disabled]="saving()"
-                    >
-                      Desactivar
-                    </button>
-                  }
-                </div>
+                <app-row-menu
+                  [canDeactivate]="!!item.estado"
+                  (edit)="abrirEditar(item)"
+                  (deactivate)="desactivar(item)"
+                />
               </td>
             </tr>
           } @empty {
@@ -103,5 +114,17 @@
         }
       </tbody>
     </table>
+    <footer class="table-footer">
+      <span>Viendo {{ rango().from }} a {{ rango().to }} de {{ filtrados().length }} entradas</span>
+      <div class="pager">
+        <button type="button" [disabled]="paginaActual() === 1" (click)="pagina.set(paginaActual() - 1)">Atrás</button>
+        @for (n of paginas(); track n) {
+          <button type="button" [class.active]="n === paginaActual()" (click)="pagina.set(n)">{{ n }}</button>
+        }
+        <button type="button" [disabled]="paginaActual() === paginas().length" (click)="pagina.set(paginaActual() + 1)">
+          Siguiente
+        </button>
+      </div>
+    </footer>
   </div>
 </section>

@@ -1,0 +1,13 @@
+<div class="row-menu" (click)="$event.stopPropagation()">
+  <button type="button" class="kebab" (click)="toggle($event)" aria-label="Acciones">
+    <app-icon name="more" />
+  </button>
+  @if (open()) {
+    <div class="menu" role="menu">
+      <button type="button" (click)="edit.emit(); open.set(false)">Editar</button>
+      @if (canDeactivate()) {
+        <button type="button" class="danger" (click)="deactivate.emit(); open.set(false)">Desactivar</button>
+      }
+    </div>
+  }
+</div>

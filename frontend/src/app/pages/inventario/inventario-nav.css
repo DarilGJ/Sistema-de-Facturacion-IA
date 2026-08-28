@@ -1,27 +1,103 @@
-.inv-nav {
+.inv-shell {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.85rem 1rem 0.7rem;
+  margin-bottom: 1.15rem;
+}
+
+.inv-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.75rem;
+  color: #0f172a;
+}
+
+.inv-brand .mark {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 8px;
+  background: #fff7ed;
+  color: #ea580c;
+  display: grid;
+  place-items: center;
+}
+
+.inv-brand strong {
+  display: block;
+  font-size: 0.95rem;
+}
+
+.inv-brand span {
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+.inv-tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.45rem;
-  margin: 1.15rem 0 1.25rem;
+  gap: 0.35rem;
 }
 
-.inv-nav a {
+.inv-tabs a,
+.inv-tabs button {
   text-decoration: none;
   color: #475569;
+  background: transparent;
+  border: 0;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.88rem;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  font: inherit;
+}
+
+.inv-tabs a:hover,
+.inv-tabs button:hover,
+.inv-tabs button.open {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.inv-tabs a.active {
+  background: #f97316;
+  color: #fff;
+}
+
+.drop {
+  position: relative;
+}
+
+.drop app-icon:last-child {
+  width: 0.75rem;
+  height: 0.75rem;
+  transform: rotate(90deg);
+}
+
+.drop-panel {
+  position: absolute;
+  top: calc(100% + 0.3rem);
+  left: 0;
+  z-index: 25;
+  min-width: 190px;
   background: #fff;
-  border: 1px solid #cbd5e1;
-  padding: 0.4rem 0.75rem;
-  font-size: 0.86rem;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+  padding: 0.35rem;
+  display: grid;
 }
 
-.inv-nav a:hover {
-  border-color: #0f766e;
-  color: #0f766e;
+.drop-panel a {
+  border-radius: 8px;
 }
 
-.inv-nav a.active {
-  background: #0f766e;
-  border-color: #0f766e;
-  color: #ecfdf5;
+@media (max-width: 720px) {
+  .inv-brand {
+    margin-bottom: 0.5rem;
+  }
 }
