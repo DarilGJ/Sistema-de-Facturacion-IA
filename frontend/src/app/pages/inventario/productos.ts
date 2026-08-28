@@ -6,15 +6,22 @@ import { InventarioNav } from './inventario-nav';
 import { InventarioService } from '../../core/services/inventario.service';
 import { Producto } from '../../core/models/inventario.model';
 import { apiErrorMessage } from '../../core/utils/api-error';
+import { clampPage, pageNumbers, pageRange, pageSlice } from '../../core/utils/paginate';
+import { UiIcon } from '../../shared/ui-icon/ui-icon';
+import { RowMenu } from '../../shared/row-menu/row-menu';
 
 @Component({
   selector: 'app-productos',
-  imports: [InventarioNav, CurrencyPipe, ReactiveFormsModule],
+  imports: [InventarioNav, CurrencyPipe, ReactiveFormsModule, UiIcon, RowMenu],
   templateUrl: './productos.html',
   styleUrl: './inventario-shared.css',
 })
 export class Productos implements OnInit {
   readonly busqueda = signal('');
+  readonly filtroEstado = signal('');
+  readonly filtroTipo = signal('');
+  readonly filtrosOpen = signal(false);
+  readonly pagina = signal(1);
   readonly loading = signal(false);
   readonly saving = signal(false);
   readonly errorMessage = signal('');
@@ -23,17 +30,24 @@ export class Productos implements OnInit {
 
   readonly filtrados = computed(() => {
     const q = this.busqueda().trim().toLowerCase();
-    const lista = this.inventario.productos();
-    if (!q) {
-      return lista;
-    }
-    return lista.filter(
-      (p) =>
+    const estado = this.filtroEstado();
+    const tipo = this.filtroTipo();
+    return this.inventario.productos().filter((p) => {
+      const matchQ =
+        !q ||
         p.nombre.toLowerCase().includes(q) ||
         p.sku.toLowerCase().includes(q) ||
-        (p.categoria || '').toLowerCase().includes(q)
-    );
+        (p.categoria || '').toLowerCase().includes(q);
+      const matchEstado = !estado || (estado === 'activo' ? p.estado : !p.estado);
+      const matchTipo = !tipo || this.tipo(p) === tipo;
+      return matchQ && matchEstado && matchTipo;
+    });
   });
+
+  readonly visibles = computed(() => pageSlice(this.filtrados(), this.pagina()));
+  readonly paginas = computed(() => pageNumbers(this.filtrados().length));
+  readonly rango = computed(() => pageRange(this.filtrados().length, this.pagina()));
+  readonly paginaActual = computed(() => clampPage(this.pagina(), this.filtrados().length));
 
   readonly form;
 
@@ -165,5 +179,32 @@ export class Productos implements OnInit {
         this.errorMessage.set(apiErrorMessage(err));
       },
     });
+  }
+
+  setBusqueda(value: string): void {
+    this.busqueda.set(value);
+    this.pagina.set(1);
+  }
+
+  toggleFiltros(): void {
+    this.filtrosOpen.update((value) => !value);
+  }
+
+  tipo(item: Producto): string {
+    return String(item.categoria || '').toLowerCase().includes('servicio') ? 'Servicio' : 'Producto';
+  }
+
+  iniciales(nombre: string): string {
+    return nombre
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0])
+      .join('')
+      .toUpperCase();
+  }
+
+  sinItbis(precio: number | string): number {
+    return Number(precio) / 1.18;
   }
 }

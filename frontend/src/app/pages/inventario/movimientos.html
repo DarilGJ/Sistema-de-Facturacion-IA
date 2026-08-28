@@ -6,8 +6,16 @@
 
   <app-inventario-nav />
 
-  <div class="toolbar">
-    <button type="button" class="btn">Registrar movimiento</button>
+  <div class="crud-toolbar">
+    <label class="search-field">
+      <app-icon name="search" />
+      <input
+        type="search"
+        placeholder="Buscar por producto o referencia"
+        [value]="busqueda()"
+        (input)="setBusqueda($any($event.target).value)"
+      />
+    </label>
   </div>
 
   <div class="table-wrap">
@@ -18,12 +26,12 @@
           <th>Tipo</th>
           <th>Producto</th>
           <th>Almacén</th>
-          <th>Cantidad</th>
+          <th class="num">Cantidad</th>
           <th>Referencia</th>
         </tr>
       </thead>
       <tbody>
-        @for (item of inventario.movimientos(); track item.id) {
+        @for (item of visibles(); track item.id) {
           <tr>
             <td>{{ item.fecha | date: 'dd/MM/yyyy' }}</td>
             <td>
@@ -38,11 +46,27 @@
             </td>
             <td>{{ item.producto }}</td>
             <td>{{ item.almacen }}</td>
-            <td>{{ item.cantidad }}</td>
+            <td class="num">{{ item.cantidad }}</td>
             <td>{{ item.referencia }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="muted">No hay movimientos que coincidan.</td>
           </tr>
         }
       </tbody>
     </table>
+    <footer class="table-footer">
+      <span>Viendo {{ rango().from }} a {{ rango().to }} de {{ filtrados().length }} entradas</span>
+      <div class="pager">
+        <button type="button" [disabled]="paginaActual() === 1" (click)="pagina.set(paginaActual() - 1)">Atrás</button>
+        @for (n of paginas(); track n) {
+          <button type="button" [class.active]="n === paginaActual()" (click)="pagina.set(n)">{{ n }}</button>
+        }
+        <button type="button" [disabled]="paginaActual() === paginas().length" (click)="pagina.set(paginaActual() + 1)">
+          Siguiente
+        </button>
+      </div>
+    </footer>
   </div>
 </section>

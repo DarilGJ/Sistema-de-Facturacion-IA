@@ -1,21 +1,23 @@
-import { Component } from '@angular/core';
+import { Component, HostListener, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { UiIcon } from '../../shared/ui-icon/ui-icon';
 
 @Component({
   selector: 'app-inventario-nav',
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, UiIcon],
   templateUrl: './inventario-nav.html',
   styleUrl: './inventario-nav.css',
 })
 export class InventarioNav {
-  readonly links = [
-    { path: '/inventario', label: 'Resumen', exact: true },
-    { path: '/inventario/productos', label: 'Productos', exact: false },
-    { path: '/inventario/categorias', label: 'Categorías', exact: false },
-    { path: '/inventario/almacenes', label: 'Almacenes', exact: false },
-    { path: '/inventario/existencias', label: 'Existencias', exact: false },
-    { path: '/inventario/movimientos', label: 'Movimientos', exact: false },
-    { path: '/inventario/proveedores', label: 'Proveedores', exact: false },
-    { path: '/inventario/clientes', label: 'Clientes', exact: false },
-  ];
+  readonly openMenu = signal<'catalogo' | 'almacenes' | 'reportes' | null>(null);
+
+  @HostListener('document:click')
+  close(): void {
+    this.openMenu.set(null);
+  }
+
+  toggle(menu: 'catalogo' | 'almacenes' | 'reportes', event: Event): void {
+    event.stopPropagation();
+    this.openMenu.update((current) => (current === menu ? null : menu));
+  }
 }

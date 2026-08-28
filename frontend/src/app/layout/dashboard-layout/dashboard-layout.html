@@ -1,6 +1,11 @@
-<div class="shell" [class.sidebar-open]="sidebarOpen()">
+<div
+  class="shell"
+  [class.sidebar-open]="sidebarOpen()"
+  [class.sidebar-collapsed]="sidebarCollapsed()"
+>
   <aside class="sidebar">
     <div class="sidebar-brand">
+      <span class="brand-mark"><app-icon name="bolt" /></span>
       <p class="brand">FacturaAI</p>
       <button type="button" class="icon-btn close-btn" (click)="closeSidebar()" aria-label="Cerrar menú">
         ✕
@@ -8,20 +13,87 @@
     </div>
 
     <nav class="nav">
-      <a routerLink="/dashboard" routerLinkActive="active" (click)="closeSidebar()">Dashboard</a>
+      <a routerLink="/dashboard" routerLinkActive="active" title="Inicio" (click)="closeSidebar()">
+        <app-icon name="home" />
+        <span>Inicio</span>
+      </a>
+      <a routerLink="/inventario/clientes" routerLinkActive="active" title="Receptores" (click)="closeSidebar()">
+        <app-icon name="users" />
+        <span>Receptores</span>
+        <app-icon class="chevron" name="chevron" />
+      </a>
 
       <p class="nav-group">Inventario</p>
-      @for (link of inventarioLinks; track link.path) {
-        <a
-          class="nav-sub"
-          [routerLink]="link.path"
-          routerLinkActive="active"
-          [routerLinkActiveOptions]="{ exact: link.exact }"
-          (click)="closeSidebar()"
-        >
-          {{ link.label }}
-        </a>
-      }
+      <a
+        routerLink="/inventario/productos"
+        routerLinkActive="active"
+        title="Artículos / Servicios"
+        (click)="closeSidebar()"
+      >
+        <app-icon name="box" />
+        <span>Artículos / Servicios</span>
+        <app-icon class="chevron" name="chevron" />
+      </a>
+      <a
+        routerLink="/inventario"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        title="Inventario avanzado"
+        (click)="closeSidebar()"
+      >
+        <app-icon name="warehouse" />
+        <span>Inventario avanzado</span>
+        <app-icon class="chevron" name="chevron" />
+      </a>
+
+      <p class="nav-group">Comprobantes electrónicos</p>
+      <a routerLink="/contabilidad" routerLinkActive="active" title="Comprobantes" (click)="closeSidebar()">
+        <app-icon name="document" />
+        <span>Comprobantes</span>
+        <app-icon class="chevron" name="chevron" />
+      </a>
+      <a routerLink="/contabilidad" title="Confirmaciones" (click)="closeSidebar()">
+        <app-icon name="check" />
+        <span>Confirmaciones</span>
+        <app-icon class="chevron" name="chevron" />
+      </a>
+      <a routerLink="/contabilidad" title="Cotización" (click)="closeSidebar()">
+        <app-icon name="clipboard" />
+        <span>Cotización</span>
+        <app-icon class="chevron" name="chevron" />
+      </a>
+
+      <p class="nav-group">Cuentas pendientes</p>
+      <a routerLink="/contabilidad" title="Cuentas" (click)="closeSidebar()">
+        <app-icon name="wallet" />
+        <span>Cuentas</span>
+        <app-icon class="chevron" name="chevron" />
+      </a>
+
+      <p class="nav-group">Punto de venta</p>
+      <a routerLink="/pos" routerLinkActive="active" title="Gestión POS" (click)="closeSidebar()">
+        <app-icon name="pos" />
+        <span>Gestión POS</span>
+        <app-icon class="chevron" name="chevron" />
+      </a>
+
+      <p class="nav-group">Opciones</p>
+      <a routerLink="/dashboard" title="Estado DGII" (click)="closeSidebar()">
+        <app-icon name="check" />
+        <span>Estado DGII</span>
+      </a>
+      <a routerLink="/contabilidad" title="Reportes" (click)="closeSidebar()">
+        <app-icon name="clipboard" />
+        <span>Reportes</span>
+      </a>
+      <a routerLink="/dashboard" title="Configuraciones" (click)="closeSidebar()">
+        <app-icon name="gear" />
+        <span>Configuraciones</span>
+      </a>
+      <a routerLink="/dashboard" title="Soporte técnico" (click)="closeSidebar()">
+        <app-icon name="support" />
+        <span>Soporte técnico</span>
+      </a>
     </nav>
 
     <div class="sidebar-footer">
@@ -36,10 +108,81 @@
 
   <div class="main">
     <header class="topbar">
-      <button type="button" class="icon-btn menu-btn" (click)="toggleSidebar()" aria-label="Abrir menú">
-        ☰
+      <button type="button" class="icon-btn menu-btn" (click)="toggleSidebar()" aria-label="Mostrar u ocultar menú">
+        <app-icon name="menu" />
       </button>
+
+      <label class="search">
+        <app-icon name="search" />
+        <span class="sr-only">Buscar</span>
+        <input
+          type="search"
+          placeholder="Buscar módulos…"
+          [value]="busqueda()"
+          (click)="$event.stopPropagation()"
+          (input)="busqueda.set($any($event.target).value)"
+          (keydown.enter)="onSearchEnter()"
+        />
+        @if (resultados().length) {
+          <div class="search-panel" role="listbox">
+            @for (item of resultados(); track item.path) {
+              <button type="button" (click)="irABusqueda(item.path, $event)">
+                <strong>{{ item.title }}</strong>
+                <span>{{ item.text }}</span>
+              </button>
+            }
+          </div>
+        }
+      </label>
+
+      <div class="modulos" (click)="$event.stopPropagation()">
+        <button
+          type="button"
+          class="modulos-btn"
+          [class.open]="modulosOpen()"
+          (click)="toggleModulos($event)"
+          aria-haspopup="true"
+          [attr.aria-expanded]="modulosOpen()"
+        >
+          Módulos
+        </button>
+
+        @if (modulosOpen()) {
+          <div class="modulos-panel" role="menu">
+            <p class="modulos-title">Ir a un módulo</p>
+            @for (modulo of modulos; track modulo.path) {
+              <button type="button" class="modulo-option" role="menuitem" (click)="irAModulo(modulo.path, $event)">
+                <strong>{{ modulo.title }}</strong>
+                <span>{{ modulo.text }}</span>
+              </button>
+            }
+          </div>
+        }
+      </div>
+
       <div class="topbar-right">
+        <span class="status-pill"><app-icon name="check" /> DGII al día</span>
+        <span class="company">FacturaAI</span>
+
+        <div class="notificaciones" (click)="$event.stopPropagation()">
+          <button type="button" class="icon-btn bell" (click)="toggleNotificaciones($event)" aria-label="Notificaciones">
+            <app-icon name="bell" />
+            @if (dashboardApi.alertas().total) {
+              <em>{{ dashboardApi.alertas().total }}</em>
+            }
+          </button>
+          @if (notificacionesOpen()) {
+            <div class="modulos-panel notify-panel">
+              <p class="modulos-title">Notificaciones</p>
+              @for (item of dashboardApi.alertas().items; track item.id) {
+                <button type="button" class="modulo-option" (click)="irAModulo(item.ruta, $event)">
+                  <strong>{{ item.texto }}</strong>
+                </button>
+              }
+            </div>
+          }
+        </div>
+
         <span class="topbar-email">{{ auth.user()?.email }}</span>
         <button type="button" class="logout-btn" (click)="logout()">Cerrar sesión</button>
       </div>

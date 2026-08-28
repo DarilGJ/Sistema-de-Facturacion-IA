@@ -6,22 +6,58 @@
 
   <app-inventario-nav />
 
-  <div class="toolbar">
-    <button type="button" class="btn">Nuevo almacén</button>
+  <div class="crud-toolbar">
+    <label class="search-field">
+      <app-icon name="search" />
+      <input
+        type="search"
+        placeholder="Buscar por nombre o ubicación"
+        [value]="busqueda()"
+        (input)="setBusqueda($any($event.target).value)"
+      />
+    </label>
   </div>
 
-  <div class="cards">
-    @for (item of inventario.almacenes(); track item.id) {
-      <article class="card">
-        <h3>{{ item.nombre }}</h3>
-        <p>{{ item.ubicacion }}</p>
-        <p class="card-meta">Responsable: {{ item.responsable }}</p>
-        <p>
-          <span class="badge" [class.badge-ok]="item.activo" [class.badge-off]="!item.activo">
-            {{ item.activo ? 'Activo' : 'Inactivo' }}
-          </span>
-        </p>
-      </article>
-    }
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Ubicación</th>
+          <th>Responsable</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of visibles(); track item.id) {
+          <tr>
+            <td>{{ item.nombre }}</td>
+            <td>{{ item.ubicacion }}</td>
+            <td>{{ item.responsable }}</td>
+            <td>
+              <span class="badge" [class.badge-ok]="item.activo" [class.badge-off]="!item.activo">
+                {{ item.activo ? 'Activado' : 'Inactivo' }}
+              </span>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4" class="muted">No hay almacenes que coincidan.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <footer class="table-footer">
+      <span>Viendo {{ rango().from }} a {{ rango().to }} de {{ filtrados().length }} entradas</span>
+      <div class="pager">
+        <button type="button" [disabled]="paginaActual() === 1" (click)="pagina.set(paginaActual() - 1)">Atrás</button>
+        @for (n of paginas(); track n) {
+          <button type="button" [class.active]="n === paginaActual()" (click)="pagina.set(n)">{{ n }}</button>
+        }
+        <button type="button" [disabled]="paginaActual() === paginas().length" (click)="pagina.set(paginaActual() + 1)">
+          Siguiente
+        </button>
+      </div>
+    </footer>
   </div>
 </section>

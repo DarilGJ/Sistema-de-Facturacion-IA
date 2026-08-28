@@ -16,6 +16,11 @@ export const routes: Routes = [
     children: [
       { path: 'dashboard', loadComponent: () => import('./pages/dashboard/dashboard').then((m) => m.Dashboard) },
       { path: 'home', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'pos', loadComponent: () => import('./pages/pos/pos').then((m) => m.Pos) },
+      {
+        path: 'contabilidad',
+        loadComponent: () => import('./pages/contabilidad/contabilidad').then((m) => m.Contabilidad),
+      },
       {
         path: 'inventario',
         loadComponent: () =>

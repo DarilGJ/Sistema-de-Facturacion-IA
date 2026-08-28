@@ -1,0 +1,49 @@
+.module-page {
+  max-width: 1100px;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 1.65rem;
+  color: #0f172a;
+}
+
+.page-header p {
+  margin: 0.4rem 0 0;
+  color: #64748b;
+}
+
+.cards {
+  margin-top: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 0.9rem;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  padding: 1.1rem 1rem;
+}
+
+.card h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #0f172a;
+}
+
+.card p {
+  margin: 0.45rem 0 0;
+  color: #64748b;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.hint {
+  margin-top: 1.25rem;
+  color: #475569;
+}
+
+.hint a {
+  color: #0f766e;
+}

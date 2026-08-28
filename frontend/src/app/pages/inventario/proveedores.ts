@@ -1,22 +1,46 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, computed, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InventarioNav } from './inventario-nav';
 import { InventarioService } from '../../core/services/inventario.service';
 import { Proveedor } from '../../core/models/inventario.model';
 import { apiErrorMessage } from '../../core/utils/api-error';
+import { clampPage, pageNumbers, pageRange, pageSlice } from '../../core/utils/paginate';
+import { UiIcon } from '../../shared/ui-icon/ui-icon';
+import { RowMenu } from '../../shared/row-menu/row-menu';
 
 @Component({
   selector: 'app-proveedores',
-  imports: [InventarioNav, ReactiveFormsModule],
+  imports: [InventarioNav, ReactiveFormsModule, UiIcon, RowMenu],
   templateUrl: './proveedores.html',
   styleUrl: './inventario-shared.css',
 })
 export class Proveedores implements OnInit {
+  readonly busqueda = signal('');
+  readonly pagina = signal(1);
   readonly loading = signal(false);
   readonly saving = signal(false);
   readonly errorMessage = signal('');
   readonly formOpen = signal(false);
   readonly editingId = signal<number | null>(null);
+
+  readonly filtrados = computed(() => {
+    const q = this.busqueda().trim().toLowerCase();
+    const lista = this.inventario.proveedores();
+    if (!q) {
+      return lista;
+    }
+    return lista.filter(
+      (p) =>
+        p.nombre_comercial.toLowerCase().includes(q) ||
+        (p.contacto || '').toLowerCase().includes(q) ||
+        (p.email || '').toLowerCase().includes(q)
+    );
+  });
+
+  readonly visibles = computed(() => pageSlice(this.filtrados(), this.pagina()));
+  readonly paginas = computed(() => pageNumbers(this.filtrados().length));
+  readonly rango = computed(() => pageRange(this.filtrados().length, this.pagina()));
+  readonly paginaActual = computed(() => clampPage(this.pagina(), this.filtrados().length));
 
   readonly form;
 
@@ -133,5 +157,20 @@ export class Proveedores implements OnInit {
         this.errorMessage.set(apiErrorMessage(err));
       },
     });
+  }
+
+  setBusqueda(value: string): void {
+    this.busqueda.set(value);
+    this.pagina.set(1);
+  }
+
+  iniciales(nombre: string): string {
+    return nombre
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0])
+      .join('')
+      .toUpperCase();
   }
 }
