@@ -1,0 +1,169 @@
+<section class="module-page">
+  <header class="page-header cotizacion-header">
+    <div>
+      <h1><app-icon name="clipboard" /> Listado de Cotización</h1>
+      <p>Consulta, filtra y gestiona tus documentos.</p>
+    </div>
+    <span class="count-pill">{{ filtrados().length }}</span>
+  </header>
+
+  <div class="top-filters">
+    <label>
+      <span>Seleccionar método</span>
+      <select [value]="filtroMetodo()" (change)="setFiltro('metodo', $any($event.target).value)">
+        <option value="">Todos los métodos</option>
+        <option value="contado">Contado</option>
+        <option value="credito">Crédito</option>
+      </select>
+    </label>
+    <label>
+      <span>Seleccionar Estado</span>
+      <select [value]="filtroEstado()" (change)="setFiltro('estado', $any($event.target).value)">
+        <option value="">Todos los estados</option>
+        <option value="pendiente">Pendiente</option>
+        <option value="cancelada">Cancelada</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="crud-toolbar">
+    <label class="search-field">
+      <app-icon name="search" />
+      <input
+        type="search"
+        placeholder="Buscar por Número"
+        [value]="busqueda()"
+        (input)="setBusqueda($any($event.target).value)"
+      />
+    </label>
+    <button type="button" class="icon-action" (click)="cargar()" title="Actualizar">
+      <app-icon name="refresh" />
+    </button>
+    <label class="page-size">
+      <select [value]="pageSize()" (change)="setPageSize($any($event.target).value)">
+        <option [value]="10">10</option>
+        <option [value]="25">25</option>
+        <option [value]="50">50</option>
+      </select>
+    </label>
+    <label class="switch">
+      <input type="checkbox" [checked]="archivado()" (change)="toggleArchivado()" />
+      Archivado
+    </label>
+  </div>
+
+  @if (errorMessage()) {
+    <p class="alert-error" role="alert">{{ errorMessage() }}</p>
+  }
+
+  @if (detalle(); as doc) {
+    <aside class="form-panel">
+      <h2>Cotización {{ doc.numero }}</h2>
+      <p class="muted">{{ doc.cliente?.nombre || 'Consumidor final' }} · {{ metodoLabel(doc.metodo_pago) }}</p>
+      <div class="table-wrap" style="border: 0">
+        <table>
+          <thead>
+            <tr>
+              <th>Descripción</th>
+              <th class="num">Cant.</th>
+              <th class="num">Precio</th>
+              <th class="num">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (linea of doc.items || []; track linea.id) {
+              <tr>
+                <td>{{ linea.descripcion }}</td>
+                <td class="num">{{ linea.cantidad }}</td>
+                <td class="num">{{ linea.precio_unitario | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
+                <td class="num">{{ linea.subtotal | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="form-actions">
+        <strong>Total: {{ doc.total | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</strong>
+        <button type="button" class="btn btn-ghost" (click)="detalle.set(null)">Cerrar</button>
+      </div>
+    </aside>
+  }
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Número</th>
+          <th>Fecha</th>
+          <th>Receptor</th>
+          <th>Método</th>
+          <th class="num">Total</th>
+          <th class="num">Saldo</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading()) {
+          <tr>
+            <td colspan="8" class="muted">Cargando cotizaciones...</td>
+          </tr>
+        } @else {
+          @for (item of visibles(); track item.id) {
+            <tr>
+              <td>
+                <button type="button" class="link-num" (click)="ver(item)">#{{ item.id }}</button>
+              </td>
+              <td>{{ item.fecha | date: 'dd-MM-yyyy' }}</td>
+              <td>
+                <div class="item-name">
+                  <span class="avatar">{{ iniciales(item.cliente?.nombre || 'CF') }}</span>
+                  <div class="item-copy">
+                    <strong>{{ item.cliente?.nombre || 'CF CONSUMIDOR FINAL' }}</strong>
+                    <span>{{ item.cliente?.email || 'Sin correo' }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="badge" [class.badge-muted]="item.metodo_pago === 'contado'" [class.badge-warn]="item.metodo_pago === 'credito'">
+                  {{ metodoLabel(item.metodo_pago) }}
+                </span>
+              </td>
+              <td class="num">{{ item.total | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
+              <td class="num">{{ saldo(item) | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
+              <td>
+                <span class="badge" [class.badge-ok]="item.estado === 'cancelada'" [class.badge-warn]="item.estado === 'pendiente'" [class.badge-off]="item.estado === 'archivada'">
+                  {{ estadoLabel(item.estado) }}
+                </span>
+                <span class="badge badge-muted">{{ item.generada ? 'Generada' : 'Sin generar' }}</span>
+              </td>
+              <td>
+                <app-row-menu
+                  [canDeactivate]="item.estado !== 'archivada'"
+                  (edit)="ver(item)"
+                  (deactivate)="archivar(item)"
+                />
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" class="muted">No hay cotizaciones que coincidan con los filtros.</td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+    <footer class="table-footer">
+      <span>Viendo {{ rango().from }} a {{ rango().to }} de {{ filtrados().length }} entradas</span>
+      <div class="pager">
+        <button type="button" [disabled]="paginaActual() === 1" (click)="pagina.set(paginaActual() - 1)">Atrás</button>
+        @for (n of paginas(); track n) {
+          <button type="button" [class.active]="n === paginaActual()" (click)="pagina.set(n)">{{ n }}</button>
+        }
+        <button type="button" [disabled]="paginaActual() === paginas().length" (click)="pagina.set(paginaActual() + 1)">
+          Siguiente
+        </button>
+      </div>
+    </footer>
+  </div>
+</section>

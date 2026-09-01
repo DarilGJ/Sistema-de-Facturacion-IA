@@ -1,27 +1,28 @@
-<section class="module-page">
-  <header class="page-header">
-    <h1>Proveedores</h1>
-    <p>Contactos para compras y reposición de inventario.</p>
+<section class="module-page receptores-page">
+  <header class="page-header receptores-header">
+    <h1><app-icon name="truck" /> Proveedores</h1>
+    <p>Busca, filtra y administra tus proveedores.</p>
   </header>
-
-  <app-inventario-nav />
 
   <div class="crud-toolbar">
     <label class="search-field">
       <app-icon name="search" />
       <input
         type="search"
-        placeholder="Buscar por nombre o contacto"
+        placeholder="Buscar proveedor..."
         [value]="busqueda()"
         (input)="setBusqueda($any($event.target).value)"
       />
     </label>
-    <button type="button" class="icon-action" (click)="cargar()" title="Actualizar">
-      <app-icon name="refresh" />
-    </button>
-    <button type="button" class="btn btn-accent" (click)="abrirNuevo()">
-      <app-icon name="plus" /> Nuevo proveedor
-    </button>
+    <button type="button" class="btn btn-accent" (click)="abrirNuevo()">+ Proveedor</button>
+    <div class="acciones-wrap" (click)="$event.stopPropagation()">
+      <button type="button" class="btn btn-ghost" (click)="toggleAcciones($event)">… Acciones</button>
+      @if (accionesOpen()) {
+        <div class="acciones-menu">
+          <button type="button" (click)="cargar(); accionesOpen.set(false)">Actualizar lista</button>
+        </div>
+      }
+    </div>
   </div>
 
   @if (errorMessage()) {
@@ -72,33 +73,43 @@
     <table>
       <thead>
         <tr>
-          <th>Nombre comercial</th>
-          <th>Contacto</th>
-          <th>Teléfono</th>
-          <th>Email</th>
-          <th>Entrega</th>
+          <th class="check-col"><input type="checkbox" disabled /></th>
+          <th>Nombre</th>
+          <th>Tipo</th>
+          <th># Identificación</th>
+          <th>Teléfonos</th>
+          <th>Factura con</th>
+          <th>Código</th>
           <th>Estado</th>
-          <th></th>
+          <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
         @if (loading()) {
           <tr>
-            <td colspan="7" class="muted">Cargando proveedores...</td>
+            <td colspan="9" class="muted">Cargando proveedores...</td>
           </tr>
         } @else {
           @for (item of visibles(); track item.id) {
             <tr>
+              <td class="check-col"><input type="checkbox" /></td>
               <td>
                 <div class="item-name">
                   <span class="avatar">{{ iniciales(item.nombre_comercial) }}</span>
-                  {{ item.nombre_comercial }}
+                  <div class="item-copy">
+                    <strong>{{ item.nombre_comercial }}</strong>
+                    <span>{{ item.email || item.contacto || 'Sin correo' }}</span>
+                  </div>
                 </div>
               </td>
-              <td>{{ item.contacto || '—' }}</td>
-              <td>{{ item.telefono || '—' }}</td>
-              <td>{{ item.email || '—' }}</td>
-              <td>{{ item.tiempo_entrega_dias }} días</td>
+              <td>
+                <span class="badge badge-muted">Jurídico</span>
+                <span class="badge badge-muted">NIT</span>
+              </td>
+              <td>N/A</td>
+              <td>{{ item.telefono || 'N/D / N/D' }}</td>
+              <td><span class="badge badge-warn">Precio 1</span></td>
+              <td>N/A</td>
               <td>
                 <span class="badge" [class.badge-ok]="item.estado" [class.badge-off]="!item.estado">
                   {{ item.estado ? 'Activado' : 'Inactivo' }}
@@ -114,7 +125,7 @@
             </tr>
           } @empty {
             <tr>
-              <td colspan="7" class="muted">Aún no hay proveedores. Crea el primero para empezar.</td>
+              <td colspan="9" class="muted">Aún no hay proveedores. Crea el primero para empezar.</td>
             </tr>
           }
         }

@@ -29,6 +29,39 @@
   padding: 0.75rem;
 }
 
+.top-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.85rem;
+}
+
+.top-filters label {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 180px;
+}
+
+.top-filters span {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.top-filters select {
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #0f172a;
+  padding: 0.5rem 0.7rem;
+  border-radius: 8px;
+  font: inherit;
+  min-width: 160px;
+}
+
 .search-field {
   position: relative;
   flex: 1;
@@ -391,4 +424,116 @@ th {
 .pager button:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+.receptores-header h1 {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.item-copy {
+  display: grid;
+  gap: 0.12rem;
+}
+
+.item-copy strong {
+  font-size: 0.92rem;
+}
+
+.item-copy span {
+  color: #94a3b8;
+  font-size: 0.78rem;
+}
+
+.check-col {
+  width: 2.2rem;
+}
+
+.acciones-wrap {
+  position: relative;
+}
+
+.acciones-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.35rem);
+  z-index: 20;
+  min-width: 180px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+  padding: 0.35rem;
+}
+
+.acciones-menu button {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  padding: 0.55rem 0.65rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.top-filters.filters-4 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(160px, 1fr));
+}
+
+.link-num {
+  border: 0;
+  background: transparent;
+  color: #ea580c;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+}
+
+.page-size select {
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  border-radius: 8px;
+  padding: 0.5rem 0.55rem;
+  font: inherit;
+}
+
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.88rem;
+  color: #475569;
+}
+
+.count-pill {
+  margin-left: auto;
+  background: #0f172a;
+  color: #fff;
+  min-width: 2.4rem;
+  text-align: center;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.cotizacion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.cotizacion-header h1 {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+@media (max-width: 900px) {
+  .top-filters.filters-4 {
+    grid-template-columns: 1fr 1fr;
+  }
 }

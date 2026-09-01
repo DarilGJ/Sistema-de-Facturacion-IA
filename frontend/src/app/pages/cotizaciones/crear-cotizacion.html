@@ -1,0 +1,112 @@
+<section class="pos">
+  <header class="page-header">
+    <h1>Crear cotización</h1>
+    <p>Arma el documento, elige el receptor y guarda la cotización. El ITBIS (18%) se calcula automáticamente.</p>
+  </header>
+
+  <div class="pos-grid">
+    <section class="catalogo">
+      <div class="toolbar">
+        <input
+          type="search"
+          placeholder="Buscar por nombre, SKU o categoría"
+          [ngModel]="busqueda()"
+          (ngModelChange)="busqueda.set($event)"
+        />
+      </div>
+
+      @if (loading()) {
+        <p class="muted">Cargando catálogo…</p>
+      } @else if (!productosVisibles().length) {
+        <p class="muted">No hay productos activos. Cárgalos en Inventario.</p>
+      } @else {
+        <div class="product-grid">
+          @for (item of productosVisibles(); track item.id) {
+            <button type="button" class="product-card" (click)="agregar(item)">
+              <span class="sku">{{ item.sku }}</span>
+              <strong>{{ item.nombre }}</strong>
+              <span class="price">{{ precio(item) | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</span>
+            </button>
+          }
+        </div>
+      }
+    </section>
+
+    <aside class="ticket">
+      <h2>Cotización</h2>
+
+      <label class="field">
+        <span>Receptor</span>
+        <select [ngModel]="clienteId()" (ngModelChange)="setCliente($event)">
+          <option [ngValue]="null">Selecciona un cliente</option>
+          @for (cliente of clientesActivos(); track cliente.id) {
+            <option [ngValue]="cliente.id">{{ cliente.nombre }} · {{ cliente.nit }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Método</span>
+        <select [ngModel]="metodoPago()" (ngModelChange)="metodoPago.set($event)">
+          <option value="contado">Contado</option>
+          <option value="credito">Crédito</option>
+        </select>
+      </label>
+
+      @if (errorMessage()) {
+        <p class="alert-error" role="alert">{{ errorMessage() }}</p>
+      }
+
+      @if (cotizaciones.ultima(); as ultima) {
+        <p class="ok">
+          Cotización {{ ultima.numero }} guardada ·
+          {{ ultima.total | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}
+          <a routerLink="/cotizaciones">Ver listado</a>
+        </p>
+      }
+
+      @if (!carrito().length) {
+        <p class="muted">Toca un producto para agregarlo.</p>
+      } @else {
+        <ul class="lineas">
+          @for (linea of carrito(); track linea.id_producto) {
+            <li>
+              <div>
+                <strong>{{ linea.nombre }}</strong>
+                <small>{{ linea.sku }} · {{ linea.precio | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</small>
+              </div>
+              <div class="qty">
+                <button type="button" (click)="cambiarCantidad(linea.id_producto, -1)">−</button>
+                <span>{{ linea.cantidad }}</span>
+                <button type="button" (click)="cambiarCantidad(linea.id_producto, 1)">+</button>
+              </div>
+              <button type="button" class="link-danger" (click)="quitar(linea.id_producto)">Quitar</button>
+            </li>
+          }
+        </ul>
+      }
+
+      <dl class="totales">
+        <div>
+          <dt>Subtotal</dt>
+          <dd>{{ subtotal() | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</dd>
+        </div>
+        <div>
+          <dt>ITBIS 18%</dt>
+          <dd>{{ itbis() | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</dd>
+        </div>
+        <div class="grand">
+          <dt>Total</dt>
+          <dd>{{ total() | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</dd>
+        </div>
+      </dl>
+
+      <div class="ticket-actions">
+        <button type="button" class="btn-ghost" (click)="vaciar()" [disabled]="!carrito().length">Vaciar</button>
+        <button type="button" class="btn" (click)="guardar()" [disabled]="saving() || !carrito().length">
+          {{ saving() ? 'Guardando…' : 'Guardar cotización' }}
+        </button>
+      </div>
+    </aside>
+  </div>
+</section>

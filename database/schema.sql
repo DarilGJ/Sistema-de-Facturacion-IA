@@ -97,3 +97,38 @@ CREATE TABLE IF NOT EXISTS factura_items (
     ON UPDATE CASCADE
     ON DELETE RESTRICT
 ) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS cotizaciones (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  numero VARCHAR(20) NOT NULL UNIQUE,
+  id_cliente INT UNSIGNED NOT NULL,
+  fecha DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  metodo_pago ENUM('contado', 'credito') NOT NULL DEFAULT 'contado',
+  subtotal DECIMAL(12, 2) NOT NULL,
+  itbis DECIMAL(12, 2) NOT NULL,
+  total DECIMAL(12, 2) NOT NULL,
+  estado ENUM('pendiente', 'cancelada', 'archivada') NOT NULL DEFAULT 'pendiente',
+  generada TINYINT(1) NOT NULL DEFAULT 0,
+  CONSTRAINT fk_cotizaciones_cliente
+    FOREIGN KEY (id_cliente) REFERENCES clientes(id)
+    ON UPDATE CASCADE
+    ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS cotizacion_items (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  id_cotizacion INT UNSIGNED NOT NULL,
+  id_producto INT UNSIGNED NOT NULL,
+  descripcion VARCHAR(160) NOT NULL,
+  cantidad INT UNSIGNED NOT NULL,
+  precio_unitario DECIMAL(10, 2) NOT NULL,
+  subtotal DECIMAL(12, 2) NOT NULL,
+  CONSTRAINT fk_cotizacion_items_cotizacion
+    FOREIGN KEY (id_cotizacion) REFERENCES cotizaciones(id)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE,
+  CONSTRAINT fk_cotizacion_items_producto
+    FOREIGN KEY (id_producto) REFERENCES productos(id)
+    ON UPDATE CASCADE
+    ON DELETE RESTRICT
+) ENGINE=InnoDB;

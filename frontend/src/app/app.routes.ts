@@ -50,9 +50,60 @@ export const routes: Routes = [
         path: 'inventario/proveedores',
         loadComponent: () => import('./pages/inventario/proveedores').then((m) => m.Proveedores),
       },
+      { path: 'inventario/clientes', loadComponent: () => import('./pages/inventario/clientes').then((m) => m.Clientes) },
       {
-        path: 'inventario/clientes',
-        loadComponent: () => import('./pages/inventario/clientes').then((m) => m.Clientes),
+        path: 'comprobantes/facturas/crear',
+        loadComponent: () => import('./pages/pos/pos').then((m) => m.Pos),
+      },
+      {
+        path: 'comprobantes/facturas',
+        loadComponent: () =>
+          import('./pages/comprobantes/listado-comprobantes').then((m) => m.ListadoComprobantes),
+        data: {
+          modo: 'factura',
+          titulo: 'Listado de Facturas',
+          subtitulo: 'Consulta, filtra y gestiona tus documentos.',
+        },
+      },
+      {
+        path: 'comprobantes/notas/credito',
+        loadComponent: () =>
+          import('./pages/comprobantes/listado-comprobantes').then((m) => m.ListadoComprobantes),
+        data: {
+          modo: 'nc',
+          titulo: 'Listado Nota Crédito',
+          subtitulo: 'Consulta y gestiona tus notas de crédito.',
+        },
+      },
+      {
+        path: 'comprobantes/notas/anulacion',
+        loadComponent: () =>
+          import('./pages/comprobantes/listado-comprobantes').then((m) => m.ListadoComprobantes),
+        data: {
+          modo: 'anulacion',
+          titulo: 'Listado Nota Anulación',
+          subtitulo: 'Consulta las facturas anuladas.',
+        },
+      },
+      {
+        path: 'comprobantes/notas/debito',
+        loadComponent: () =>
+          import('./pages/comprobantes/listado-comprobantes').then((m) => m.ListadoComprobantes),
+        data: {
+          modo: 'nd',
+          titulo: 'Listado Nota Débito',
+          subtitulo: 'Consulta y gestiona tus notas de débito.',
+        },
+      },
+      {
+        path: 'cotizaciones/crear',
+        loadComponent: () =>
+          import('./pages/cotizaciones/crear-cotizacion').then((m) => m.CrearCotizacion),
+      },
+      {
+        path: 'cotizaciones',
+        loadComponent: () =>
+          import('./pages/cotizaciones/listado-cotizaciones').then((m) => m.ListadoCotizaciones),
       },
     ],
   },

@@ -17,11 +17,43 @@
         <app-icon name="home" />
         <span>Inicio</span>
       </a>
-      <a routerLink="/inventario/clientes" routerLinkActive="active" title="Receptores" (click)="closeSidebar()">
-        <app-icon name="users" />
-        <span>Receptores</span>
-        <app-icon class="chevron" name="chevron" />
-      </a>
+
+      <div class="nav-section">
+        <button
+          type="button"
+          class="nav-toggle"
+          [class.open]="receptoresOpen()"
+          [class.active-section]="receptoresActivo()"
+          title="Receptores"
+          (click)="toggleReceptores($event)"
+        >
+          <app-icon name="users" />
+          <span>Receptores</span>
+          <app-icon class="chevron" name="chevron" />
+        </button>
+        @if (receptoresOpen()) {
+          <div class="nav-children">
+            <a
+              class="nav-sub"
+              routerLink="/inventario/clientes"
+              routerLinkActive="active"
+              title="Clientes"
+              (click)="closeSidebar()"
+            >
+              <span>Clientes</span>
+            </a>
+            <a
+              class="nav-sub"
+              routerLink="/inventario/proveedores"
+              routerLinkActive="active"
+              title="Proveedores"
+              (click)="closeSidebar()"
+            >
+              <span>Proveedores</span>
+            </a>
+          </div>
+        }
+      </div>
 
       <p class="nav-group">Inventario</p>
       <a
@@ -32,7 +64,6 @@
       >
         <app-icon name="box" />
         <span>Artículos / Servicios</span>
-        <app-icon class="chevron" name="chevron" />
       </a>
       <a
         routerLink="/inventario"
@@ -47,21 +78,111 @@
       </a>
 
       <p class="nav-group">Comprobantes electrónicos</p>
-      <a routerLink="/contabilidad" routerLinkActive="active" title="Comprobantes" (click)="closeSidebar()">
-        <app-icon name="document" />
-        <span>Comprobantes</span>
-        <app-icon class="chevron" name="chevron" />
-      </a>
+      <div class="nav-section">
+        <button
+          type="button"
+          class="nav-toggle"
+          [class.open]="comprobantesOpen()"
+          [class.active-section]="comprobantesActivo()"
+          title="Comprobantes"
+          (click)="toggleComprobantes($event)"
+        >
+          <app-icon name="document" />
+          <span>Comprobantes</span>
+          <app-icon class="chevron" name="chevron" />
+        </button>
+        @if (comprobantesOpen()) {
+          <div class="nav-children">
+            <button
+              type="button"
+              class="nav-toggle nav-branch"
+              [class.open]="facturasMenuOpen()"
+              title="Facturas"
+              (click)="toggleFacturasMenu($event)"
+            >
+              <span class="nav-dot"></span>
+              <span>Facturas</span>
+              <app-icon class="chevron" name="chevron" />
+            </button>
+            @if (facturasMenuOpen()) {
+              <div class="nav-leaf">
+                <a routerLink="/comprobantes/facturas/crear" routerLinkActive="active" (click)="closeSidebar()">
+                  <app-icon name="document" />
+                  <span>Crear</span>
+                </a>
+                <a routerLink="/comprobantes/facturas" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeSidebar()">
+                  <app-icon name="document" />
+                  <span>Listado</span>
+                </a>
+              </div>
+            }
+
+            <button
+              type="button"
+              class="nav-toggle nav-branch"
+              [class.open]="notasMenuOpen()"
+              title="Notas"
+              (click)="toggleNotasMenu($event)"
+            >
+              <span class="nav-dot"></span>
+              <span>Notas</span>
+              <app-icon class="chevron" name="chevron" />
+            </button>
+            @if (notasMenuOpen()) {
+              <div class="nav-leaf">
+                <a routerLink="/comprobantes/notas/credito" routerLinkActive="active" (click)="closeSidebar()">
+                  <app-icon name="document" />
+                  <span>Listado Nota Crédito</span>
+                </a>
+                <a routerLink="/comprobantes/notas/anulacion" routerLinkActive="active" (click)="closeSidebar()">
+                  <app-icon name="document" />
+                  <span>Listado Nota Anulación</span>
+                </a>
+                <a routerLink="/comprobantes/notas/debito" routerLinkActive="active" (click)="closeSidebar()">
+                  <app-icon name="document" />
+                  <span>Listado Nota Débito</span>
+                </a>
+              </div>
+            }
+          </div>
+        }
+      </div>
       <a routerLink="/contabilidad" title="Confirmaciones" (click)="closeSidebar()">
         <app-icon name="check" />
         <span>Confirmaciones</span>
         <app-icon class="chevron" name="chevron" />
       </a>
-      <a routerLink="/contabilidad" title="Cotización" (click)="closeSidebar()">
-        <app-icon name="clipboard" />
-        <span>Cotización</span>
-        <app-icon class="chevron" name="chevron" />
-      </a>
+      <div class="nav-section">
+        <button
+          type="button"
+          class="nav-toggle"
+          [class.open]="cotizacionesOpen()"
+          [class.active-section]="cotizacionesActivo()"
+          title="Cotización"
+          (click)="toggleCotizaciones($event)"
+        >
+          <app-icon name="clipboard" />
+          <span>Cotización</span>
+          <app-icon class="chevron" name="chevron" />
+        </button>
+        @if (cotizacionesOpen()) {
+          <div class="nav-children nav-leaf">
+            <a routerLink="/cotizaciones/crear" routerLinkActive="active" (click)="closeSidebar()">
+              <app-icon name="document" />
+              <span>Crear</span>
+            </a>
+            <a
+              routerLink="/cotizaciones"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: true }"
+              (click)="closeSidebar()"
+            >
+              <app-icon name="document" />
+              <span>Listado</span>
+            </a>
+          </div>
+        }
+      </div>
 
       <p class="nav-group">Cuentas pendientes</p>
       <a routerLink="/contabilidad" title="Cuentas" (click)="closeSidebar()">
