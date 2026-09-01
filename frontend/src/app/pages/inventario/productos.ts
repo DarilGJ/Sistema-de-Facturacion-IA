@@ -2,7 +2,6 @@ import { Component, OnInit, computed, signal } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
-import { InventarioNav } from './inventario-nav';
 import { InventarioService } from '../../core/services/inventario.service';
 import { Producto } from '../../core/models/inventario.model';
 import { apiErrorMessage } from '../../core/utils/api-error';
@@ -12,16 +11,17 @@ import { RowMenu } from '../../shared/row-menu/row-menu';
 
 @Component({
   selector: 'app-productos',
-  imports: [InventarioNav, CurrencyPipe, ReactiveFormsModule, UiIcon, RowMenu],
+  imports: [CurrencyPipe, ReactiveFormsModule, UiIcon, RowMenu],
   templateUrl: './productos.html',
   styleUrl: './inventario-shared.css',
 })
 export class Productos implements OnInit {
   readonly busqueda = signal('');
-  readonly filtroEstado = signal('');
+  readonly filtroEstado = signal('activo');
   readonly filtroTipo = signal('');
   readonly filtrosOpen = signal(false);
   readonly pagina = signal(1);
+  readonly pageSize = signal(10);
   readonly loading = signal(false);
   readonly saving = signal(false);
   readonly errorMessage = signal('');
@@ -44,10 +44,13 @@ export class Productos implements OnInit {
     });
   });
 
-  readonly visibles = computed(() => pageSlice(this.filtrados(), this.pagina()));
-  readonly paginas = computed(() => pageNumbers(this.filtrados().length));
-  readonly rango = computed(() => pageRange(this.filtrados().length, this.pagina()));
-  readonly paginaActual = computed(() => clampPage(this.pagina(), this.filtrados().length));
+  readonly visibles = computed(() => pageSlice(this.filtrados(), this.pagina(), this.pageSize()));
+  readonly paginas = computed(() => pageNumbers(this.filtrados().length, this.pageSize()));
+  readonly rango = computed(() => pageRange(this.filtrados().length, this.pagina(), this.pageSize()));
+  readonly paginaActual = computed(() => clampPage(this.pagina(), this.filtrados().length, this.pageSize()));
+  readonly montoInventario = computed(() =>
+    this.filtrados().reduce((total, item) => total + this.valorCosto(item), 0)
+  );
 
   readonly form;
 
@@ -186,8 +189,22 @@ export class Productos implements OnInit {
     this.pagina.set(1);
   }
 
+  setFiltroEstado(value: string): void {
+    this.filtroEstado.set(value);
+    this.pagina.set(1);
+  }
+
+  setPageSize(value: string): void {
+    this.pageSize.set(Number(value) || 10);
+    this.pagina.set(1);
+  }
+
   toggleFiltros(): void {
     this.filtrosOpen.update((value) => !value);
+  }
+
+  valorCosto(item: Producto): number {
+    return Number(item.costo_compra || 0) * Number(item.stock_actual || 0);
   }
 
   tipo(item: Producto): string {

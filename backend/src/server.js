@@ -9,6 +9,7 @@ import proveedorRoutes from './routes/proveedor.routes.js';
 import clienteRoutes from './routes/cliente.routes.js';
 import productoRoutes from './routes/producto.routes.js';
 import facturaRoutes from './routes/factura.routes.js';
+import cotizacionRoutes from './routes/cotizacion.routes.js';
 import dashboardRoutes from './routes/dashboard.routes.js';
 
 const app = express();
@@ -31,6 +32,7 @@ app.use('/api/proveedores', proveedorRoutes);
 app.use('/api/clientes', clienteRoutes);
 app.use('/api/productos', productoRoutes);
 app.use('/api/facturas', facturaRoutes);
+app.use('/api/cotizaciones', cotizacionRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
 app.use((err, _req, res, _next) => {

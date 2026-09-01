@@ -1,10 +1,28 @@
-<section class="module-page">
-  <header class="page-header">
+<section class="module-page receptores-page">
+  <header class="page-header receptores-header">
     <h1>Artículos y servicios</h1>
-    <p>Catálogo de productos para facturación e inventario.</p>
+    <p>Busca y administra tu catálogo de venta.</p>
   </header>
 
-  <app-inventario-nav />
+  <div class="top-filters">
+    <label>
+      <span>Estado</span>
+      <select [value]="filtroEstado()" (change)="setFiltroEstado($any($event.target).value)">
+        <option value="">Todos</option>
+        <option value="activo">Activado</option>
+        <option value="inactivo">Inactivo</option>
+      </select>
+    </label>
+    <label>
+      <span>Cantidad de Resultados</span>
+      <select [value]="pageSize()" (change)="setPageSize($any($event.target).value)">
+        <option [value]="10">10</option>
+        <option [value]="25">25</option>
+        <option [value]="50">50</option>
+        <option [value]="100">100</option>
+      </select>
+    </label>
+  </div>
 
   <div class="crud-toolbar">
     <label class="search-field">
@@ -28,18 +46,14 @@
     >
       <app-icon name="filter" />
     </button>
-    <button type="button" class="btn btn-accent" (click)="abrirNuevo()">
-      <app-icon name="plus" /> Nuevo producto
+    <button type="button" class="btn btn-accent" (click)="abrirNuevo()">+ Nuevo Producto</button>
+    <button type="button" class="btn btn-ghost" disabled title="Próximamente">
+      <app-icon name="upload" /> Importaciones
     </button>
   </div>
 
   @if (filtrosOpen()) {
     <div class="filter-bar">
-      <select [value]="filtroEstado()" (change)="filtroEstado.set($any($event.target).value); pagina.set(1)">
-        <option value="">Todos los estados</option>
-        <option value="activo">Activado</option>
-        <option value="inactivo">Inactivo</option>
-      </select>
       <select [value]="filtroTipo()" (change)="filtroTipo.set($any($event.target).value); pagina.set(1)">
         <option value="">Todos los tipos</option>
         <option value="Producto">Producto</option>
@@ -119,16 +133,19 @@
           <th>Gravamen</th>
           <th>Estado</th>
           <th>Unidad</th>
-          <th class="num">Costo</th>
-          <th class="num">Precio s/ITBIS</th>
-          <th class="num">Precio</th>
-          <th></th>
+          <th class="num">Precio de compra</th>
+          <th class="num">Precio de compra sin impuesto</th>
+          <th class="num">Valor al costo</th>
+          <th class="num">Precio 1 con impuesto</th>
+          <th class="num">Precio 2 con impuesto</th>
+          <th class="num">Costo total</th>
+          <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
         @if (loading()) {
           <tr>
-            <td colspan="10" class="muted">Cargando productos...</td>
+            <td colspan="13" class="muted">Cargando productos...</td>
           </tr>
         } @else {
           @for (item of visibles(); track item.id) {
@@ -136,7 +153,7 @@
               <td>
                 <div class="item-name">
                   <span class="avatar">{{ iniciales(item.nombre) }}</span>
-                  <span>{{ item.nombre }}</span>
+                  <strong>{{ item.nombre }}</strong>
                 </div>
               </td>
               <td>{{ item.sku }}</td>
@@ -147,10 +164,13 @@
                   {{ item.estado ? 'Activado' : 'Inactivo' }}
                 </span>
               </td>
-              <td>Und.</td>
+              <td>Unidad</td>
               <td class="num">{{ item.costo_compra | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
-              <td class="num">{{ sinItbis(item.precio_venta) | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
+              <td class="num">{{ sinItbis(item.costo_compra) | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
+              <td class="num">{{ valorCosto(item) | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
               <td class="num">{{ item.precio_venta | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
+              <td class="num">{{ item.precio_venta | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
+              <td class="num">{{ valorCosto(item) | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
               <td>
                 <app-row-menu
                   [canDeactivate]="!!item.estado"
@@ -161,14 +181,17 @@
             </tr>
           } @empty {
             <tr>
-              <td colspan="10" class="muted">No hay productos que coincidan.</td>
+              <td colspan="13" class="muted">No hay productos que coincidan.</td>
             </tr>
           }
         }
       </tbody>
     </table>
     <footer class="table-footer">
-      <span>Viendo {{ rango().from }} a {{ rango().to }} de {{ filtrados().length }} entradas</span>
+      <span>
+        Viendo {{ rango().from }} a {{ rango().to }} de {{ filtrados().length }} entradas
+        · Monto total inventario (costo): {{ montoInventario() | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}
+      </span>
       <div class="pager">
         <button type="button" [disabled]="paginaActual() === 1" (click)="pagina.set(paginaActual() - 1)">Atrás</button>
         @for (n of paginas(); track n) {

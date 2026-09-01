@@ -17,6 +17,10 @@ export class FacturaService {
     return this.http.get<Factura[]>(`${this.api}/facturas`).pipe(tap((rows) => this.facturas.set(rows)));
   }
 
+  obtener(id: number): Observable<Factura> {
+    return this.http.get<Factura>(`${this.api}/facturas/${id}`).pipe(tap((factura) => this.ultima.set(factura)));
+  }
+
   crear(payload: FacturaPayload): Observable<Factura> {
     return this.http.post<Factura>(`${this.api}/facturas`, payload).pipe(
       tap((factura) => {

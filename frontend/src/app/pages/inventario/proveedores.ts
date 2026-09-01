@@ -1,6 +1,5 @@
-import { Component, OnInit, computed, signal } from '@angular/core';
+import { Component, HostListener, OnInit, computed, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { InventarioNav } from './inventario-nav';
 import { InventarioService } from '../../core/services/inventario.service';
 import { Proveedor } from '../../core/models/inventario.model';
 import { apiErrorMessage } from '../../core/utils/api-error';
@@ -10,7 +9,7 @@ import { RowMenu } from '../../shared/row-menu/row-menu';
 
 @Component({
   selector: 'app-proveedores',
-  imports: [InventarioNav, ReactiveFormsModule, UiIcon, RowMenu],
+  imports: [ReactiveFormsModule, UiIcon, RowMenu],
   templateUrl: './proveedores.html',
   styleUrl: './inventario-shared.css',
 })
@@ -22,6 +21,7 @@ export class Proveedores implements OnInit {
   readonly errorMessage = signal('');
   readonly formOpen = signal(false);
   readonly editingId = signal<number | null>(null);
+  readonly accionesOpen = signal(false);
 
   readonly filtrados = computed(() => {
     const q = this.busqueda().trim().toLowerCase();
@@ -60,6 +60,11 @@ export class Proveedores implements OnInit {
 
   ngOnInit(): void {
     this.cargar();
+  }
+
+  @HostListener('document:click')
+  closeAcciones(): void {
+    this.accionesOpen.set(false);
   }
 
   cargar(): void {
@@ -162,6 +167,11 @@ export class Proveedores implements OnInit {
   setBusqueda(value: string): void {
     this.busqueda.set(value);
     this.pagina.set(1);
+  }
+
+  toggleAcciones(event: Event): void {
+    event.stopPropagation();
+    this.accionesOpen.update((open) => !open);
   }
 
   iniciales(nombre: string): string {

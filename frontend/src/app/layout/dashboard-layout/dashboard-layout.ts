@@ -1,5 +1,6 @@
 import { Component, HostListener, OnInit, computed, inject, signal } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { filter } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { UiIcon } from '../../shared/ui-icon/ui-icon';
@@ -22,6 +23,21 @@ export class DashboardLayout implements OnInit {
   readonly modulosOpen = signal(false);
   readonly notificacionesOpen = signal(false);
   readonly busqueda = signal('');
+  readonly url = signal(this.router.url);
+
+  readonly receptoresActivo = computed(
+    () =>
+      this.url().includes('/inventario/clientes') || this.url().includes('/inventario/proveedores')
+  );
+  readonly receptoresOpen = signal(this.receptoresActivo());
+  readonly comprobantesActivo = computed(() => this.url().includes('/comprobantes/'));
+  readonly facturasActivo = computed(() => this.url().includes('/comprobantes/facturas'));
+  readonly notasActivo = computed(() => this.url().includes('/comprobantes/notas'));
+  readonly comprobantesOpen = signal(this.comprobantesActivo());
+  readonly facturasMenuOpen = signal(this.facturasActivo());
+  readonly notasMenuOpen = signal(this.notasActivo());
+  readonly cotizacionesActivo = computed(() => this.url().includes('/cotizaciones'));
+  readonly cotizacionesOpen = signal(this.cotizacionesActivo());
 
   readonly inventarioLinks = [
     { path: '/inventario', label: 'Resumen', exact: true, icon: 'box' },
@@ -42,6 +58,13 @@ export class DashboardLayout implements OnInit {
 
   readonly searchable = [
     { path: '/dashboard', title: 'Inicio', text: 'Dashboard operativo' },
+    { path: '/comprobantes/facturas', title: 'Listado de Facturas', text: 'Comprobantes' },
+    { path: '/comprobantes/facturas/crear', title: 'Crear factura', text: 'Comprobantes' },
+    { path: '/comprobantes/notas/credito', title: 'Nota Crédito', text: 'Comprobantes' },
+    { path: '/comprobantes/notas/anulacion', title: 'Nota Anulación', text: 'Comprobantes' },
+    { path: '/comprobantes/notas/debito', title: 'Nota Débito', text: 'Comprobantes' },
+    { path: '/cotizaciones', title: 'Listado de Cotización', text: 'Cotizaciones' },
+    { path: '/cotizaciones/crear', title: 'Crear cotización', text: 'Cotizaciones' },
     ...this.modulos,
     ...this.inventarioLinks.map((link) => ({ path: link.path, title: link.label, text: 'Inventario' })),
   ];
@@ -58,6 +81,54 @@ export class DashboardLayout implements OnInit {
 
   ngOnInit(): void {
     this.dashboardApi.cargarAlertas().subscribe({ error: () => undefined });
+    this.router.events.pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd)).subscribe((event) => {
+      this.url.set(event.urlAfterRedirects);
+      if (this.receptoresActivo()) {
+        this.receptoresOpen.set(true);
+      }
+      if (this.comprobantesActivo()) {
+        this.comprobantesOpen.set(true);
+        if (this.facturasActivo()) {
+          this.facturasMenuOpen.set(true);
+        }
+        if (this.notasActivo()) {
+          this.notasMenuOpen.set(true);
+        }
+      }
+      if (this.cotizacionesActivo()) {
+        this.cotizacionesOpen.set(true);
+      }
+    });
+  }
+
+  toggleReceptores(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.receptoresOpen.update((open) => !open);
+  }
+
+  toggleComprobantes(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.comprobantesOpen.update((open) => !open);
+  }
+
+  toggleFacturasMenu(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.facturasMenuOpen.update((open) => !open);
+  }
+
+  toggleNotasMenu(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.notasMenuOpen.update((open) => !open);
+  }
+
+  toggleCotizaciones(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.cotizacionesOpen.update((open) => !open);
   }
 
   @HostListener('document:click')
