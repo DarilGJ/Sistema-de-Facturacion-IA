@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { Cotizacion, CotizacionPayload } from '../models/cotizacion.model';
+import { Factura } from '../models/factura.model';
 
 @Injectable({ providedIn: 'root' })
 export class CotizacionService {
@@ -32,6 +33,16 @@ export class CotizacionService {
     return this.http.patch<Cotizacion>(`${this.api}/cotizaciones/${id}`, payload).pipe(
       tap((row) => {
         this.cotizaciones.update((rows) => rows.map((item) => (item.id === id ? row : item)));
+      })
+    );
+  }
+
+  convertirAFactura(id: number): Observable<{ factura: Factura; cotizacion: Cotizacion }> {
+    return this.http.post<{ factura: Factura; cotizacion: Cotizacion }>(`${this.api}/cotizaciones/${id}/facturar`, {}).pipe(
+      tap((res) => {
+        this.cotizaciones.update((rows) =>
+          rows.map((item) => (item.id === res.cotizacion.id ? res.cotizacion : item))
+        );
       })
     );
   }

@@ -9,8 +9,10 @@ import { UiIcon } from '../ui-icon/ui-icon';
 })
 export class RowMenu {
   readonly canDeactivate = input(true);
+  readonly canConvert = input(false);
   readonly edit = output<void>();
   readonly deactivate = output<void>();
+  readonly convert = output<void>();
   readonly open = signal(false);
 
   @HostListener('document:click')

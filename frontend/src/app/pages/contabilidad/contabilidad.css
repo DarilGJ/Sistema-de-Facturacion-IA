@@ -1,5 +1,7 @@
 .module-page {
-  max-width: 1100px;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
 }
 
 .page-header h1 {
@@ -45,5 +47,5 @@
 }
 
 .hint a {
-  color: #0f766e;
+  color: var(--brand-blue);
 }

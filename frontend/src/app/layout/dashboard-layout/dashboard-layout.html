@@ -22,16 +22,16 @@
         <button
           type="button"
           class="nav-toggle"
-          [class.open]="receptoresOpen()"
+          [class.open]="abierto('receptores')"
           [class.active-section]="receptoresActivo()"
           title="Receptores"
-          (click)="toggleReceptores($event)"
+          (click)="toggleMenu('receptores', $event)"
         >
           <app-icon name="users" />
           <span>Receptores</span>
           <app-icon class="chevron" name="chevron" />
         </button>
-        @if (receptoresOpen()) {
+        @if (abierto('receptores')) {
           <div class="nav-children">
             <a
               class="nav-sub"
@@ -82,36 +82,36 @@
         <button
           type="button"
           class="nav-toggle"
-          [class.open]="comprobantesOpen()"
+          [class.open]="abierto('comprobantes')"
           [class.active-section]="comprobantesActivo()"
           title="Comprobantes"
-          (click)="toggleComprobantes($event)"
+          (click)="toggleMenu('comprobantes', $event)"
         >
           <app-icon name="document" />
           <span>Comprobantes</span>
           <app-icon class="chevron" name="chevron" />
         </button>
-        @if (comprobantesOpen()) {
+        @if (abierto('comprobantes')) {
           <div class="nav-children">
             <button
               type="button"
               class="nav-toggle nav-branch"
-              [class.open]="facturasMenuOpen()"
+              [class.open]="abierto('facturas')"
               title="Facturas"
-              (click)="toggleFacturasMenu($event)"
+              (click)="toggleMenu('facturas', $event)"
             >
               <span class="nav-dot"></span>
               <span>Facturas</span>
               <app-icon class="chevron" name="chevron" />
             </button>
-            @if (facturasMenuOpen()) {
+            @if (abierto('facturas')) {
               <div class="nav-leaf">
                 <a routerLink="/comprobantes/facturas/crear" routerLinkActive="active" (click)="closeSidebar()">
-                  <app-icon name="document" />
+                  <span class="nav-dot"></span>
                   <span>Crear</span>
                 </a>
                 <a routerLink="/comprobantes/facturas" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeSidebar()">
-                  <app-icon name="document" />
+                  <span class="nav-dot"></span>
                   <span>Listado</span>
                 </a>
               </div>
@@ -120,26 +120,26 @@
             <button
               type="button"
               class="nav-toggle nav-branch"
-              [class.open]="notasMenuOpen()"
+              [class.open]="abierto('notas')"
               title="Notas"
-              (click)="toggleNotasMenu($event)"
+              (click)="toggleMenu('notas', $event)"
             >
               <span class="nav-dot"></span>
               <span>Notas</span>
               <app-icon class="chevron" name="chevron" />
             </button>
-            @if (notasMenuOpen()) {
+            @if (abierto('notas')) {
               <div class="nav-leaf">
                 <a routerLink="/comprobantes/notas/credito" routerLinkActive="active" (click)="closeSidebar()">
-                  <app-icon name="document" />
+                  <span class="nav-dot"></span>
                   <span>Listado Nota Crédito</span>
                 </a>
                 <a routerLink="/comprobantes/notas/anulacion" routerLinkActive="active" (click)="closeSidebar()">
-                  <app-icon name="document" />
+                  <span class="nav-dot"></span>
                   <span>Listado Nota Anulación</span>
                 </a>
                 <a routerLink="/comprobantes/notas/debito" routerLinkActive="active" (click)="closeSidebar()">
-                  <app-icon name="document" />
+                  <span class="nav-dot"></span>
                   <span>Listado Nota Débito</span>
                 </a>
               </div>
@@ -147,28 +147,47 @@
           </div>
         }
       </div>
-      <a routerLink="/contabilidad" title="Confirmaciones" (click)="closeSidebar()">
-        <app-icon name="check" />
-        <span>Confirmaciones</span>
-        <app-icon class="chevron" name="chevron" />
-      </a>
+
       <div class="nav-section">
         <button
           type="button"
           class="nav-toggle"
-          [class.open]="cotizacionesOpen()"
+          [class.open]="abierto('confirmaciones')"
+          [class.active-section]="confirmacionesActivo()"
+          title="Confirmaciones"
+          (click)="toggleMenu('confirmaciones', $event)"
+        >
+          <app-icon name="check" />
+          <span>Confirmaciones</span>
+          <app-icon class="chevron" name="chevron" />
+        </button>
+        @if (abierto('confirmaciones')) {
+          <div class="nav-children nav-leaf">
+            <a routerLink="/contabilidad" routerLinkActive="active" (click)="closeSidebar()">
+              <span class="nav-dot"></span>
+              <span>Listado</span>
+            </a>
+          </div>
+        }
+      </div>
+
+      <div class="nav-section">
+        <button
+          type="button"
+          class="nav-toggle"
+          [class.open]="abierto('cotizaciones')"
           [class.active-section]="cotizacionesActivo()"
           title="Cotización"
-          (click)="toggleCotizaciones($event)"
+          (click)="toggleMenu('cotizaciones', $event)"
         >
           <app-icon name="clipboard" />
           <span>Cotización</span>
           <app-icon class="chevron" name="chevron" />
         </button>
-        @if (cotizacionesOpen()) {
+        @if (abierto('cotizaciones')) {
           <div class="nav-children nav-leaf">
             <a routerLink="/cotizaciones/crear" routerLinkActive="active" (click)="closeSidebar()">
-              <app-icon name="document" />
+              <span class="nav-dot"></span>
               <span>Crear</span>
             </a>
             <a
@@ -177,41 +196,193 @@
               [routerLinkActiveOptions]="{ exact: true }"
               (click)="closeSidebar()"
             >
-              <app-icon name="document" />
+              <span class="nav-dot"></span>
               <span>Listado</span>
             </a>
           </div>
         }
       </div>
 
-      <p class="nav-group">Cuentas pendientes</p>
-      <a routerLink="/contabilidad" title="Cuentas" (click)="closeSidebar()">
-        <app-icon name="wallet" />
-        <span>Cuentas</span>
-        <app-icon class="chevron" name="chevron" />
+      <div class="nav-section">
+        <button
+          type="button"
+          class="nav-toggle"
+          [class.open]="abierto('recurrente')"
+          [class.active-section]="recurrenteActivo()"
+          title="Recurrente"
+          (click)="toggleMenu('recurrente', $event)"
+        >
+          <app-icon name="clock-doc" />
+          <span>Recurrente</span>
+          <app-icon class="chevron" name="chevron" />
+        </button>
+        @if (abierto('recurrente')) {
+          <div class="nav-children nav-leaf">
+            <a routerLink="/recurrentes/crear" routerLinkActive="active" (click)="closeSidebar()">
+              <span class="nav-dot"></span>
+              <span>Crear</span>
+            </a>
+            <a routerLink="/recurrentes" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeSidebar()">
+              <span class="nav-dot"></span>
+              <span>Listado</span>
+            </a>
+          </div>
+        }
+      </div>
+
+      <div class="nav-section">
+        <button
+          type="button"
+          class="nav-toggle"
+          [class.open]="abierto('egresos')"
+          [class.active-section]="egresosActivo()"
+          title="Egresos"
+          (click)="toggleMenu('egresos', $event)"
+        >
+          <app-icon name="minus-doc" />
+          <span>Egresos</span>
+          <app-icon class="chevron" name="chevron" />
+        </button>
+        @if (abierto('egresos')) {
+          <div class="nav-children">
+            <button
+              type="button"
+              class="nav-toggle nav-branch"
+              [class.open]="abierto('compras')"
+              title="Compras"
+              (click)="toggleMenu('compras', $event)"
+            >
+              <span class="nav-dot"></span>
+              <span>Compras</span>
+              <app-icon class="chevron" name="chevron" />
+            </button>
+            @if (abierto('compras')) {
+              <div class="nav-leaf">
+                <a routerLink="/egresos/compras/crear" routerLinkActive="active" (click)="closeSidebar()">
+                  <span class="nav-dot"></span>
+                  <span>Crear</span>
+                </a>
+                <a routerLink="/egresos/compras" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeSidebar()">
+                  <span class="nav-dot"></span>
+                  <span>Listado</span>
+                </a>
+              </div>
+            }
+
+            <button
+              type="button"
+              class="nav-toggle nav-branch"
+              [class.open]="abierto('gastos')"
+              title="Gastos"
+              (click)="toggleMenu('gastos', $event)"
+            >
+              <span class="nav-dot"></span>
+              <span>Gastos</span>
+              <app-icon class="chevron" name="chevron" />
+            </button>
+            @if (abierto('gastos')) {
+              <div class="nav-leaf">
+                <a routerLink="/egresos/gastos/tipos" routerLinkActive="active" (click)="closeSidebar()">
+                  <span class="nav-dot"></span>
+                  <span>Gastos (Tipos)</span>
+                </a>
+                <a routerLink="/egresos/gastos/crear" routerLinkActive="active" (click)="closeSidebar()">
+                  <span class="nav-dot"></span>
+                  <span>Crear</span>
+                </a>
+                <a routerLink="/egresos/gastos" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeSidebar()">
+                  <span class="nav-dot"></span>
+                  <span>Listado</span>
+                </a>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <a routerLink="/anticipos" routerLinkActive="active" title="Anticipos" (click)="closeSidebar()">
+        <app-icon name="card" />
+        <span>Anticipos</span>
       </a>
+
+      <p class="nav-group">Cuentas pendientes</p>
+      <div class="nav-section">
+        <button
+          type="button"
+          class="nav-toggle"
+          [class.open]="abierto('cuentas')"
+          [class.active-section]="cuentasActivo()"
+          title="Cuentas"
+          (click)="toggleMenu('cuentas', $event)"
+        >
+          <app-icon name="wallet" />
+          <span>Cuentas</span>
+          <app-icon class="chevron" name="chevron" />
+        </button>
+        @if (abierto('cuentas')) {
+          <div class="nav-children nav-leaf">
+            <a routerLink="/cuentas/cobrar" routerLinkActive="active" (click)="closeSidebar()">
+              <span class="nav-dot"></span>
+              <span>Cuentas por Cobrar</span>
+            </a>
+            <a routerLink="/cuentas/pagar" routerLinkActive="active" (click)="closeSidebar()">
+              <span class="nav-dot"></span>
+              <span>Cuentas por Pagar</span>
+            </a>
+          </div>
+        }
+      </div>
 
       <p class="nav-group">Punto de venta</p>
-      <a routerLink="/pos" routerLinkActive="active" title="Gestión POS" (click)="closeSidebar()">
-        <app-icon name="pos" />
-        <span>Gestión POS</span>
-        <app-icon class="chevron" name="chevron" />
-      </a>
+      <div class="nav-section">
+        <button
+          type="button"
+          class="nav-toggle nav-pos"
+          [class.open]="abierto('pos')"
+          [class.active-section]="posActivo()"
+          title="Gestión POS"
+          (click)="toggleMenu('pos', $event)"
+        >
+          <app-icon name="pos" />
+          <span>Gestión POS</span>
+          <app-icon class="chevron" name="chevron" />
+        </button>
+        @if (abierto('pos')) {
+          <div class="nav-children nav-leaf">
+            <a routerLink="/pos" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeSidebar()">
+              <app-icon name="pos" />
+              <span>Vender</span>
+            </a>
+            <a routerLink="/pos/cajas" routerLinkActive="active" (click)="closeSidebar()">
+              <app-icon name="cashbox" />
+              <span>Cajas Registradoras</span>
+            </a>
+            <a routerLink="/pos/tiquetes" routerLinkActive="active" (click)="closeSidebar()">
+              <app-icon name="ticket" />
+              <span>Listado Tiquetes</span>
+            </a>
+          </div>
+        }
+      </div>
 
       <p class="nav-group">Opciones</p>
-      <a routerLink="/dashboard" title="Estado DGII" (click)="closeSidebar()">
+      <a routerLink="/opciones/sat" routerLinkActive="active" title="Estado SAT" (click)="closeSidebar()">
         <app-icon name="check" />
-        <span>Estado DGII</span>
+        <span>Estado SAT</span>
       </a>
-      <a routerLink="/contabilidad" title="Reportes" (click)="closeSidebar()">
+      <a routerLink="/opciones/reportes" routerLinkActive="active" title="Reportes" (click)="closeSidebar()">
         <app-icon name="clipboard" />
         <span>Reportes</span>
       </a>
-      <a routerLink="/dashboard" title="Configuraciones" (click)="closeSidebar()">
+      <a routerLink="/opciones/calendario" routerLinkActive="active" title="Calendario" (click)="closeSidebar()">
+        <app-icon name="calendar" />
+        <span>Calendario</span>
+      </a>
+      <a routerLink="/opciones/configuracion" routerLinkActive="active" title="Configuraciones" (click)="closeSidebar()">
         <app-icon name="gear" />
         <span>Configuraciones</span>
       </a>
-      <a routerLink="/dashboard" title="Soporte técnico" (click)="closeSidebar()">
+      <a routerLink="/opciones/soporte" routerLinkActive="active" title="Soporte técnico" (click)="closeSidebar()">
         <app-icon name="support" />
         <span>Soporte técnico</span>
       </a>

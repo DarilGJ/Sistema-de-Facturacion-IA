@@ -1,3 +1,19 @@
+:root {
+  --brand-blue: #3d6ea8;
+  --brand-blue-dark: #2f588a;
+  --brand-blue-deep: #27466b;
+  --brand-yellow: #e4c35a;
+  --brand-yellow-soft: #f8efc8;
+  --brand-red: #c97878;
+  --brand-red-soft: #f7eaea;
+  --brand-white: #ffffff;
+  --app-bg: #f3f6fb;
+  --text-main: #243447;
+  --muted: #64748b;
+  --sidebar: #27466b;
+  --sidebar-text: #e8eef6;
+}
+
 *,
 *::before,
 *::after {
@@ -7,10 +23,18 @@
 html,
 body {
   margin: 0;
+  width: 100%;
   min-height: 100%;
+  overflow-x: hidden;
   font-family: "Segoe UI", "Source Sans 3", "Helvetica Neue", sans-serif;
-  background: #0f172a;
-  color: #e2e8f0;
+  background: var(--brand-blue-deep);
+  color: var(--sidebar-text);
+}
+
+app-root {
+  display: block;
+  width: 100%;
+  min-width: 0;
 }
 
 button,

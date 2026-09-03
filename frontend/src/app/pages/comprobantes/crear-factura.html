@@ -1,0 +1,321 @@
+<section class="fe">
+  <header class="fe-top">
+    <div class="issuer">
+      <span class="label">Emisor seleccionado</span>
+      <strong>{{ auth.user()?.nombre || 'FacturaAI' }}</strong>
+      <small>Sucursal: Principal</small>
+      <small>Facturación electrónica</small>
+    </div>
+    <div class="fe-title">
+      <h1>{{ tituloDocumento() }}</h1>
+      <label class="check">
+        <input type="checkbox" [checked]="exportacion()" (change)="exportacion.set($any($event.target).checked)" />
+        Documento de Exportación
+      </label>
+    </div>
+    <div class="fe-meta">
+      <span class="numero">No: {{ numeroPreview() }}</span>
+      <label>
+        <span>Fecha Emisión</span>
+        <input type="date" [ngModel]="fechaEmision()" (ngModelChange)="fechaEmision.set($event)" />
+      </label>
+      <label>
+        <span>Comprobante</span>
+        <select [ngModel]="tipoComprobante()" (ngModelChange)="tipoComprobante.set($event)">
+          @if (esCotizacion()) {
+            <option>Cotización</option>
+          } @else {
+            <option>Factura</option>
+          }
+        </select>
+      </label>
+    </div>
+  </header>
+
+  @if (errorMessage()) {
+    <p class="alert-error" role="alert">{{ errorMessage() }}</p>
+  }
+  @if (!esCotizacion() && facturas.ultima(); as ultima) {
+    <p class="ok">Factura {{ ultima.numero }} procesada.</p>
+  }
+  @if (esCotizacion() && cotizaciones.ultima(); as ultima) {
+    <p class="ok">Cotización {{ ultima.numero }} guardada. No afecta inventario hasta convertirla a factura.</p>
+  }
+
+  <section class="panel">
+    <button type="button" class="panel-h" (click)="toggle('receptor')">
+      <app-icon name="chevron" [class.open]="seccionReceptor()" />
+      Receptor y opciones
+    </button>
+    @if (seccionReceptor()) {
+      <div class="panel-b">
+        <div class="suggest" (click)="$event.stopPropagation()">
+          <label class="search-row">
+            <app-icon name="users" />
+            <input
+              type="search"
+              placeholder="Buscar Cliente"
+              [ngModel]="busquedaCliente()"
+              (ngModelChange)="busquedaCliente.set($event); clientesOpen.set(true)"
+              (focus)="clientesOpen.set(true)"
+            />
+            <app-icon class="end" name="search" />
+          </label>
+          @if (clientesOpen()) {
+            <div class="suggest-list">
+              @for (cliente of clientesFiltrados(); track cliente.id) {
+                <button type="button" (click)="seleccionarCliente(cliente, $event)">
+                  <strong>{{ cliente.nombre }}</strong>
+                  <span>{{ cliente.nit }} · {{ cliente.email || 'Sin correo' }}</span>
+                </button>
+              } @empty {
+                <p>No hay clientes que coincidan.</p>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="receptor">
+          <div class="receptor-main">
+            <label>
+              <span>Requerimientos Especiales</span>
+              <select [ngModel]="requerimientos()" (ngModelChange)="requerimientos.set($event)">
+                <option value="">Seleccionar...</option>
+                <option value="exento">Exento</option>
+              </select>
+            </label>
+            <label>
+              <span>Canal de venta</span>
+              <select [ngModel]="canalVenta()" (ngModelChange)="canalVenta.set($event)">
+                <option>No</option>
+                <option>Mostrador</option>
+                <option>Online</option>
+              </select>
+            </label>
+            <div class="opciones">
+              <div class="opciones-h">
+                <strong>Opciones</strong>
+                <app-icon name="gear" />
+              </div>
+              <div class="opciones-b">
+                <label class="switch">
+                  <span>Contacto</span>
+                  <input type="checkbox" [checked]="optContacto()" (change)="optContacto.set($any($event.target).checked)" />
+                </label>
+                <label class="switch">
+                  <span>Otras Opciones</span>
+                  <input type="checkbox" [checked]="optOtras()" (change)="optOtras.set($any($event.target).checked)" />
+                </label>
+                <label class="switch">
+                  <span>Taller</span>
+                  <input type="checkbox" [checked]="optTaller()" (change)="optTaller.set($any($event.target).checked)" />
+                </label>
+                <label class="switch">
+                  <span>Cuenta Ajena</span>
+                  <input type="checkbox" [checked]="optCuentaAjena()" (change)="optCuentaAjena.set($any($event.target).checked)" />
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="receptor-side">
+            <label>
+              <span>Moneda</span>
+              <select [ngModel]="moneda()" (ngModelChange)="moneda.set($event)">
+                <option>Quetzal</option>
+                <option>Dólar</option>
+              </select>
+            </label>
+            <label>
+              <span>Vendedor</span>
+              <input type="text" placeholder="Vendedor" [ngModel]="vendedor()" (ngModelChange)="vendedor.set($event)" />
+            </label>
+            <label>
+              <span>Condición de venta</span>
+              <select [ngModel]="condicionVenta()" (ngModelChange)="condicionVenta.set($event)">
+                <option value="contado">Contado</option>
+                <option value="credito">Crédito</option>
+              </select>
+            </label>
+          </div>
+        </div>
+      </div>
+    }
+  </section>
+
+  <section class="panel">
+    <button type="button" class="panel-h" (click)="toggle('productos')">
+      <app-icon name="chevron" [class.open]="seccionProductos()" />
+      Productos y servicios
+    </button>
+    @if (seccionProductos()) {
+      <div class="panel-b">
+        <div class="prod-bar">
+          <span class="prod-label">Seleccionar Producto:</span>
+          <button type="button" class="btn-green" (click)="toggle('productoForm')">+ Nuevo Producto</button>
+          <label class="radio"><input type="radio" name="cat" [checked]="catalogoTipo() === 'producto'" (change)="catalogoTipo.set('producto')" /> Productos</label>
+          <label class="radio"><input type="radio" name="cat" [checked]="catalogoTipo() === 'servicio'" (change)="catalogoTipo.set('servicio')" /> Servicios</label>
+          <label class="bodega">
+            <span>Bodega:</span>
+            <select [ngModel]="bodegaId()" (ngModelChange)="bodegaId.set(toNumber($event))">
+              @for (almacen of inventario.almacenes(); track almacen.id) {
+                <option [ngValue]="almacen.id">{{ almacen.nombre }}</option>
+              }
+            </select>
+          </label>
+        </div>
+
+        @if (formProductoOpen()) {
+          <div class="mini-form">
+            <input type="text" placeholder="Código" [ngModel]="nuevoSku()" (ngModelChange)="nuevoSku.set($event)" />
+            <input type="text" placeholder="Nombre" [ngModel]="nuevoNombre()" (ngModelChange)="nuevoNombre.set($event)" />
+            <input type="number" min="0" step="0.01" placeholder="Precio" [ngModel]="nuevoPrecio()" (ngModelChange)="nuevoPrecio.set(toNumber($event))" />
+            <button type="button" class="btn-accent" (click)="crearProductoRapido()">Agregar</button>
+          </div>
+        }
+
+        <div class="suggest" (click)="$event.stopPropagation()">
+          <label class="search-row search-end">
+            <input
+              type="search"
+              placeholder="Buscar producto..."
+              [ngModel]="busquedaProducto()"
+              (ngModelChange)="busquedaProducto.set($event); productosOpen.set(true)"
+              (focus)="productosOpen.set(true)"
+            />
+            <app-icon class="end" name="search" />
+          </label>
+          @if (productosOpen()) {
+            <div class="suggest-list">
+              @if (loading()) {
+                <p>Cargando catálogo...</p>
+              } @else {
+                @for (item of productosFiltrados(); track item.id) {
+                  <button type="button" (click)="agregarProducto(item, $event)">
+                    <strong>{{ item.nombre }}</strong>
+                    <span>{{ item.sku }} · {{ item.precio_venta | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</span>
+                  </button>
+                } @empty {
+                  <p>No hay artículos en este catálogo.</p>
+                }
+              }
+            </div>
+          }
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <colgroup>
+              <col class="col-sku" />
+              <col class="col-item" />
+              <col class="col-qty" />
+              <col class="col-price" />
+              <col class="col-sub" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Artículo</th>
+                <th>Cant.</th>
+                <th class="num">Precio U</th>
+                <th class="num">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (linea of lineas(); track linea.uid) {
+                <tr>
+                  <td>
+                    <input
+                      class="cell"
+                      type="text"
+                      placeholder="Código"
+                      [ngModel]="linea.sku"
+                      (ngModelChange)="setSku(linea.uid!, $event)"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      class="cell"
+                      type="text"
+                      placeholder="Artículo"
+                      [ngModel]="linea.nombre"
+                      (ngModelChange)="setNombre(linea.uid!, $event)"
+                    />
+                  </td>
+                  <td>
+                    <input class="cell qty" type="number" min="1" [ngModel]="linea.cantidad" (ngModelChange)="setCantidad(linea.uid!, $event)" />
+                  </td>
+                  <td>
+                    <input class="cell qty price" type="number" min="0" step="0.01" [ngModel]="linea.precio" (ngModelChange)="setPrecio(linea.uid!, $event)" />
+                  </td>
+                  <td class="num">{{ linea.precio * linea.cantidad | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  </section>
+
+  <section class="panel">
+    <button type="button" class="panel-h" (click)="toggle('pago')">
+      <app-icon name="chevron" [class.open]="seccionPago()" />
+      Pago y totales
+    </button>
+    @if (seccionPago()) {
+      <div class="panel-b pago">
+        <div class="pago-left">
+          <label>
+            <span>Forma de pago</span>
+            <select [ngModel]="formaPago()" (ngModelChange)="formaPago.set($event)">
+              @if (esCotizacion()) {
+                <option value="contado">Contado</option>
+                <option value="credito">Crédito</option>
+              } @else {
+                <option value="efectivo">Efectivo</option>
+                <option value="tarjeta">Tarjeta</option>
+                <option value="transferencia">Transferencia</option>
+              }
+            </select>
+          </label>
+          <p class="metodos">
+            <span>Total de métodos</span>
+            <strong>{{ total() | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</strong>
+          </p>
+          <button type="button" class="btn-process" (click)="procesar()" [disabled]="emitting()">
+            {{ etiquetaAccion() }}
+          </button>
+        </div>
+        <dl class="totales">
+          <div><dt>Sub Total</dt><dd>{{ subtotal() | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</dd></div>
+          <div>
+            <dt>Descuento (-)</dt>
+            <dd>
+              <input class="cell qty price" type="number" min="0" step="0.01" [ngModel]="descuento()" (ngModelChange)="descuento.set(toNumber($event))" />
+            </dd>
+          </div>
+          <div><dt>Monto Bruto</dt><dd>{{ montoBruto() | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</dd></div>
+          <div><dt>Monto Gravable</dt><dd>{{ montoBruto() | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</dd></div>
+          <div><dt>IVA 18%</dt><dd>{{ iva() | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</dd></div>
+          <div class="grand"><dt>{{ esCotizacion() ? 'Total:' : 'Total a pagar:' }}</dt><dd>{{ total() | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</dd></div>
+        </dl>
+      </div>
+    }
+  </section>
+
+  <section class="panel">
+    <button type="button" class="panel-h" (click)="toggle('notas')">
+      <app-icon name="chevron" [class.open]="seccionNotas()" />
+      Notas
+    </button>
+    @if (seccionNotas()) {
+      <div class="panel-b">
+        <textarea rows="3" placeholder="Detalles adicionales..." [ngModel]="notas()" (ngModelChange)="notas.set($event)"></textarea>
+      </div>
+    } @else {
+      <div class="panel-b notes-preview">
+        <span>Detalles adicionales...</span>
+      </div>
+    }
+  </section>
+</section>
