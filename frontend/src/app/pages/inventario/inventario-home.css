@@ -1,7 +1,9 @@
 .inv-home {
   display: grid;
   gap: 1rem;
-  max-width: 1280px;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
 }
 
 .control,
@@ -26,7 +28,7 @@
 
 .kicker {
   margin: 0;
-  color: #ea580c;
+  color: var(--brand-blue);
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -60,7 +62,7 @@
 
 .tabs button.active {
   color: #0f172a;
-  border-bottom-color: #f97316;
+  border-bottom-color: var(--brand-yellow);
   font-weight: 700;
 }
 
@@ -125,7 +127,7 @@
 
 .icon.orange {
   background: #fff7ed;
-  color: #ea580c;
+  color: var(--brand-blue);
 }
 
 .icon.navy {
@@ -225,14 +227,14 @@ ol span,
 }
 
 .btn-outline {
-  border: 1px solid #f97316;
-  color: #ea580c;
+  border: 1px solid var(--brand-yellow);
+  color: var(--brand-blue);
 }
 
 .link {
   display: inline-block;
   margin-top: 0.8rem;
-  color: #ea580c;
+  color: var(--brand-blue);
   padding: 0;
 }
 

@@ -1,5 +1,6 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { CotizacionService } from '../../core/services/cotizacion.service';
 import { Cotizacion } from '../../core/models/cotizacion.model';
 import { apiErrorMessage } from '../../core/utils/api-error';
@@ -15,6 +16,8 @@ import { RowMenu } from '../../shared/row-menu/row-menu';
 })
 export class ListadoCotizaciones implements OnInit {
   readonly api = inject(CotizacionService);
+  private readonly router = inject(Router);
+  readonly convirtiendo = signal<number | null>(null);
 
   readonly busqueda = signal('');
   readonly filtroMetodo = signal('');
@@ -101,6 +104,29 @@ export class ListadoCotizaciones implements OnInit {
   archivar(item: Cotizacion): void {
     this.api.actualizar(item.id, { estado: 'archivada' }).subscribe({
       error: (err: unknown) => this.errorMessage.set(apiErrorMessage(err)),
+    });
+  }
+
+  convertir(item: Cotizacion): void {
+    if (item.generada || item.estado !== 'pendiente') {
+      this.errorMessage.set('Esta cotización no se puede convertir a factura.');
+      return;
+    }
+    this.convirtiendo.set(item.id);
+    this.errorMessage.set('');
+    this.api.convertirAFactura(item.id).subscribe({
+      next: (res) => {
+        this.convirtiendo.set(null);
+        void this.router.navigate(['/comprobantes/facturas']);
+        this.detalle.set(null);
+        if (res.factura) {
+          this.errorMessage.set('');
+        }
+      },
+      error: (err: unknown) => {
+        this.convirtiendo.set(null);
+        this.errorMessage.set(apiErrorMessage(err, 'No se pudo convertir la cotización.'));
+      },
     });
   }
 

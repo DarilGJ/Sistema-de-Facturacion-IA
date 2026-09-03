@@ -31,10 +31,11 @@ export interface Factura {
 export interface FacturaPayload {
   id_cliente: number;
   metodo_pago: 'efectivo' | 'tarjeta' | 'transferencia';
-  items: Array<{ id_producto: number; cantidad: number }>;
+  items: Array<{ id_producto: number; cantidad: number; precio_unitario?: number }>;
 }
 
 export interface CarritoLinea {
+  uid?: number;
   id_producto: number;
   sku: string;
   nombre: string;

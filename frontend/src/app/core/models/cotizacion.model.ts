@@ -32,5 +32,5 @@ export interface Cotizacion {
 export interface CotizacionPayload {
   id_cliente: number;
   metodo_pago: 'contado' | 'credito';
-  items: Array<{ id_producto: number; cantidad: number }>;
+  items: Array<{ id_producto: number; cantidad: number; precio_unitario?: number }>;
 }

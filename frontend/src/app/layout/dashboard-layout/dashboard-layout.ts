@@ -7,6 +7,20 @@ import { UiIcon } from '../../shared/ui-icon/ui-icon';
 
 const SIDEBAR_KEY = 'sf_sidebar_collapsed';
 
+type MenuKey =
+  | 'receptores'
+  | 'comprobantes'
+  | 'facturas'
+  | 'notas'
+  | 'confirmaciones'
+  | 'cotizaciones'
+  | 'recurrente'
+  | 'egresos'
+  | 'compras'
+  | 'gastos'
+  | 'cuentas'
+  | 'pos';
+
 @Component({
   selector: 'app-dashboard-layout',
   imports: [RouterOutlet, RouterLink, RouterLinkActive, UiIcon],
@@ -29,15 +43,34 @@ export class DashboardLayout implements OnInit {
     () =>
       this.url().includes('/inventario/clientes') || this.url().includes('/inventario/proveedores')
   );
-  readonly receptoresOpen = signal(this.receptoresActivo());
   readonly comprobantesActivo = computed(() => this.url().includes('/comprobantes/'));
   readonly facturasActivo = computed(() => this.url().includes('/comprobantes/facturas'));
   readonly notasActivo = computed(() => this.url().includes('/comprobantes/notas'));
-  readonly comprobantesOpen = signal(this.comprobantesActivo());
-  readonly facturasMenuOpen = signal(this.facturasActivo());
-  readonly notasMenuOpen = signal(this.notasActivo());
   readonly cotizacionesActivo = computed(() => this.url().includes('/cotizaciones'));
-  readonly cotizacionesOpen = signal(this.cotizacionesActivo());
+  readonly confirmacionesActivo = computed(() => this.url().includes('/contabilidad'));
+  readonly recurrenteActivo = computed(() => this.url().includes('/recurrentes'));
+  readonly egresosActivo = computed(() => this.url().includes('/egresos/'));
+  readonly comprasActivo = computed(() => this.url().includes('/egresos/compras'));
+  readonly gastosActivo = computed(() => this.url().includes('/egresos/gastos'));
+  readonly cuentasActivo = computed(() => this.url().includes('/cuentas/'));
+  readonly posActivo = computed(
+    () => this.url() === '/pos' || this.url().startsWith('/pos/')
+  );
+
+  readonly menuOpen = signal<Record<MenuKey, boolean>>({
+    receptores: this.receptoresActivo(),
+    comprobantes: this.comprobantesActivo(),
+    facturas: this.facturasActivo(),
+    notas: this.notasActivo(),
+    confirmaciones: this.confirmacionesActivo(),
+    cotizaciones: this.cotizacionesActivo(),
+    recurrente: this.recurrenteActivo(),
+    egresos: this.egresosActivo(),
+    compras: this.comprasActivo(),
+    gastos: this.gastosActivo(),
+    cuentas: this.cuentasActivo(),
+    pos: this.posActivo(),
+  });
 
   readonly inventarioLinks = [
     { path: '/inventario', label: 'Resumen', exact: true, icon: 'box' },
@@ -65,6 +98,17 @@ export class DashboardLayout implements OnInit {
     { path: '/comprobantes/notas/debito', title: 'Nota Débito', text: 'Comprobantes' },
     { path: '/cotizaciones', title: 'Listado de Cotización', text: 'Cotizaciones' },
     { path: '/cotizaciones/crear', title: 'Crear cotización', text: 'Cotizaciones' },
+    { path: '/recurrentes', title: 'Recurrentes', text: 'Comprobantes' },
+    { path: '/egresos/compras', title: 'Compras', text: 'Egresos' },
+    { path: '/egresos/gastos', title: 'Gastos', text: 'Egresos' },
+    { path: '/anticipos', title: 'Anticipos', text: 'Comprobantes' },
+    { path: '/cuentas/cobrar', title: 'Cuentas por cobrar', text: 'Cuentas' },
+    { path: '/cuentas/pagar', title: 'Cuentas por pagar', text: 'Cuentas' },
+    { path: '/pos', title: 'Punto de venta', text: 'POS' },
+    { path: '/pos/cajas', title: 'Cajas registradoras', text: 'POS' },
+    { path: '/pos/tiquetes', title: 'Listado tiquetes', text: 'POS' },
+    { path: '/opciones/sat', title: 'Estado SAT', text: 'Opciones' },
+    { path: '/opciones/calendario', title: 'Calendario', text: 'Opciones' },
     ...this.modulos,
     ...this.inventarioLinks.map((link) => ({ path: link.path, title: link.label, text: 'Inventario' })),
   ];
@@ -83,52 +127,36 @@ export class DashboardLayout implements OnInit {
     this.dashboardApi.cargarAlertas().subscribe({ error: () => undefined });
     this.router.events.pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd)).subscribe((event) => {
       this.url.set(event.urlAfterRedirects);
-      if (this.receptoresActivo()) {
-        this.receptoresOpen.set(true);
-      }
-      if (this.comprobantesActivo()) {
-        this.comprobantesOpen.set(true);
-        if (this.facturasActivo()) {
-          this.facturasMenuOpen.set(true);
-        }
-        if (this.notasActivo()) {
-          this.notasMenuOpen.set(true);
-        }
-      }
-      if (this.cotizacionesActivo()) {
-        this.cotizacionesOpen.set(true);
-      }
+      this.abrirMenusActivos();
     });
   }
 
-  toggleReceptores(event: Event): void {
-    event.preventDefault();
-    event.stopPropagation();
-    this.receptoresOpen.update((open) => !open);
+  abierto(menu: MenuKey): boolean {
+    return this.menuOpen()[menu];
   }
 
-  toggleComprobantes(event: Event): void {
+  toggleMenu(menu: MenuKey, event: Event): void {
     event.preventDefault();
     event.stopPropagation();
-    this.comprobantesOpen.update((open) => !open);
+    this.menuOpen.update((state) => ({ ...state, [menu]: !state[menu] }));
   }
 
-  toggleFacturasMenu(event: Event): void {
-    event.preventDefault();
-    event.stopPropagation();
-    this.facturasMenuOpen.update((open) => !open);
-  }
-
-  toggleNotasMenu(event: Event): void {
-    event.preventDefault();
-    event.stopPropagation();
-    this.notasMenuOpen.update((open) => !open);
-  }
-
-  toggleCotizaciones(event: Event): void {
-    event.preventDefault();
-    event.stopPropagation();
-    this.cotizacionesOpen.update((open) => !open);
+  private abrirMenusActivos(): void {
+    this.menuOpen.update((state) => ({
+      ...state,
+      receptores: state.receptores || this.receptoresActivo(),
+      comprobantes: state.comprobantes || this.comprobantesActivo(),
+      facturas: state.facturas || this.facturasActivo(),
+      notas: state.notas || this.notasActivo(),
+      confirmaciones: state.confirmaciones || this.confirmacionesActivo(),
+      cotizaciones: state.cotizaciones || this.cotizacionesActivo(),
+      recurrente: state.recurrente || this.recurrenteActivo(),
+      egresos: state.egresos || this.egresosActivo(),
+      compras: state.compras || this.comprasActivo(),
+      gastos: state.gastos || this.gastosActivo(),
+      cuentas: state.cuentas || this.cuentasActivo(),
+      pos: state.pos || this.posActivo(),
+    }));
   }
 
   @HostListener('document:click')

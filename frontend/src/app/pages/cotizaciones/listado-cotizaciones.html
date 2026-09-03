@@ -84,6 +84,11 @@
       </div>
       <div class="form-actions">
         <strong>Total: {{ doc.total | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</strong>
+        @if (!doc.generada && doc.estado === 'pendiente') {
+          <button type="button" class="btn" (click)="convertir(doc)" [disabled]="convirtiendo() === doc.id">
+            {{ convirtiendo() === doc.id ? 'Convirtiendo…' : 'Convertir a factura' }}
+          </button>
+        }
         <button type="button" class="btn btn-ghost" (click)="detalle.set(null)">Cerrar</button>
       </div>
     </aside>
@@ -135,12 +140,14 @@
                 <span class="badge" [class.badge-ok]="item.estado === 'cancelada'" [class.badge-warn]="item.estado === 'pendiente'" [class.badge-off]="item.estado === 'archivada'">
                   {{ estadoLabel(item.estado) }}
                 </span>
-                <span class="badge badge-muted">{{ item.generada ? 'Generada' : 'Sin generar' }}</span>
+    <span class="badge badge-muted">{{ item.generada ? 'Facturada' : 'Sin facturar' }}</span>
               </td>
               <td>
                 <app-row-menu
                   [canDeactivate]="item.estado !== 'archivada'"
+                  [canConvert]="item.estado === 'pendiente' && !item.generada"
                   (edit)="ver(item)"
+                  (convert)="convertir(item)"
                   (deactivate)="archivar(item)"
                 />
               </td>

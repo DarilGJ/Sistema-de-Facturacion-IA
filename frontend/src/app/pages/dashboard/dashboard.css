@@ -1,5 +1,7 @@
 .home {
-  max-width: 1280px;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
   display: grid;
   gap: 1.15rem;
 }
@@ -7,6 +9,7 @@
 .welcome {
   display: flex;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 1rem;
   align-items: flex-end;
 }
@@ -47,7 +50,7 @@
 
 .primary,
 .cta a {
-  background: #f97316;
+  background: var(--brand-yellow);
   color: #fff;
 }
 
@@ -104,7 +107,7 @@
 .bar span {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, #14b8a6, #f97316);
+  background: linear-gradient(90deg, var(--brand-blue), var(--brand-yellow));
 }
 
 .progress-line {
@@ -120,7 +123,7 @@
 }
 
 .task-grid {
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .task {
@@ -145,18 +148,18 @@
   display: grid;
   place-items: center;
   font-size: 0.75rem;
-  color: #0f766e;
+  color: var(--brand-blue);
 }
 
 .task.done .check {
-  background: #0f766e;
-  border-color: #0f766e;
+  background: var(--brand-blue);
+  border-color: var(--brand-blue);
   color: #fff;
 }
 
 .plan-name {
   font-weight: 700;
-  color: #0f766e;
+  color: var(--brand-blue);
 }
 
 .usage {
@@ -166,7 +169,7 @@
 }
 
 .kpi-grid {
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .kpi,
@@ -215,6 +218,7 @@
 
 .filters {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.35rem;
 }
 
@@ -226,13 +230,14 @@
 }
 
 .filters button.active {
-  background: #0f766e;
-  border-color: #0f766e;
+  background: var(--brand-blue);
+  border-color: var(--brand-blue);
   color: #fff;
 }
 
 .range {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.75rem;
   align-items: end;
   margin: 0.75rem 0 1rem;
@@ -251,12 +256,12 @@
 }
 
 .range button {
-  background: #0f766e;
+  background: var(--brand-blue);
   color: #fff;
 }
 
 .pos-grid {
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .pos-grid article {
@@ -270,7 +275,7 @@
 }
 
 .split {
-  grid-template-columns: minmax(260px, 0.9fr) 1.4fr;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr);
 }
 
 .finance-col {
@@ -304,7 +309,7 @@ th {
 }
 
 .charts {
-  grid-template-columns: 1.4fr 1fr;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
 }
 
 .area {

@@ -19,7 +19,7 @@
   height: 2rem;
   border-radius: 8px;
   background: #fff7ed;
-  color: #ea580c;
+  color: var(--brand-blue);
   display: grid;
   place-items: center;
 }
@@ -59,13 +59,13 @@
 .inv-tabs a:hover,
 .inv-tabs button:hover,
 .inv-tabs button.open {
-  background: #fff7ed;
-  color: #c2410c;
+  background: var(--brand-yellow-soft);
+  color: var(--brand-blue-dark);
 }
 
 .inv-tabs a.active {
-  background: #f97316;
-  color: #fff;
+  background: var(--brand-yellow);
+  color: var(--brand-blue-deep);
 }
 
 .drop {

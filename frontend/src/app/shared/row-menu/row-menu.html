@@ -5,6 +5,9 @@
   @if (open()) {
     <div class="menu" role="menu">
       <button type="button" (click)="edit.emit(); open.set(false)">Editar</button>
+      @if (canConvert()) {
+        <button type="button" (click)="convert.emit(); open.set(false)">Convertir a factura</button>
+      }
       @if (canDeactivate()) {
         <button type="button" class="danger" (click)="deactivate.emit(); open.set(false)">Desactivar</button>
       }
