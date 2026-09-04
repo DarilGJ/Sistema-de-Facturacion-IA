@@ -1,0 +1,386 @@
+<section class="fe">
+  <header class="fe-top">
+    <div class="issuer">
+      <label>
+        <span>Empresa sucursal</span>
+        <select [ngModel]="sucursal()" (ngModelChange)="sucursal.set($event)">
+          <option value="principal">{{ auth.user()?.nombre || 'Sucursal Principal' }}</option>
+        </select>
+      </label>
+      <strong>{{ auth.user()?.nombre || 'FacturaAI' }}</strong>
+      <small>Identificación: N/D</small>
+      <small>Dirección: Guatemala</small>
+      <small>{{ auth.user()?.email || 'Sin correo' }}</small>
+    </div>
+    <div class="fe-title">
+      <h1>Compra</h1>
+    </div>
+    <div class="fe-meta">
+      <label>
+        <span>No. documento</span>
+        <input
+          type="text"
+          placeholder="FED 000"
+          [ngModel]="numeroProveedor()"
+          (ngModelChange)="numeroProveedor.set($event)"
+        />
+      </label>
+      <span class="numero">No: {{ numeroPreview() }}</span>
+      <label>
+        <span>Fecha emisión</span>
+        <input type="date" [ngModel]="fechaEmision()" (ngModelChange)="setFecha($event)" />
+      </label>
+    </div>
+  </header>
+
+  @if (errorMessage()) {
+    <p class="alert-error" role="alert">{{ errorMessage() }}</p>
+  }
+  @if (compras.ultima(); as ultima) {
+    <p class="ok">Compra {{ ultima.numero }} registrada. El inventario ya refleja el ingreso.</p>
+  }
+
+  <section class="panel">
+    <button type="button" class="panel-h" (click)="toggle('receptor')">
+      <app-icon name="chevron" [class.open]="seccionReceptor()" />
+      Receptor y opciones
+    </button>
+    @if (seccionReceptor()) {
+      <div class="panel-b">
+        <div class="import-row">
+          <label class="btn-green file-btn">
+            Importar XML
+            <input type="file" accept=".xml,text/xml" (change)="importar('xml', $event)" />
+          </label>
+          <label class="btn-file file-btn">
+            Importar PDF / Foto
+            <input type="file" accept=".pdf,image/*" (change)="importar('pdf', $event)" />
+          </label>
+        </div>
+
+        <div class="receptor compra-receptor">
+          <div class="receptor-main">
+            <div class="suggest" (click)="$event.stopPropagation()">
+              <label class="search-row">
+                <app-icon name="users" />
+                <input
+                  type="search"
+                  placeholder="Buscar proveedor"
+                  [ngModel]="busquedaProveedor()"
+                  (ngModelChange)="busquedaProveedor.set($event); proveedoresOpen.set(true)"
+                  (focus)="proveedoresOpen.set(true)"
+                />
+                <app-icon class="end" name="search" />
+              </label>
+              @if (proveedoresOpen()) {
+                <div class="suggest-list">
+                  @for (item of proveedoresFiltrados(); track item.id) {
+                    <button type="button" (click)="seleccionarProveedor(item, $event)">
+                      <strong>{{ nombreProveedor(item) }}</strong>
+                      <span>{{ identificacion(item) }} · {{ item.email || 'Sin correo' }}</span>
+                    </button>
+                  } @empty {
+                    <p>No hay proveedores que coincidan.</p>
+                  }
+                </div>
+              }
+            </div>
+
+            @if (proveedor(); as prov) {
+              <div class="prov-card">
+                <strong>{{ nombreProveedor(prov) }}</strong>
+                <span>Identificación: {{ identificacion(prov) }}</span>
+                <span>Dirección: {{ prov.direccion || 'N/D' }}</span>
+                @if (!prov.email) {
+                  <span class="warn-pill">Sin correo registrado</span>
+                }
+              </div>
+            }
+
+            <label>
+              <span>Requerimientos especiales</span>
+              <select [ngModel]="requerimientos()" (ngModelChange)="requerimientos.set($event)">
+                <option value="">Seleccionar...</option>
+                <option value="exento">Exento</option>
+              </select>
+            </label>
+            <label>
+              <span>Canal de venta</span>
+              <select [ngModel]="canalVenta()" (ngModelChange)="canalVenta.set($event)">
+                <option>No</option>
+                <option>Mostrador</option>
+                <option>Online</option>
+              </select>
+            </label>
+            <div class="opciones">
+              <div class="opciones-h">
+                <strong>Opciones</strong>
+                <app-icon name="gear" />
+              </div>
+              <div class="opciones-b">
+                <label class="switch">
+                  <span>Contacto</span>
+                  <input type="checkbox" [checked]="optContacto()" (change)="optContacto.set($any($event.target).checked)" />
+                </label>
+                <label class="switch">
+                  <span>Otras opciones</span>
+                  <input type="checkbox" [checked]="optOtras()" (change)="optOtras.set($any($event.target).checked)" />
+                </label>
+                <label class="switch">
+                  <span>Taller</span>
+                  <input type="checkbox" [checked]="optTaller()" (change)="optTaller.set($any($event.target).checked)" />
+                </label>
+                <label class="switch">
+                  <span>Cuenta ajena</span>
+                  <input type="checkbox" [checked]="optCuentaAjena()" (change)="optCuentaAjena.set($any($event.target).checked)" />
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="receptor-side">
+            <label>
+              <span>Moneda</span>
+              <select [ngModel]="moneda()" (ngModelChange)="moneda.set($event)">
+                <option>Quetzal</option>
+                <option>Dólar</option>
+              </select>
+            </label>
+            <label>
+              <span>Vendedor</span>
+              <input type="text" placeholder="Vendedor" [ngModel]="vendedor()" (ngModelChange)="vendedor.set($event)" />
+            </label>
+            <label>
+              <span>Condición de venta</span>
+              <select [ngModel]="condicionVenta()" (ngModelChange)="setCondicion($event)">
+                <option value="contado">Contado</option>
+                <option value="credito">Crédito</option>
+              </select>
+            </label>
+            @if (esCredito()) {
+              <label>
+                <span>Unidad de tiempo</span>
+                <select [ngModel]="plazoUnidad()" (ngModelChange)="setPlazoUnidad($event)">
+                  <option value="dias">Días</option>
+                  <option value="meses">Meses</option>
+                  <option value="anio">Año</option>
+                </select>
+              </label>
+              <label>
+                <span>Plazo</span>
+                <input type="number" min="0" [ngModel]="plazo()" (ngModelChange)="setPlazo($event)" />
+              </label>
+              <label>
+                <span>Vencimiento</span>
+                <input type="date" [ngModel]="vencimiento()" (ngModelChange)="vencimiento.set($event)" />
+              </label>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  </section>
+
+  <section class="panel">
+    <button type="button" class="panel-h" (click)="toggle('productos')">
+      <app-icon name="chevron" [class.open]="seccionProductos()" />
+      Productos y servicios
+    </button>
+    @if (seccionProductos()) {
+      <div class="panel-b">
+        @if (!proveedorId()) {
+          <p class="prod-banner">
+            <app-icon name="search" />
+            Primero seleccione el proveedor. Al seleccionarlo se habilitará la búsqueda de productos y servicios para este documento.
+          </p>
+        } @else {
+          <div class="prod-bar">
+            <span class="prod-label">Seleccionar producto:</span>
+            <button type="button" class="btn-green" (click)="toggle('productoForm')">+ Nuevo producto</button>
+            <label class="switch compact">
+              <span>Filtrar por proveedor?</span>
+              <input
+                type="checkbox"
+                [checked]="filtrarProveedor()"
+                (change)="filtrarProveedor.set($any($event.target).checked)"
+              />
+            </label>
+            <label class="radio">
+              <input type="radio" name="catc" [checked]="catalogoTipo() === 'producto'" (change)="catalogoTipo.set('producto')" />
+              Productos
+            </label>
+            <label class="radio">
+              <input type="radio" name="catc" [checked]="catalogoTipo() === 'servicio'" (change)="catalogoTipo.set('servicio')" />
+              Servicios
+            </label>
+            <label class="bodega">
+              <span>Seleccionar bodega</span>
+              <select [ngModel]="bodegaId()" (ngModelChange)="bodegaId.set(toNumber($event))">
+                @for (almacen of inventario.almacenes(); track almacen.id) {
+                  @if (almacen.estado) {
+                    <option [ngValue]="almacen.id">{{ almacen.nombre }}</option>
+                  }
+                }
+              </select>
+            </label>
+          </div>
+
+          @if (formProductoOpen()) {
+            <div class="mini-form">
+              <input type="text" placeholder="Código" [ngModel]="nuevoSku()" (ngModelChange)="nuevoSku.set($event)" />
+              <input type="text" placeholder="Nombre" [ngModel]="nuevoNombre()" (ngModelChange)="nuevoNombre.set($event)" />
+              <input type="number" min="0" step="0.01" placeholder="Costo" [ngModel]="nuevoPrecio()" (ngModelChange)="nuevoPrecio.set(toNumber($event))" />
+              <button type="button" class="btn-accent" (click)="crearProductoRapido()">Agregar</button>
+            </div>
+          }
+
+          <div class="suggest" (click)="$event.stopPropagation()">
+            <label class="search-row search-end">
+              <input
+                type="search"
+                placeholder="Buscar producto"
+                [ngModel]="busquedaProducto()"
+                (ngModelChange)="busquedaProducto.set($event); productosOpen.set(true)"
+                (focus)="productosOpen.set(true)"
+              />
+              <app-icon class="end" name="search" />
+            </label>
+            @if (productosOpen()) {
+              <div class="suggest-list">
+                @if (loading()) {
+                  <p>Cargando catálogo...</p>
+                } @else {
+                  @for (item of productosFiltrados(); track item.id) {
+                    <button type="button" (click)="agregarProducto(item, $event)">
+                      <strong>{{ item.nombre }}</strong>
+                      <span>{{ item.sku }} · {{ item.costo_compra | number: '1.2-2' }} GTQ</span>
+                    </button>
+                  } @empty {
+                    <p>No hay artículos en este catálogo.</p>
+                  }
+                }
+              </div>
+            }
+          </div>
+
+          <div class="table-wrap">
+            <table class="compra-table">
+              <thead>
+                <tr>
+                  <th>Detalle</th>
+                  <th>Cant.</th>
+                  <th class="num">Precio</th>
+                  <th class="num">Subtotal</th>
+                  <th class="num">Desc.</th>
+                  <th class="num">Total</th>
+                  <th class="num">Impuestos</th>
+                  <th class="num">Total línea</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (linea of lineas(); track linea.uid) {
+                  @if (linea.id_producto) {
+                    <tr>
+                      <td>
+                        <strong>{{ linea.nombre }}</strong>
+                        <span class="um">{{ linea.sku }} · {{ linea.unidad }}</span>
+                      </td>
+                      <td>
+                        <input class="cell qty" type="number" min="1" [ngModel]="linea.cantidad" (ngModelChange)="setCantidad(linea.uid, $event)" />
+                      </td>
+                      <td>
+                        <input class="cell qty price" type="number" min="0" step="0.01" [ngModel]="linea.precio" (ngModelChange)="setPrecio(linea.uid, $event)" />
+                      </td>
+                      <td class="num">{{ lineaSubtotal(linea) | number: '1.2-2' }}</td>
+                      <td>
+                        <input class="cell qty price" type="number" min="0" step="0.01" [ngModel]="linea.descuento" (ngModelChange)="setDescuento(linea.uid, $event)" />
+                      </td>
+                      <td class="num">{{ lineaNeto(linea) | number: '1.2-2' }}</td>
+                      <td class="num">{{ lineaIva(linea) | number: '1.2-2' }}</td>
+                      <td class="num">{{ lineaTotal(linea) | number: '1.2-2' }}</td>
+                      <td>
+                        <button type="button" class="icon-x" (click)="quitar(linea.uid)" aria-label="Quitar">
+                          <app-icon name="close" />
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+          <div class="ingreso-row">
+            <button type="button" class="btn-accent" (click)="guardar()" [disabled]="saving()">Orden de ingreso</button>
+          </div>
+        }
+      </div>
+    }
+  </section>
+
+  <section class="panel">
+    <button type="button" class="panel-h" (click)="toggle('pago')">
+      <app-icon name="chevron" [class.open]="seccionPago()" />
+      Pago y totales
+    </button>
+    @if (seccionPago()) {
+      <div class="panel-b pago">
+        <div class="pago-left">
+          <label>
+            <span>Forma de pago</span>
+            <select [ngModel]="formaPago()" (ngModelChange)="formaPago.set($event)">
+              <option value="efectivo">Efectivo</option>
+              <option value="tarjeta">Tarjeta</option>
+              <option value="transferencia">Transferencia</option>
+            </select>
+          </label>
+          @if (esCredito()) {
+            <p class="abono-alert">Ingrese el abono inicial</p>
+            <button type="button" class="btn-cuotas" disabled>Generador de cuotas (0)</button>
+          }
+          <p class="metodos">
+            <span>Total de métodos</span>
+            <strong>{{ (esCredito() ? 0 : total()) | number: '1.2-2' }}</strong>
+          </p>
+        </div>
+        <dl class="totales">
+          <div><dt>Sub total</dt><dd>{{ subtotal() | number: '1.2-2' }}</dd></div>
+          <div>
+            <dt>Descuento (-)</dt>
+            <dd>
+              <input class="cell qty price" type="number" min="0" step="0.01" [ngModel]="descuentoDoc()" (ngModelChange)="descuentoDoc.set(toNumber($event))" />
+            </dd>
+          </div>
+          <div><dt>Monto bruto</dt><dd>{{ montoBruto() | number: '1.2-2' }}</dd></div>
+          <div><dt>Monto gravable</dt><dd>{{ montoBruto() | number: '1.2-2' }}</dd></div>
+          <div><dt>IVA 12%</dt><dd>{{ iva() | number: '1.2-2' }}</dd></div>
+          <div class="grand"><dt>Total venta:</dt><dd>{{ total() | number: '1.2-2' }}</dd></div>
+        </dl>
+      </div>
+    }
+  </section>
+
+  <section class="panel">
+    <button type="button" class="panel-h" (click)="toggle('notas')">
+      <app-icon name="chevron" [class.open]="seccionNotas()" />
+      Notas
+    </button>
+    @if (seccionNotas()) {
+      <div class="panel-b">
+        <label>
+          <span>Detalle (opcional):</span>
+          <textarea rows="3" placeholder="Detalles adicionales..." [ngModel]="notas()" (ngModelChange)="notas.set($event)"></textarea>
+        </label>
+      </div>
+    }
+  </section>
+
+  <footer class="compra-actions">
+    <button type="button" class="btn-preview" (click)="previsualizar()">
+      <app-icon name="eye" /> Previsualizar
+    </button>
+    <button type="button" class="btn-save" (click)="guardar()" [disabled]="saving()">
+      <app-icon name="check" /> {{ saving() ? 'Guardando…' : 'Guardar' }}
+    </button>
+  </footer>
+</section>

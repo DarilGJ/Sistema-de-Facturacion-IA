@@ -1,0 +1,163 @@
+<section class="module-page">
+  <header class="page-header cotizacion-header">
+    <div>
+      <h1>Listado de Compras</h1>
+      <p>Consulta, filtra y gestiona tus documentos.</p>
+    </div>
+    <button type="button" class="gui-btn" title="Configuración">
+      <app-icon name="gear" /> GUI
+    </button>
+  </header>
+
+  <p class="info-banner">
+    <app-icon name="info" />
+    <span>
+      <strong>Compra generada</strong> afecta inventario y se muestra con la etiqueta Inventario.
+      <strong>Sin generar</strong> es solo revisión y no mueve existencias.
+    </span>
+  </p>
+
+  <div class="top-filters">
+    <label>
+      <span>Seleccionar método</span>
+      <select [value]="filtroMetodo()" (change)="setFiltro('metodo', $any($event.target).value)">
+        <option value="">Seleccionar método</option>
+        <option value="contado">Contado</option>
+        <option value="credito">Crédito</option>
+      </select>
+    </label>
+    <label>
+      <span>Seleccionar Estado</span>
+      <select [value]="filtroEstado()" (change)="setFiltro('estado', $any($event.target).value)">
+        <option value="">Seleccionar Estado</option>
+        <option value="pendiente">Pendiente</option>
+        <option value="cancelada">Cancelada</option>
+        <option value="anulada">Anulada</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="crud-toolbar">
+    <label class="search-field">
+      <app-icon name="search" />
+      <input
+        type="search"
+        placeholder="Buscar por Número"
+        [value]="busqueda()"
+        (input)="setBusqueda($any($event.target).value)"
+      />
+    </label>
+    <button type="button" class="icon-action" (click)="cargar()" title="Actualizar">
+      <app-icon name="refresh" />
+    </button>
+    <label class="page-size">
+      <select [value]="pageSize()" (change)="setPageSize($any($event.target).value)">
+        <option [value]="10">10</option>
+        <option [value]="25">25</option>
+        <option [value]="50">50</option>
+      </select>
+    </label>
+    <label class="switch">
+      <input type="checkbox" [checked]="archivado()" (change)="toggleArchivado()" />
+      Archivado
+    </label>
+  </div>
+
+  @if (errorMessage()) {
+    <p class="alert-error" role="alert">{{ errorMessage() }}</p>
+  }
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Número</th>
+          <th>Fecha</th>
+          <th>Receptor</th>
+          <th>Método</th>
+          <th class="num">Total</th>
+          <th class="num">Saldo</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading()) {
+          <tr>
+            <td colspan="8" class="muted">Cargando compras...</td>
+          </tr>
+        } @else {
+          @for (item of visibles(); track item.id) {
+            <tr>
+              <td>
+                <div class="num-cell">
+                  <span class="link-num">#{{ item.id }}</span>
+                  <span class="inv-tag">Inventario</span>
+                </div>
+              </td>
+              <td>{{ item.fecha | date: 'dd-MM-yyyy' }}</td>
+              <td>
+                <div class="item-name">
+                  <span class="avatar">{{ iniciales(receptor(item)) }}</span>
+                  <div class="item-copy">
+                    <strong>{{ receptor(item) }}</strong>
+                    @if (item.proveedor?.email) {
+                      <span>{{ item.proveedor?.email }}</span>
+                    } @else {
+                      <span>sin@correo.gt</span>
+                    }
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span
+                  class="badge badge-ico"
+                  [class.badge-muted]="item.condicion_venta !== 'credito'"
+                  [class.badge-warn]="item.condicion_venta === 'credito'"
+                >
+                  <app-icon name="clock" />
+                  {{ metodoLabel(item) }}
+                </span>
+              </td>
+              <td class="num">GTQ {{ item.total | number: '1.2-2' }}</td>
+              <td class="num">{{ saldo(item) | number: '1.2-2' }}</td>
+              <td>
+                <span
+                  class="badge"
+                  [class.badge-ok]="estadoFiltro(item) === 'cancelada'"
+                  [class.badge-warn]="estadoFiltro(item) === 'pendiente'"
+                  [class.badge-off]="estadoFiltro(item) === 'anulada'"
+                >
+                  {{ estadoLabel(item) }}
+                </span>
+              </td>
+              <td>
+                <app-row-menu [items]="accionesFila(item)" (select)="onAccion(item, $event)" />
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" class="muted">No hay compras que coincidan con los filtros.</td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+    <footer class="table-footer">
+      <span>Viendo {{ rango().from }} a {{ rango().to }} de {{ filtrados().length }} entradas</span>
+      <div class="pager">
+        <button type="button" [disabled]="paginaActual() === 1" (click)="pagina.set(paginaActual() - 1)">Atrás</button>
+        @for (n of paginas(); track $index) {
+          @if (n === 'gap') {
+            <span class="pager-gap">…</span>
+          } @else {
+            <button type="button" [class.active]="n === paginaActual()" (click)="pagina.set(n)">{{ n }}</button>
+          }
+        }
+        <button type="button" [disabled]="paginaActual() === ultimaPagina()" (click)="pagina.set(paginaActual() + 1)">
+          Siguiente
+        </button>
+      </div>
+    </footer>
+  </div>
+</section>

@@ -11,7 +11,7 @@
     <label>
       <span>Seleccionar método</span>
       <select [value]="filtroMetodo()" (change)="setFiltro('metodo', $any($event.target).value)">
-        <option value="">Todos los métodos</option>
+        <option value="">Seleccionar método</option>
         <option value="contado">Contado</option>
         <option value="credito">Crédito</option>
       </select>
@@ -19,9 +19,10 @@
     <label>
       <span>Seleccionar Estado</span>
       <select [value]="filtroEstado()" (change)="setFiltro('estado', $any($event.target).value)">
-        <option value="">Todos los estados</option>
-        <option value="pendiente">Pendiente</option>
+        <option value="">Seleccionar Estado</option>
         <option value="cancelada">Cancelada</option>
+        <option value="pendiente">Pendiente</option>
+        <option value="anulada">Anulada</option>
       </select>
     </label>
   </div>
@@ -56,44 +57,6 @@
     <p class="alert-error" role="alert">{{ errorMessage() }}</p>
   }
 
-  @if (detalle(); as doc) {
-    <aside class="form-panel">
-      <h2>Cotización {{ doc.numero }}</h2>
-      <p class="muted">{{ doc.cliente?.nombre || 'Consumidor final' }} · {{ metodoLabel(doc.metodo_pago) }}</p>
-      <div class="table-wrap" style="border: 0">
-        <table>
-          <thead>
-            <tr>
-              <th>Descripción</th>
-              <th class="num">Cant.</th>
-              <th class="num">Precio</th>
-              <th class="num">Subtotal</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (linea of doc.items || []; track linea.id) {
-              <tr>
-                <td>{{ linea.descripcion }}</td>
-                <td class="num">{{ linea.cantidad }}</td>
-                <td class="num">{{ linea.precio_unitario | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
-                <td class="num">{{ linea.subtotal | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-      <div class="form-actions">
-        <strong>Total: {{ doc.total | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</strong>
-        @if (!doc.generada && doc.estado === 'pendiente') {
-          <button type="button" class="btn" (click)="convertir(doc)" [disabled]="convirtiendo() === doc.id">
-            {{ convirtiendo() === doc.id ? 'Convirtiendo…' : 'Convertir a factura' }}
-          </button>
-        }
-        <button type="button" class="btn btn-ghost" (click)="detalle.set(null)">Cerrar</button>
-      </div>
-    </aside>
-  }
-
   <div class="table-wrap">
     <table>
       <thead>
@@ -117,7 +80,7 @@
           @for (item of visibles(); track item.id) {
             <tr>
               <td>
-                <button type="button" class="link-num" (click)="ver(item)">#{{ item.id }}</button>
+                <button type="button" class="link-num" (click)="item.estado === 'pendiente' && !item.generada ? abrirGenerar(item) : null">#{{ item.id }}</button>
               </td>
               <td>{{ item.fecha | date: 'dd-MM-yyyy' }}</td>
               <td>
@@ -125,31 +88,38 @@
                   <span class="avatar">{{ iniciales(item.cliente?.nombre || 'CF') }}</span>
                   <div class="item-copy">
                     <strong>{{ item.cliente?.nombre || 'CF CONSUMIDOR FINAL' }}</strong>
-                    <span>{{ item.cliente?.email || 'Sin correo' }}</span>
+                    @if (item.cliente?.email) {
+                      <span>{{ item.cliente?.email }}</span>
+                    }
                   </div>
                 </div>
               </td>
               <td>
-                <span class="badge" [class.badge-muted]="item.metodo_pago === 'contado'" [class.badge-warn]="item.metodo_pago === 'credito'">
+                <span
+                  class="badge"
+                  [class.badge-muted]="item.metodo_pago === 'contado'"
+                  [class.badge-warn]="item.metodo_pago === 'credito'"
+                >
                   {{ metodoLabel(item.metodo_pago) }}
                 </span>
               </td>
-              <td class="num">{{ item.total | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
-              <td class="num">{{ saldo(item) | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
+              <td class="num">GTQ {{ item.total | number: '1.2-2' }}</td>
+              <td class="num">{{ saldo(item) | number: '1.2-2' }}</td>
               <td>
-                <span class="badge" [class.badge-ok]="item.estado === 'cancelada'" [class.badge-warn]="item.estado === 'pendiente'" [class.badge-off]="item.estado === 'archivada'">
-                  {{ estadoLabel(item.estado) }}
-                </span>
-    <span class="badge badge-muted">{{ item.generada ? 'Facturada' : 'Sin facturar' }}</span>
+                <div class="estado-stack">
+                  <span
+                    class="badge"
+                    [class.badge-ok]="item.estado === 'cancelada'"
+                    [class.badge-warn]="item.estado === 'pendiente'"
+                    [class.badge-off]="item.estado === 'anulada' || item.estado === 'archivada'"
+                  >
+                    {{ estadoLabel(item.estado) }}
+                  </span>
+                  <span class="badge badge-muted">{{ item.generada ? 'Generada' : 'Sin generar' }}</span>
+                </div>
               </td>
               <td>
-                <app-row-menu
-                  [canDeactivate]="item.estado !== 'archivada'"
-                  [canConvert]="item.estado === 'pendiente' && !item.generada"
-                  (edit)="ver(item)"
-                  (convert)="convertir(item)"
-                  (deactivate)="archivar(item)"
-                />
+                <app-row-menu [items]="acciones(item)" (select)="onAccion(item, $event)" />
               </td>
             </tr>
           } @empty {
@@ -164,13 +134,124 @@
       <span>Viendo {{ rango().from }} a {{ rango().to }} de {{ filtrados().length }} entradas</span>
       <div class="pager">
         <button type="button" [disabled]="paginaActual() === 1" (click)="pagina.set(paginaActual() - 1)">Atrás</button>
-        @for (n of paginas(); track n) {
-          <button type="button" [class.active]="n === paginaActual()" (click)="pagina.set(n)">{{ n }}</button>
+        @for (n of paginas(); track $index) {
+          @if (n === 'gap') {
+            <span class="pager-gap">…</span>
+          } @else {
+            <button type="button" [class.active]="n === paginaActual()" (click)="pagina.set(n)">{{ n }}</button>
+          }
         }
-        <button type="button" [disabled]="paginaActual() === paginas().length" (click)="pagina.set(paginaActual() + 1)">
+        <button type="button" [disabled]="paginaActual() === ultimaPagina()" (click)="pagina.set(paginaActual() + 1)">
           Siguiente
         </button>
       </div>
     </footer>
   </div>
 </section>
+
+@if (modal(); as doc) {
+  <div class="modal-overlay" (click)="cerrarModal()">
+    <div class="gen-modal" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="gen-title">
+      <header class="gen-header">
+        <div>
+          <h2 id="gen-title">Generar Cotización #{{ doc.id }}</h2>
+          <p>Revise líneas, pago y total antes de crear el comprobante definitivo</p>
+        </div>
+        <button type="button" class="modal-close" (click)="cerrarModal()" aria-label="Cerrar">
+          <app-icon name="close" />
+        </button>
+      </header>
+
+      <div class="gen-body">
+        <div class="gen-top">
+          <section class="gen-card">
+            <h3>Receptor</h3>
+            <div class="gen-receptor">
+              <div>
+                <strong>{{ doc.cliente?.nombre || 'CF CONSUMIDOR FINAL' }}</strong>
+                <span>{{ doc.cliente?.nit || 'CF' }}</span>
+              </div>
+              <span class="gtq-pill">GTQ</span>
+            </div>
+          </section>
+
+          <div class="gen-side">
+            <section class="gen-card gen-totals">
+              <div>
+                <span>Total documento</span>
+                <strong>{{ doc.total | number: '1.2-2' }} GTQ</strong>
+              </div>
+              <div>
+                <span>Saldo restante</span>
+                <strong>{{ saldo(doc) | number: '1.2-2' }} GTQ</strong>
+              </div>
+              <div>
+                <span>Total líneas</span>
+                <strong>{{ totalLineas(doc) | number: '1.2-2' }} GTQ</strong>
+              </div>
+            </section>
+            <section class="gen-card">
+              <h3>Fecha emisión</h3>
+              <label class="date-field">
+                <app-icon name="calendar" />
+                <input
+                  type="date"
+                  [value]="fechaEmision()"
+                  (input)="fechaEmision.set($any($event.target).value)"
+                  aria-label="Fecha Emisión"
+                />
+              </label>
+            </section>
+          </div>
+        </div>
+
+        <section class="gen-card">
+          <h3>Líneas del documento</h3>
+          <table class="gen-lines">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th class="num">Cantidad</th>
+                <th class="num">Monto</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (linea of doc.items || []; track linea.id) {
+                <tr>
+                  <td>
+                    <strong>{{ linea.descripcion }}</strong>
+                    <span>{{ linea.producto?.sku || linea.id_producto }}</span>
+                  </td>
+                  <td class="num">{{ linea.cantidad | number: '1.0-0' }}</td>
+                  <td class="num">{{ linea.subtotal | number: '1.2-2' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </section>
+
+        <section class="gen-card gen-pay">
+          <h3>Formas de pago</h3>
+          <div class="pay-row">
+            <span>{{ formaPagoLabel(doc) }}</span>
+            <strong>{{ doc.total | number: '1.2-2' }} GTQ</strong>
+          </div>
+        </section>
+      </div>
+
+      <footer class="gen-footer">
+        <button type="button" class="btn-edit" (click)="editarDesdeModal(doc)" [disabled]="generando()">
+          <app-icon name="pencil" /> Editar
+        </button>
+        <button type="button" class="btn-gen" (click)="generar('factura')" [disabled]="generando()">
+          <span class="gen-ico"><app-icon name="arrow-up" /></span>
+          {{ generando() ? 'Generando…' : 'Generar Factura' }}
+        </button>
+        <button type="button" class="btn-gen" (click)="generar('recibo')" [disabled]="generando()">
+          <span class="gen-ico"><app-icon name="arrow-up" /></span>
+          {{ generando() ? 'Generando…' : 'Generar Tiquete' }}
+        </button>
+      </footer>
+    </div>
+  </div>
+}

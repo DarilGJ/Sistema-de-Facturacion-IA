@@ -168,7 +168,7 @@ CREATE TABLE IF NOT EXISTS cotizaciones (
   subtotal DECIMAL(12, 2) NOT NULL,
   itbis DECIMAL(12, 2) NOT NULL,
   total DECIMAL(12, 2) NOT NULL,
-  estado ENUM('pendiente', 'cancelada', 'archivada') NOT NULL DEFAULT 'pendiente',
+  estado ENUM('pendiente', 'cancelada', 'archivada', 'anulada') NOT NULL DEFAULT 'pendiente',
   generada TINYINT(1) NOT NULL DEFAULT 0,
   CONSTRAINT fk_cotizaciones_cliente
     FOREIGN KEY (id_cliente) REFERENCES clientes(id)
@@ -418,4 +418,54 @@ CREATE TABLE IF NOT EXISTS inventario_movimientos (
   KEY idx_movimientos_proceso (proceso),
   KEY idx_movimientos_origen (documento_origen),
   KEY idx_movimientos_documento (documento)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS compras (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  numero VARCHAR(20) NOT NULL UNIQUE,
+  numero_proveedor VARCHAR(40) NULL,
+  id_proveedor INT UNSIGNED NOT NULL,
+  id_bodega INT UNSIGNED NULL,
+  fecha DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  metodo_pago ENUM('efectivo', 'tarjeta', 'transferencia') NOT NULL DEFAULT 'efectivo',
+  condicion_venta ENUM('contado', 'credito') NOT NULL DEFAULT 'contado',
+  moneda VARCHAR(40) NOT NULL DEFAULT 'Quetzal',
+  vendedor VARCHAR(120) NULL,
+  canal VARCHAR(80) NULL,
+  requerimientos VARCHAR(80) NULL,
+  plazo INT UNSIGNED NOT NULL DEFAULT 0,
+  plazo_unidad ENUM('dias', 'meses', 'anio') NOT NULL DEFAULT 'dias',
+  vencimiento DATE NULL,
+  notas TEXT NULL,
+  descuento DECIMAL(12, 2) NOT NULL DEFAULT 0,
+  subtotal DECIMAL(12, 2) NOT NULL,
+  iva DECIMAL(12, 2) NOT NULL,
+  total DECIMAL(12, 2) NOT NULL,
+  archivado TINYINT(1) NOT NULL DEFAULT 0,
+  estado ENUM('pendiente', 'cancelada', 'anulada') NOT NULL DEFAULT 'cancelada',
+  CONSTRAINT fk_compras_proveedor
+    FOREIGN KEY (id_proveedor) REFERENCES proveedores(id)
+    ON UPDATE CASCADE
+    ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS compra_items (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  id_compra INT UNSIGNED NOT NULL,
+  id_producto INT UNSIGNED NOT NULL,
+  descripcion VARCHAR(160) NOT NULL,
+  cantidad INT UNSIGNED NOT NULL,
+  precio_unitario DECIMAL(10, 2) NOT NULL,
+  descuento DECIMAL(12, 2) NOT NULL DEFAULT 0,
+  subtotal DECIMAL(12, 2) NOT NULL,
+  iva DECIMAL(12, 2) NOT NULL DEFAULT 0,
+  total DECIMAL(12, 2) NOT NULL,
+  CONSTRAINT fk_compra_items_compra
+    FOREIGN KEY (id_compra) REFERENCES compras(id)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE,
+  CONSTRAINT fk_compra_items_producto
+    FOREIGN KEY (id_producto) REFERENCES productos(id)
+    ON UPDATE CASCADE
+    ON DELETE RESTRICT
 ) ENGINE=InnoDB;

@@ -27,6 +27,7 @@ export async function emitirFactura({
   descuento: descuentoIn,
   notas,
   items,
+  fecha,
   user,
   transaction: t,
 }) {
@@ -115,10 +116,12 @@ export async function emitirFactura({
     lock: t.LOCK.UPDATE,
   });
 
+  const fechaEmision = fecha ? new Date(fecha) : null;
   const factura = await Factura.create(
     {
       numero: nextNumero(ultima?.id),
       id_cliente,
+      ...(fechaEmision && !Number.isNaN(fechaEmision.getTime()) ? { fecha: fechaEmision } : {}),
       metodo_pago: pago,
       condicion_venta: condicion,
       tipo_factura: tipo,

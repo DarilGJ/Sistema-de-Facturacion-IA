@@ -71,7 +71,18 @@ function wrap(text: string, maxChars: number): string[] {
   return lines.length ? lines : [''];
 }
 
-export function buildFacturaPdfBytes(factura: Factura, emisor: Partial<EmisorDte> = {}): Uint8Array {
+export interface PdfDocumentoOpciones {
+  titulo?: string;
+  encabezado?: string;
+  pie?: string;
+  filename?: string;
+}
+
+export function buildFacturaPdfBytes(
+  factura: Factura,
+  emisor: Partial<EmisorDte> = {},
+  opciones: PdfDocumentoOpciones = {}
+): Uint8Array {
   const e = {
     nombre: emisor.nombre || 'FacturaAI',
     razonSocial: emisor.razonSocial || 'FacturaAI',
@@ -113,8 +124,12 @@ export function buildFacturaPdfBytes(factura: Factura, emisor: Partial<EmisorDte
   rect(36, 708, 54, 54, '0.98 0.8 0.082');
   text(40, 728, 7, wrap(e.nombre, 12)[0], 'F2');
 
-  text(360, 748, 9, 'DOCUMENTO TRIBUTARIO ELECTRONICO', 'F2');
-  text(360, 732, 13, `${tipoFacturaLabel(factura.tipo_factura)} # ${numero}`, 'F2');
+  const titulo = opciones.titulo || tipoFacturaLabel(factura.tipo_factura);
+  const encabezado = opciones.encabezado ?? 'DOCUMENTO TRIBUTARIO ELECTRONICO';
+  const pie = opciones.pie ?? 'Representacion impresa de la Factura Electronica';
+
+  text(360, 748, 9, encabezado, 'F2');
+  text(360, 732, 13, `${titulo} # ${numero}`, 'F2');
   text(360, 712, 9, `Serie  ${serie}`);
   text(360, 700, 9, `No  ${noSat}`);
   text(360, 688, 9, `Fecha de Emision  ${fecha}`);
@@ -210,7 +225,7 @@ export function buildFacturaPdfBytes(factura: Factura, emisor: Partial<EmisorDte
   text(36, 56, 8, `Numero de Autorizacion: ${aut}`, 'F2');
   text(36, 44, 8, `Serie SAT: ${serie}    Fecha de Certificacion: ${fecha}`);
   text(36, 32, 8, 'Datos Certificador: FacturaAI');
-  text(36, 18, 7, 'Representacion impresa de la Factura Electronica');
+  text(36, 18, 7, pie);
   textRight(576, 18, 7, 'Pagina 1 de 1');
 
   if (anulada) {
@@ -311,22 +326,30 @@ function pdfBlob(bytes: Uint8Array): Blob {
   return new Blob([copy], { type: 'application/pdf' });
 }
 
-export function facturaPdfFilename(factura: Factura): string {
-  return `Factura-${padDoc(factura.id)}.pdf`;
+export function facturaPdfFilename(factura: Factura, opciones: PdfDocumentoOpciones = {}): string {
+  return opciones.filename || `Factura-${padDoc(factura.id)}.pdf`;
 }
 
-export function descargarFacturaPdf(factura: Factura, emisor: Partial<EmisorDte> = {}): void {
-  const blob = pdfBlob(buildFacturaPdfBytes(factura, emisor));
+export function descargarFacturaPdf(
+  factura: Factura,
+  emisor: Partial<EmisorDte> = {},
+  opciones: PdfDocumentoOpciones = {}
+): void {
+  const blob = pdfBlob(buildFacturaPdfBytes(factura, emisor, opciones));
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = facturaPdfFilename(factura);
+  a.download = facturaPdfFilename(factura, opciones);
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1500);
 }
 
-export function abrirFacturaPdf(factura: Factura, emisor: Partial<EmisorDte> = {}): void {
-  const blob = pdfBlob(buildFacturaPdfBytes(factura, emisor));
+export function abrirFacturaPdf(
+  factura: Factura,
+  emisor: Partial<EmisorDte> = {},
+  opciones: PdfDocumentoOpciones = {}
+): void {
+  const blob = pdfBlob(buildFacturaPdfBytes(factura, emisor, opciones));
   const url = URL.createObjectURL(blob);
   window.open(url, '_blank', 'noopener,noreferrer');
 }
