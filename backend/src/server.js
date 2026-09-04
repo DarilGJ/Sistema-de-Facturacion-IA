@@ -7,6 +7,8 @@ import { ensureClienteSchema } from './utils/ensure-cliente-schema.js';
 import { ensureProveedorSchema } from './utils/ensure-proveedor-schema.js';
 import { ensureProductoSchema } from './utils/ensure-producto-schema.js';
 import { ensureFacturaSchema } from './utils/ensure-factura-schema.js';
+import { ensureCotizacionSchema } from './utils/ensure-cotizacion-schema.js';
+import { ensureCompraSchema } from './utils/ensure-compra-schema.js';
 import { getOrCreateInventarioConfig } from './utils/inventario-config.js';
 import authRoutes from './routes/auth.routes.js';
 import aiRoutes from './routes/ai.routes.js';
@@ -15,6 +17,7 @@ import clienteRoutes from './routes/cliente.routes.js';
 import productoRoutes from './routes/producto.routes.js';
 import facturaRoutes from './routes/factura.routes.js';
 import cotizacionRoutes from './routes/cotizacion.routes.js';
+import compraRoutes from './routes/compra.routes.js';
 import dashboardRoutes from './routes/dashboard.routes.js';
 import inventarioRoutes from './routes/inventario.routes.js';
 
@@ -39,6 +42,7 @@ app.use('/api/clientes', clienteRoutes);
 app.use('/api/productos', productoRoutes);
 app.use('/api/facturas', facturaRoutes);
 app.use('/api/cotizaciones', cotizacionRoutes);
+app.use('/api/compras', compraRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/inventario', inventarioRoutes);
 
@@ -55,6 +59,8 @@ async function start() {
     await ensureProveedorSchema();
     await ensureProductoSchema();
     await ensureFacturaSchema();
+    await ensureCotizacionSchema();
+    await ensureCompraSchema();
     await getOrCreateInventarioConfig();
     console.log('MySQL (Sequelize) conectado y modelos sincronizados');
   } catch (error) {

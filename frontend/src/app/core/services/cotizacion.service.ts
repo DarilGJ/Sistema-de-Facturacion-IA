@@ -29,6 +29,27 @@ export class CotizacionService {
     );
   }
 
+  obtener(id: number): Observable<Cotizacion> {
+    return this.http.get<Cotizacion>(`${this.api}/cotizaciones/${id}`).pipe(
+      tap((row) => {
+        this.ultima.set(row);
+        this.cotizaciones.update((rows) => {
+          const exists = rows.some((item) => item.id === id);
+          return exists ? rows.map((item) => (item.id === id ? row : item)) : [row, ...rows];
+        });
+      })
+    );
+  }
+
+  actualizarDocumento(id: number, payload: CotizacionPayload): Observable<Cotizacion> {
+    return this.http.put<Cotizacion>(`${this.api}/cotizaciones/${id}`, payload).pipe(
+      tap((row) => {
+        this.ultima.set(row);
+        this.cotizaciones.update((rows) => rows.map((item) => (item.id === id ? row : item)));
+      })
+    );
+  }
+
   actualizar(id: number, payload: Partial<Pick<Cotizacion, 'estado' | 'generada'>>): Observable<Cotizacion> {
     return this.http.patch<Cotizacion>(`${this.api}/cotizaciones/${id}`, payload).pipe(
       tap((row) => {
@@ -37,13 +58,18 @@ export class CotizacionService {
     );
   }
 
-  convertirAFactura(id: number): Observable<{ factura: Factura; cotizacion: Cotizacion }> {
-    return this.http.post<{ factura: Factura; cotizacion: Cotizacion }>(`${this.api}/cotizaciones/${id}/facturar`, {}).pipe(
-      tap((res) => {
-        this.cotizaciones.update((rows) =>
-          rows.map((item) => (item.id === res.cotizacion.id ? res.cotizacion : item))
-        );
-      })
-    );
+  convertirAFactura(
+    id: number,
+    body: { tipo_factura?: 'factura' | 'recibo'; fecha?: string } = {}
+  ): Observable<{ factura: Factura; cotizacion: Cotizacion }> {
+    return this.http
+      .post<{ factura: Factura; cotizacion: Cotizacion }>(`${this.api}/cotizaciones/${id}/facturar`, body)
+      .pipe(
+        tap((res) => {
+          this.cotizaciones.update((rows) =>
+            rows.map((item) => (item.id === res.cotizacion.id ? res.cotizacion : item))
+          );
+        })
+      );
   }
 }

@@ -239,13 +239,11 @@ export const routes: Routes = [
       },
       {
         path: 'egresos/compras/crear',
-        loadComponent: () => import('./pages/modulo/modulo-placeholder').then((m) => m.ModuloPlaceholder),
-        data: { titulo: 'Crear compra', subtitulo: 'Registra una compra a proveedor.' },
+        loadComponent: () => import('./pages/egresos/crear-compra').then((m) => m.CrearCompra),
       },
       {
         path: 'egresos/compras',
-        loadComponent: () => import('./pages/modulo/modulo-placeholder').then((m) => m.ModuloPlaceholder),
-        data: { titulo: 'Listado de compras', subtitulo: 'Consulta y gestiona tus compras.' },
+        loadComponent: () => import('./pages/egresos/listado-compras').then((m) => m.ListadoCompras),
       },
       {
         path: 'egresos/gastos/tipos',

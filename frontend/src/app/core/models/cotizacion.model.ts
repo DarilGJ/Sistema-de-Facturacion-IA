@@ -17,7 +17,7 @@ export interface Cotizacion {
   subtotal: number | string;
   itbis: number | string;
   total: number | string;
-  estado: 'pendiente' | 'cancelada' | 'archivada';
+  estado: 'pendiente' | 'cancelada' | 'archivada' | 'anulada';
   generada: boolean;
   cliente?: {
     id: number;
@@ -26,7 +26,11 @@ export interface Cotizacion {
     email: string | null;
     telefono: string | null;
   };
-  items?: CotizacionItem[];
+  items?: Array<
+    CotizacionItem & {
+      producto?: { id: number; sku: string; nombre?: string };
+    }
+  >;
 }
 
 export interface CotizacionPayload {

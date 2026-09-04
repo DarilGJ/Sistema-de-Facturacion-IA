@@ -1,0 +1,170 @@
+.import-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.file-btn {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.file-btn input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.btn-file {
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #334155;
+  border-radius: 6px;
+  padding: 0.42rem 0.8rem;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.compra-receptor {
+  grid-template-columns: minmax(0, 1.4fr) minmax(220px, 0.7fr);
+}
+
+.prov-card {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.55rem 0.15rem 0.2rem;
+  color: #475569;
+  font-size: 0.86rem;
+}
+
+.prov-card strong {
+  color: #0f172a;
+  font-size: 0.95rem;
+}
+
+.warn-pill {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 0.25rem;
+  background: #ffedd5;
+  color: #c2410c;
+  border-radius: 999px;
+  padding: 0.15rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.prod-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0.85rem 1rem;
+  background: #f1f5f9;
+  border-radius: 8px;
+  color: #475569;
+  font-size: 0.9rem;
+}
+
+.prod-banner app-icon {
+  flex-shrink: 0;
+  color: #94a3b8;
+}
+
+.switch.compact {
+  gap: 0.4rem;
+  font-size: 0.8rem;
+}
+
+.compra-table {
+  table-layout: auto;
+}
+
+.compra-table .um {
+  display: block;
+  color: #94a3b8;
+  font-size: 0.75rem;
+}
+
+.icon-x {
+  width: 1.8rem;
+  height: 1.8rem;
+  border: 0;
+  background: #fee2e2;
+  color: #b91c1c;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.ingreso-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.abono-alert {
+  margin: 0;
+  padding: 0.55rem 0.7rem;
+  background: #ffedd5;
+  color: #c2410c;
+  border-radius: 8px;
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.btn-cuotas {
+  border: 1px solid #fdba74;
+  background: #fff7ed;
+  color: #c2410c;
+  border-radius: 6px;
+  padding: 0.45rem 0.7rem;
+  font: inherit;
+  font-weight: 700;
+}
+
+.compra-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.55rem;
+  padding: 0.2rem 0 0.8rem;
+}
+
+.btn-preview,
+.btn-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 8px;
+  padding: 0.55rem 0.95rem;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-preview {
+  border: 1px solid #e2e8f0;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.btn-save {
+  border: 1.5px solid #16a34a;
+  background: #fff;
+  color: #16a34a;
+}
+
+.btn-save:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+@media (max-width: 900px) {
+  .compra-receptor {
+    grid-template-columns: 1fr;
+  }
+}

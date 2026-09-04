@@ -41,7 +41,7 @@ export const Cotizacion = sequelize.define(
       allowNull: false,
     },
     estado: {
-      type: DataTypes.ENUM('pendiente', 'cancelada', 'archivada'),
+      type: DataTypes.ENUM('pendiente', 'cancelada', 'archivada', 'anulada'),
       allowNull: false,
       defaultValue: 'pendiente',
     },

@@ -1,0 +1,246 @@
+.estado-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.pager-gap {
+  padding: 0.35rem 0.2rem;
+  color: #94a3b8;
+}
+
+.gen-modal {
+  width: min(920px, 100%);
+  max-height: calc(100vh - 2.5rem);
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: #0f172a;
+}
+
+.gen-header,
+.gen-footer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1.05rem 1.25rem;
+}
+
+.gen-header {
+  border-bottom: 1px solid #eef2f7;
+}
+
+.gen-header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.gen-header p {
+  margin: 0.25rem 0 0;
+  color: #94a3b8;
+  font-size: 0.92rem;
+}
+
+.gen-body {
+  padding: 1rem 1.25rem;
+  overflow: auto;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.gen-top {
+  display: grid;
+  grid-template-columns: 1.2fr 0.9fr;
+  gap: 0.85rem;
+  align-items: start;
+}
+
+.gen-side {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.gen-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  background: #fff;
+}
+
+.gen-card h3 {
+  margin: 0 0 0.65rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.gen-receptor {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.gen-receptor strong,
+.gen-lines strong {
+  display: block;
+  color: #0f172a;
+}
+
+.gen-receptor span,
+.gen-lines td span {
+  display: block;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  margin-top: 0.2rem;
+}
+
+.gtq-pill {
+  background: #f1f5f9;
+  color: #64748b;
+  border-radius: 999px;
+  padding: 0.15rem 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.gen-totals {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.gen-totals div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.92rem;
+}
+
+.gen-totals span {
+  color: #94a3b8;
+}
+
+.date-field {
+  position: relative;
+  display: block;
+}
+
+.date-field app-icon {
+  position: absolute;
+  left: 0.7rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  width: 1rem;
+  height: 1rem;
+}
+
+.date-field input {
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.55rem 0.7rem 0.55rem 2.2rem;
+  font: inherit;
+  color: #0f172a;
+}
+
+.gen-lines {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.gen-lines th {
+  text-align: left;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  font-weight: 700;
+  padding: 0.35rem 0.2rem 0.55rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.gen-lines td {
+  padding: 0.7rem 0.2rem;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: top;
+}
+
+.gen-lines .num,
+.gen-lines th.num {
+  text-align: right;
+}
+
+.pay-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.95rem;
+}
+
+.gen-footer {
+  border-top: 1px solid #eef2f7;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.btn-edit,
+.btn-gen {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 0;
+  border-radius: 8px;
+  padding: 0.55rem 0.9rem;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-edit {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.btn-gen {
+  background: #f97316;
+  color: #fff;
+}
+
+.btn-gen:disabled,
+.btn-edit:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.gen-ico {
+  width: 1.15rem;
+  height: 1.15rem;
+  border: 1.5px solid currentColor;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+}
+
+.gen-ico app-icon {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+@media (max-width: 760px) {
+  .gen-top {
+    grid-template-columns: 1fr;
+  }
+
+  .gen-footer {
+    flex-wrap: wrap;
+  }
+}

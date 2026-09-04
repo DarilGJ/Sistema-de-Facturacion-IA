@@ -6,6 +6,8 @@ import { Factura } from './factura.model.js';
 import { FacturaItem } from './factura-item.model.js';
 import { Cotizacion } from './cotizacion.model.js';
 import { CotizacionItem } from './cotizacion-item.model.js';
+import { Compra } from './compra.model.js';
+import { CompraItem } from './compra-item.model.js';
 import { InventarioConfig } from './inventario-config.model.js';
 import { Categoria } from './categoria.model.js';
 import { Subcategoria } from './subcategoria.model.js';
@@ -100,6 +102,42 @@ Producto.hasMany(CotizacionItem, {
 });
 
 CotizacionItem.belongsTo(Producto, {
+  foreignKey: 'id_producto',
+  as: 'producto',
+});
+
+Proveedor.hasMany(Compra, {
+  foreignKey: 'id_proveedor',
+  as: 'compras',
+  onUpdate: 'CASCADE',
+  onDelete: 'RESTRICT',
+});
+
+Compra.belongsTo(Proveedor, {
+  foreignKey: 'id_proveedor',
+  as: 'proveedor',
+});
+
+Compra.hasMany(CompraItem, {
+  foreignKey: 'id_compra',
+  as: 'items',
+  onUpdate: 'CASCADE',
+  onDelete: 'CASCADE',
+});
+
+CompraItem.belongsTo(Compra, {
+  foreignKey: 'id_compra',
+  as: 'compra',
+});
+
+Producto.hasMany(CompraItem, {
+  foreignKey: 'id_producto',
+  as: 'compra_items',
+  onUpdate: 'CASCADE',
+  onDelete: 'RESTRICT',
+});
+
+CompraItem.belongsTo(Producto, {
   foreignKey: 'id_producto',
   as: 'producto',
 });
@@ -262,6 +300,8 @@ export {
   FacturaItem,
   Cotizacion,
   CotizacionItem,
+  Compra,
+  CompraItem,
   InventarioConfig,
   Categoria,
   Subcategoria,

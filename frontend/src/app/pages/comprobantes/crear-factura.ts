@@ -30,9 +30,16 @@ export class CrearFactura implements OnInit {
   readonly modo = signal<'factura' | 'cotizacion'>('factura');
   readonly esCotizacion = computed(() => this.modo() === 'cotizacion');
   readonly tituloDocumento = computed(() => (this.esCotizacion() ? 'Cotización' : 'Factura Electrónica'));
-  readonly etiquetaAccion = computed(() =>
-    this.esCotizacion() ? (this.emitting() ? 'Guardando…' : 'Guardar cotización') : this.emitting() ? 'Procesando…' : 'Procesar Factura'
-  );
+  readonly editandoId = signal<number | null>(null);
+  readonly etiquetaAccion = computed(() => {
+    if (!this.esCotizacion()) {
+      return this.emitting() ? 'Procesando…' : 'Procesar Factura';
+    }
+    if (this.emitting()) {
+      return 'Guardando…';
+    }
+    return this.editandoId() ? 'Actualizar cotización' : 'Guardar cotización';
+  });
 
   readonly seccionReceptor = signal(true);
   readonly seccionProductos = signal(true);
@@ -376,29 +383,36 @@ export class CrearFactura implements OnInit {
     }));
 
     if (this.esCotizacion()) {
-      this.cotizaciones
-        .crear({
-          id_cliente: idCliente,
-          metodo_pago: this.formaPago() === 'credito' ? 'credito' : 'contado',
-          items,
-        })
-        .subscribe({
-          next: () => {
-            this.emitting.set(false);
-            this.lineas.set([
-              this.lineaVacia(),
-              this.lineaVacia(),
-              this.lineaVacia(),
-              this.lineaVacia(),
-              this.lineaVacia(),
-            ]);
-            void this.router.navigate(['/cotizaciones']);
-          },
-          error: (err: unknown) => {
-            this.emitting.set(false);
-            this.errorMessage.set(apiErrorMessage(err, 'No se pudo guardar la cotización.'));
-          },
-        });
+      const editId = this.editandoId();
+      const req =
+        editId != null
+          ? this.cotizaciones.actualizarDocumento(editId, {
+              id_cliente: idCliente,
+              metodo_pago: this.formaPago() === 'credito' || this.condicionVenta() === 'credito' ? 'credito' : 'contado',
+              items,
+            })
+          : this.cotizaciones.crear({
+              id_cliente: idCliente,
+              metodo_pago: this.formaPago() === 'credito' || this.condicionVenta() === 'credito' ? 'credito' : 'contado',
+              items,
+            });
+      req.subscribe({
+        next: () => {
+          this.emitting.set(false);
+          this.lineas.set([
+            this.lineaVacia(),
+            this.lineaVacia(),
+            this.lineaVacia(),
+            this.lineaVacia(),
+            this.lineaVacia(),
+          ]);
+          void this.router.navigate(['/cotizaciones']);
+        },
+        error: (err: unknown) => {
+          this.emitting.set(false);
+          this.errorMessage.set(apiErrorMessage(err, 'No se pudo guardar la cotización.'));
+        },
+      });
       return;
     }
 
@@ -444,7 +458,25 @@ export class CrearFactura implements OnInit {
   }
 
   private cargarReutilizar(): void {
+    const editar = Number(this.route.snapshot.queryParamMap.get('editar'));
+    const reutilizar = Number(this.route.snapshot.queryParamMap.get('reutilizar'));
     if (this.esCotizacion()) {
+      const id = editar || reutilizar;
+      if (!id) {
+        return;
+      }
+      if (editar) {
+        this.editandoId.set(editar);
+      }
+      this.cotizaciones.obtener(id).subscribe({
+        next: (doc) => this.aplicarDocumento({
+          id_cliente: doc.id_cliente,
+          condicion: doc.metodo_pago,
+          formaPago: doc.metodo_pago === 'credito' ? 'credito' : 'efectivo',
+          items: doc.items || [],
+        }),
+        error: (err: unknown) => this.errorMessage.set(apiErrorMessage(err, 'No se pudo cargar la cotización.')),
+      });
       return;
     }
     const id = Number(this.route.snapshot.queryParamMap.get('reutilizar'));
@@ -453,31 +485,51 @@ export class CrearFactura implements OnInit {
     }
     this.facturas.obtener(id).subscribe({
       next: (doc) => {
-        this.clienteId.set(doc.id_cliente);
-        const cliente = this.inventario.clientes().find((c) => c.id === doc.id_cliente);
-        if (cliente) {
-          this.busquedaCliente.set(`${cliente.nombre} · ${cliente.nit}`);
-        }
-        this.condicionVenta.set(doc.condicion_venta === 'credito' ? 'credito' : 'contado');
-        this.formaPago.set(doc.metodo_pago);
         this.tipoComprobante.set(this.labelTipo(doc.tipo_factura));
         this.moneda.set(doc.moneda || 'Quetzal');
         this.vendedor.set(doc.vendedor || this.auth.user()?.nombre || 'Vendedor');
         this.descuento.set(Number(doc.descuento) || 0);
         this.notas.set(doc.notas || '');
-        const lineas = (doc.items || []).map((linea) => ({
-          uid: this.lineaSeq++,
-          id_producto: linea.id_producto,
-          sku: linea.producto?.sku || '',
-          nombre: linea.descripcion,
-          precio: Number(linea.precio_unitario) || 0,
-          stock: 9999,
-          cantidad: Number(linea.cantidad) || 1,
-        }));
-        this.lineas.set(lineas.length ? [...lineas, this.lineaVacia()] : [this.lineaVacia()]);
+        this.aplicarDocumento({
+          id_cliente: doc.id_cliente,
+          condicion: doc.condicion_venta === 'credito' ? 'credito' : 'contado',
+          formaPago: doc.metodo_pago,
+          items: doc.items || [],
+        });
       },
       error: (err: unknown) => this.errorMessage.set(apiErrorMessage(err, 'No se pudo reutilizar la factura.')),
     });
+  }
+
+  private aplicarDocumento(doc: {
+    id_cliente: number;
+    condicion: string;
+    formaPago: string;
+    items: Array<{
+      id_producto: number;
+      descripcion?: string;
+      cantidad: number;
+      precio_unitario: number | string;
+      producto?: { sku?: string };
+    }>;
+  }): void {
+    this.clienteId.set(doc.id_cliente);
+    const cliente = this.inventario.clientes().find((c) => c.id === doc.id_cliente);
+    if (cliente) {
+      this.busquedaCliente.set(`${cliente.nombre} · ${cliente.nit}`);
+    }
+    this.condicionVenta.set(doc.condicion === 'credito' ? 'credito' : 'contado');
+    this.formaPago.set(doc.formaPago);
+    const lineas = doc.items.map((linea) => ({
+      uid: this.lineaSeq++,
+      id_producto: linea.id_producto,
+      sku: linea.producto?.sku || '',
+      nombre: linea.descripcion || '',
+      precio: Number(linea.precio_unitario) || 0,
+      stock: 9999,
+      cantidad: Number(linea.cantidad) || 1,
+    }));
+    this.lineas.set(lineas.length ? [...lineas, this.lineaVacia()] : [this.lineaVacia()]);
   }
 
   private labelTipo(tipo?: string): string {
