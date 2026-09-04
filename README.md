@@ -137,4 +137,3 @@ AI_ENGINE_URL=http://localhost:8000
 FRONTEND_URL=http://localhost:4200
 ```
 
-No subas `.env` al repositorio. Usa `.env.example` como plantilla.
