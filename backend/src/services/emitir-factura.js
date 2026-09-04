@@ -55,7 +55,8 @@ export async function emitirFactura({ id_cliente, metodo_pago, items, transactio
       throw error;
     }
 
-    const esServicio = String(producto.categoria || '').toLowerCase().includes('servicio');
+    const esServicio =
+      producto.tipo === 'servicio' || String(producto.categoria || '').toLowerCase().includes('servicio');
     if (!esServicio && producto.stock_actual < cantidad) {
       const error = new Error(
         `Stock insuficiente para ${producto.nombre}. Disponible: ${producto.stock_actual}`

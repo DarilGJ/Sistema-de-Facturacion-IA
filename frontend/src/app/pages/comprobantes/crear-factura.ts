@@ -186,7 +186,7 @@ export class CrearFactura implements OnInit {
   }
 
   esServicio(producto: Producto): boolean {
-    return String(producto.categoria || '').toLowerCase().includes('servicio');
+    return producto.tipo === 'servicio' || String(producto.categoria || '').toLowerCase().includes('servicio');
   }
 
   seleccionarCliente(cliente: Cliente, event: Event): void {
@@ -319,7 +319,9 @@ export class CrearFactura implements OnInit {
       .crearProducto({
         sku,
         nombre,
+        tipo: this.catalogoTipo() === 'servicio' ? 'servicio' : 'producto',
         categoria: this.catalogoTipo() === 'servicio' ? 'Servicios' : 'General',
+        unidad_medida: this.catalogoTipo() === 'servicio' ? 'unidad de servicio' : 'unidad',
         precio_venta: precio,
         costo_compra: precio,
         stock_actual: this.catalogoTipo() === 'servicio' ? 0 : 1,

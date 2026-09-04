@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { login, findUserById } from '../services/auth.service.js';
+import { login, findUserById, listVendedores } from '../services/auth.service.js';
 import { authRequired } from '../middleware/auth.middleware.js';
 
 const router = Router();
@@ -19,6 +19,15 @@ router.post('/login', async (req, res) => {
     return res.status(status).json({
       message: status === 500 ? 'Error interno del servidor' : error.message,
     });
+  }
+});
+
+router.get('/vendedores', authRequired, async (_req, res) => {
+  try {
+    const vendedores = await listVendedores();
+    return res.json(vendedores);
+  } catch {
+    return res.status(500).json({ message: 'Error interno del servidor' });
   }
 });
 

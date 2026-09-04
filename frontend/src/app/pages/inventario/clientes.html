@@ -1,8 +1,60 @@
 <section class="module-page receptores-page">
-  <header class="page-header receptores-header">
-    <h1><app-icon name="users" /> Clientes</h1>
-    <p>Busca, filtra y administra tus clientes.</p>
+  <header class="page-header receptores-header clientes-header">
+    <div>
+      <h1><app-icon name="users" /> Clientes</h1>
+      <p>Busca, filtra y administra tus clientes.</p>
+    </div>
+    <button
+      type="button"
+      class="icon-action filtros-toggle"
+      [class.active]="filtrosOpen()"
+      (click)="toggleFiltros()"
+      title="Abre los filtros avanzados de clientes."
+      [attr.aria-expanded]="filtrosOpen()"
+    >
+      <app-icon name="chevron" />
+    </button>
   </header>
+
+  @if (filtrosOpen()) {
+    <div class="top-filters filters-4">
+      <label>
+        <span>Estado</span>
+        <select [value]="filtroEstado()" (change)="setFiltroEstado($any($event.target).value)">
+          <option value="">Todos</option>
+          <option value="activo">Activado</option>
+          <option value="inactivo">Inactivo</option>
+        </select>
+      </label>
+      <label>
+        <span>Tipo Persona</span>
+        <select [value]="filtroPersona()" (change)="setFiltroPersona($any($event.target).value)">
+          <option value="">Tipo Persona</option>
+          <option value="juridico">Jurídico</option>
+          <option value="individual">Individual</option>
+        </select>
+      </label>
+      <label>
+        <span>Tipo Identificación</span>
+        <select [value]="filtroIdentificacion()" (change)="setFiltroIdentificacion($any($event.target).value)">
+          <option value="">Tipo Identificación</option>
+          <option value="nit">NIT</option>
+          <option value="cui_dpi">CUI/DPI</option>
+          <option value="consumidor_final">Consumidor Final</option>
+          <option value="extranjero">Extranjero</option>
+        </select>
+      </label>
+      <label>
+        <span>Cantidad de Resultados</span>
+        <select [value]="pageSize()" (change)="setPageSize($any($event.target).value)">
+          <option [value]="10">10</option>
+          <option [value]="25">25</option>
+          <option [value]="50">50</option>
+          <option [value]="100">100</option>
+        </select>
+      </label>
+    </div>
+  }
 
   <div class="crud-toolbar">
     <label class="search-field">
@@ -25,44 +77,270 @@
     </div>
   </div>
 
-  @if (errorMessage()) {
+  @if (errorMessage() && !formOpen()) {
     <p class="alert-error" role="alert">{{ errorMessage() }}</p>
   }
 
   @if (formOpen()) {
-    <form class="form-panel" [formGroup]="form" (ngSubmit)="guardar()">
-      <h2>{{ editingId() ? 'Editar cliente' : 'Nuevo cliente' }}</h2>
-      <div class="form-grid">
-        <label>
-          <span>Nombre *</span>
-          <input type="text" formControlName="nombre" />
-        </label>
-        <label>
-          <span>NIT *</span>
-          <input type="text" formControlName="nit" />
-        </label>
-        <label>
-          <span>Email</span>
-          <input type="email" formControlName="email" />
-        </label>
-        <label>
-          <span>Teléfono</span>
-          <input type="text" formControlName="telefono" />
-        </label>
-        <label class="checkbox-row">
-          <input type="checkbox" formControlName="estado" />
-          <span>Activo</span>
-        </label>
-      </div>
-      <div class="form-actions">
-        <button type="submit" class="btn btn-accent" [disabled]="saving()">
-          {{ saving() ? 'Guardando...' : 'Guardar' }}
-        </button>
-        <button type="button" class="btn btn-ghost" (click)="cancelar()" [disabled]="saving()">
-          Cancelar
-        </button>
-      </div>
-    </form>
+    <div class="modal-overlay" (click)="cancelar()">
+      <form class="cliente-modal" [formGroup]="form" (ngSubmit)="guardar()" (click)="$event.stopPropagation()">
+        <header class="cliente-modal-header">
+          <h2>{{ editingId() ? 'Editar Cliente' : 'Nuevo Cliente' }}</h2>
+          <button type="button" class="modal-close" (click)="cancelar()" aria-label="Cerrar">
+            <app-icon name="close" />
+          </button>
+        </header>
+
+        <div class="cliente-modal-body">
+          @if (errorMessage()) {
+            <p class="alert-error" role="alert">{{ errorMessage() }}</p>
+          }
+
+          <p class="modal-section">Datos principales</p>
+          <div class="cliente-grid">
+            <label class="outline-field" [class.invalid]="invalid('tipo_identificacion')">
+              <span>Tipo Identificación</span>
+              <select formControlName="tipo_identificacion">
+                <option value="nit">NIT</option>
+                <option value="cui_dpi">CUI/DPI</option>
+                <option value="consumidor_final">Consumidor Final</option>
+                <option value="extranjero">Extranjero</option>
+              </select>
+            </label>
+
+            <label class="outline-field" [class.invalid]="invalid('tipo_persona')">
+              <span>Tipo Persona</span>
+              <select formControlName="tipo_persona">
+                <option value="juridico">Jurídico</option>
+                <option value="individual">Individual</option>
+              </select>
+            </label>
+
+            <div class="sat-row">
+              <label class="outline-field" [class.invalid]="invalid('nit')">
+                <span>Número Identificación</span>
+                <input type="text" formControlName="nit" />
+                @if (requiredError('nit')) {
+                  <small>Este campo es requerido</small>
+                }
+              </label>
+              @if (muestraSat()) {
+                <button type="button" class="btn btn-accent sat-btn" (click)="buscarSat()">
+                  <app-icon name="search" /> Buscar SAT.
+                </button>
+              }
+            </div>
+
+            <label class="outline-field" [class.invalid]="invalid('nombre')">
+              <span>Nombre</span>
+              <input type="text" formControlName="nombre" />
+              @if (requiredError('nombre')) {
+                <small>Este campo es requerido</small>
+              }
+            </label>
+
+            <label class="outline-field" [class.invalid]="invalid('email')">
+              <span>Correo</span>
+              <input type="email" formControlName="email" />
+              @if (requiredError('email')) {
+                <small>Este campo es requerido</small>
+              }
+              @if (emailError('email')) {
+                <small>El correo no es válido</small>
+              }
+            </label>
+
+            @if (esJuridico()) {
+              <label class="outline-field">
+                <span>Razón social</span>
+                <input type="text" formControlName="razon_social" />
+              </label>
+            }
+
+            @if (esExtranjero()) {
+              <label class="outline-field" [class.invalid]="invalid('pais')">
+                <span>País</span>
+                <select formControlName="pais">
+                  <option value="">Seleccionar país</option>
+                  @for (grupo of paises; track grupo.grupo) {
+                    <optgroup [label]="grupo.grupo">
+                      @for (pais of grupo.items; track pais) {
+                        <option [value]="pais">{{ pais }}</option>
+                      }
+                    </optgroup>
+                  }
+                </select>
+                @if (requiredError('pais')) {
+                  <small>Este campo es requerido</small>
+                }
+              </label>
+            }
+
+            <label class="outline-field" [class.invalid]="telefonoExtranjeroError()">
+              <span>Teléfono #1</span>
+              <input
+                type="text"
+                formControlName="telefono"
+                [attr.maxlength]="esExtranjero() ? 15 : null"
+              />
+              @if (esExtranjero()) {
+                <span class="field-hint">Extranjero: hasta 15 dígitos (incluye código de país)</span>
+              }
+              @if (telefonoExtranjeroError()) {
+                <small>Usa hasta 15 dígitos, con código de país</small>
+              }
+            </label>
+
+            <label class="outline-field span-2" [class.invalid]="invalid('direccion')">
+              <span>Dirección</span>
+              <textarea rows="3" formControlName="direccion"></textarea>
+              @if (requiredError('direccion')) {
+                <small>Este campo es requerido</small>
+              }
+            </label>
+          </div>
+
+          <section class="accordion">
+            <button
+              type="button"
+              class="accordion-toggle"
+              [class.open]="extrasOpen()"
+              (click)="toggleExtras()"
+              [attr.aria-expanded]="extrasOpen()"
+            >
+              <span class="accordion-copy">
+                <strong>Datos adicionales</strong>
+                <em>Opcional</em>
+              </span>
+              <app-icon name="chevron" />
+            </button>
+            @if (extrasOpen()) {
+              <div class="cliente-grid accordion-body">
+                <label class="outline-field">
+                  <span>Nombre Comercial</span>
+                  <input type="text" formControlName="nombre_comercial" />
+                </label>
+                <label class="outline-field">
+                  <span>Teléfono #2</span>
+                  <input type="text" formControlName="telefono2" />
+                </label>
+                <label class="outline-field" [class.invalid]="emailError('email2')">
+                  <span>Correo #2</span>
+                  <input type="email" formControlName="email2" />
+                  @if (emailError('email2')) {
+                    <small>El correo no es válido</small>
+                  }
+                </label>
+                <label class="outline-field" [class.invalid]="emailError('email3')">
+                  <span>Correo #3</span>
+                  <input type="email" formControlName="email3" />
+                  @if (emailError('email3')) {
+                    <small>El correo no es válido</small>
+                  }
+                </label>
+                <label class="outline-field span-2">
+                  <span>Nota del cliente (opcional)</span>
+                  <textarea rows="3" formControlName="nota"></textarea>
+                </label>
+              </div>
+            }
+          </section>
+
+          <section class="accordion">
+            <button
+              type="button"
+              class="accordion-toggle"
+              [class.open]="configOpen()"
+              (click)="toggleConfig()"
+              [attr.aria-expanded]="configOpen()"
+            >
+              <span class="accordion-copy">
+                <strong>Configuración</strong>
+                <em>Opcional</em>
+              </span>
+              <app-icon name="chevron" />
+            </button>
+            @if (configOpen()) {
+              <div class="cliente-grid accordion-body">
+                <label class="outline-field">
+                  <span>Método Cancelación</span>
+                  <select formControlName="metodo_cancelacion">
+                    <option value="contado">Contado</option>
+                    <option value="credito">Crédito</option>
+                  </select>
+                </label>
+                @if (esCredito()) {
+                  <label class="outline-field">
+                    <span>Plazo Unidad</span>
+                    <select formControlName="plazo_unidad">
+                      <option value="dias">Días</option>
+                      <option value="meses">Meses</option>
+                      <option value="anio">Año</option>
+                    </select>
+                  </label>
+                  <label class="outline-field">
+                    <span>Plazo</span>
+                    <input type="number" min="0" step="1" formControlName="plazo" />
+                  </label>
+                }
+                <label class="outline-field">
+                  <span>Precio a facturar</span>
+                  <select formControlName="precio_facturar">
+                    <option value="precio_1">Precio 1</option>
+                    <option value="precio_2">Precio 2</option>
+                    <option value="precio_3">Precio 3</option>
+                  </select>
+                </label>
+                <label class="outline-field">
+                  <span>% Descuento</span>
+                  <input type="number" min="0" max="100" step="0.01" formControlName="porcentaje_descuento" />
+                </label>
+                <label class="outline-field">
+                  <span>Código</span>
+                  <input type="text" formControlName="codigo" />
+                </label>
+                <label class="outline-field">
+                  <span>Vendedor</span>
+                  <select formControlName="id_vendedor">
+                    <option value="">Seleccionar vendedor</option>
+                    @for (vendedor of inventario.vendedores(); track vendedor.id) {
+                      <option [value]="vendedor.id">{{ vendedor.nombre }}</option>
+                    }
+                  </select>
+                </label>
+                <label class="outline-field">
+                  <span>Zona</span>
+                  <input type="text" formControlName="zona" />
+                </label>
+                @if (esCredito()) {
+                  <label class="outline-field">
+                    <span>Crédito máximo</span>
+                    <input type="number" min="0" step="0.01" formControlName="credito_maximo" />
+                  </label>
+                }
+                <label class="checkbox-row modal-check">
+                  <input type="checkbox" formControlName="estado" />
+                  <span>Activo</span>
+                </label>
+              </div>
+            }
+          </section>
+
+          @if (satMessage()) {
+            <p class="sat-hint">{{ satMessage() }}</p>
+          }
+        </div>
+
+        <footer class="cliente-modal-footer">
+          <button type="button" class="btn btn-ghost" (click)="cancelar()" [disabled]="saving()">
+            <app-icon name="close" /> Cancelar
+          </button>
+          <button type="submit" class="btn btn-accent" [disabled]="saving()">
+            <app-icon name="save" /> {{ saving() ? 'Guardando...' : 'Guardar' }}
+          </button>
+        </footer>
+      </form>
+    </div>
   }
 
   <div class="table-wrap">
@@ -99,13 +377,13 @@
                 </div>
               </td>
               <td>
-                <span class="badge badge-muted">Natural</span>
-                <span class="badge badge-muted">NIT</span>
+                <span class="badge badge-muted">{{ etiquetaPersona(item.tipo_persona) }}</span>
+                <span class="badge badge-muted">{{ etiquetaTipoId(item.tipo_identificacion) }}</span>
               </td>
               <td>{{ item.nit }}</td>
-              <td>{{ item.telefono || 'N/D / N/D' }}</td>
-              <td><span class="badge badge-warn">Precio 1</span></td>
-              <td>N/A</td>
+              <td>{{ telefonos(item) }}</td>
+              <td><span class="badge badge-warn">{{ etiquetaPrecio(item.precio_facturar) }}</span></td>
+              <td>{{ item.codigo || 'N/A' }}</td>
               <td>
                 <span class="badge" [class.badge-ok]="item.estado" [class.badge-off]="!item.estado">
                   {{ item.estado ? 'Activado' : 'Inactivo' }}
