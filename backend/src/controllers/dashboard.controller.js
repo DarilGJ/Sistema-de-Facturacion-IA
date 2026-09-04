@@ -199,7 +199,9 @@ export async function resumen(req, res) {
     ]);
 
     const productosById = new Map(productos.map((p) => [p.id, p]));
-    const servicios = productos.filter((p) => String(p.categoria || '').toLowerCase().includes('servicio')).length;
+    const servicios = productos.filter(
+      (p) => p.tipo === 'servicio' || String(p.categoria || '').toLowerCase().includes('servicio')
+    ).length;
     const stockBajo = productos.filter((p) => p.estado && p.stock_actual <= p.stock_minimo);
 
     const pos = summarize(facturas, productosById, range.start, range.end);

@@ -9,6 +9,7 @@ import {
   Cliente,
   ClientePayload,
   Existencia,
+  VendedorOpcion,
   Movimiento,
   Producto,
   ProductoPayload,
@@ -23,6 +24,7 @@ export class InventarioService {
 
   readonly proveedores = signal<Proveedor[]>([]);
   readonly clientes = signal<Cliente[]>([]);
+  readonly vendedores = signal<VendedorOpcion[]>([]);
   readonly productos = signal<Producto[]>([]);
 
   readonly categorias = signal<Categoria[]>([
@@ -76,6 +78,12 @@ export class InventarioService {
     return this.http
       .delete(`${this.api}/proveedores/${id}`)
       .pipe(switchMap(() => this.listarProveedores()));
+  }
+
+  listarVendedores(): Observable<VendedorOpcion[]> {
+    return this.http
+      .get<VendedorOpcion[]>(`${this.api}/auth/vendedores`)
+      .pipe(tap((rows) => this.vendedores.set(rows)));
   }
 
   listarClientes(): Observable<Cliente[]> {

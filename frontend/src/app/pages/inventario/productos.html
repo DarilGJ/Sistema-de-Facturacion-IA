@@ -1,28 +1,96 @@
 <section class="module-page receptores-page">
-  <header class="page-header receptores-header">
-    <h1>Artículos y servicios</h1>
-    <p>Busca y administra tu catálogo de venta.</p>
+  <header class="page-header receptores-header clientes-header">
+    <div>
+      <h1><app-icon name="tag" /> Artículos y servicios</h1>
+      <p>Consulta existencias, costos y organización del inventario.</p>
+    </div>
+    <button
+      type="button"
+      class="icon-action filtros-toggle"
+      [class.active]="filtrosOpen()"
+      (click)="toggleFiltros()"
+      title="Abre los filtros avanzados del catálogo."
+      [attr.aria-expanded]="filtrosOpen()"
+    >
+      <app-icon name="chevron" />
+    </button>
   </header>
 
-  <div class="top-filters">
-    <label>
-      <span>Estado</span>
-      <select [value]="filtroEstado()" (change)="setFiltroEstado($any($event.target).value)">
-        <option value="">Todos</option>
-        <option value="activo">Activado</option>
-        <option value="inactivo">Inactivo</option>
-      </select>
-    </label>
-    <label>
-      <span>Cantidad de Resultados</span>
-      <select [value]="pageSize()" (change)="setPageSize($any($event.target).value)">
-        <option [value]="10">10</option>
-        <option [value]="25">25</option>
-        <option [value]="50">50</option>
-        <option [value]="100">100</option>
-      </select>
-    </label>
-  </div>
+  @if (filtrosOpen()) {
+    <div class="top-filters filters-8">
+      <label>
+        <span>Estado</span>
+        <select [value]="filtroEstado()" (change)="setFiltroEstado($any($event.target).value)">
+          <option value="">Todos</option>
+          <option value="activo">Activado</option>
+          <option value="inactivo">Inactivo</option>
+        </select>
+      </label>
+      <label>
+        <span>Bodega</span>
+        <select [value]="filtroBodega()" (change)="filtroBodega.set($any($event.target).value); pagina.set(1)">
+          <option value="">Bodega</option>
+          @for (bodega of bodegasFiltro(); track bodega) {
+            <option [value]="bodega">{{ bodega }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        <span>Categoría</span>
+        <select [value]="filtroCategoria()" (change)="filtroCategoria.set($any($event.target).value); pagina.set(1)">
+          <option value="">Categoría</option>
+          @for (cat of categoriasFiltro(); track cat) {
+            <option [value]="cat">{{ cat }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        <span>Subcategoría</span>
+        <select [value]="filtroSubcategoria()" (change)="filtroSubcategoria.set($any($event.target).value); pagina.set(1)">
+          <option value="">Subcategoría</option>
+          @for (sub of subcategoriasFiltro(); track sub) {
+            <option [value]="sub">{{ sub }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        <span>Marca</span>
+        <select [value]="filtroMarca()" (change)="filtroMarca.set($any($event.target).value); pagina.set(1)">
+          <option value="">Marca</option>
+          @for (marca of marcasFiltro(); track marca) {
+            <option [value]="marca">{{ marca }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        <span>Proveedor</span>
+        <select [value]="filtroProveedor()" (change)="filtroProveedor.set($any($event.target).value); pagina.set(1)">
+          <option value="">Proveedor</option>
+          @for (proveedor of inventario.proveedores(); track proveedor.id) {
+            <option [value]="proveedor.id">{{ proveedor.nombre_comercial || proveedor.nombre }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        <span>Filtrar Cantidades Generales</span>
+        <select [value]="filtroCantidad()" (change)="filtroCantidad.set($any($event.target).value); pagina.set(1)">
+          <option value="">Sin Filtrar</option>
+          <option value="con_stock">Con stock</option>
+          <option value="sin_stock">Sin stock</option>
+          <option value="bajo_minimo">Bajo mínimo</option>
+        </select>
+      </label>
+      <label>
+        <span>Cantidad de Resultados</span>
+        <select [value]="pageSize()" (change)="setPageSize($any($event.target).value)">
+          <option [value]="10">10</option>
+          <option [value]="25">25</option>
+          <option [value]="50">50</option>
+          <option [value]="100">100</option>
+        </select>
+      </label>
+    </div>
+  }
 
   <div class="crud-toolbar">
     <label class="search-field">
@@ -37,90 +105,241 @@
     <button type="button" class="icon-action" (click)="cargar()" title="Actualizar">
       <app-icon name="refresh" />
     </button>
-    <button
-      type="button"
-      class="icon-action accent"
-      [class.active]="filtrosOpen()"
-      (click)="toggleFiltros()"
-      title="Filtros"
-    >
-      <app-icon name="filter" />
-    </button>
     <button type="button" class="btn btn-accent" (click)="abrirNuevo()">+ Nuevo Producto</button>
     <button type="button" class="btn btn-ghost" disabled title="Próximamente">
       <app-icon name="upload" /> Importaciones
     </button>
   </div>
 
-  @if (filtrosOpen()) {
-    <div class="filter-bar">
-      <select [value]="filtroTipo()" (change)="filtroTipo.set($any($event.target).value); pagina.set(1)">
-        <option value="">Todos los tipos</option>
-        <option value="Producto">Producto</option>
-        <option value="Servicio">Servicio</option>
-      </select>
-    </div>
-  }
-
-  @if (errorMessage()) {
+  @if (errorMessage() && !formOpen()) {
     <p class="alert-error" role="alert">{{ errorMessage() }}</p>
   }
 
   @if (formOpen()) {
-    <form class="form-panel" [formGroup]="form" (ngSubmit)="guardar()">
-      <h2>{{ editingId() ? 'Editar producto' : 'Nuevo producto' }}</h2>
-      <div class="form-grid">
-        <label>
-          <span>SKU *</span>
-          <input type="text" formControlName="sku" />
-        </label>
-        <label>
-          <span>Nombre *</span>
-          <input type="text" formControlName="nombre" />
-        </label>
-        <label>
-          <span>Categoría</span>
-          <input type="text" formControlName="categoria" />
-        </label>
-        <label>
-          <span>Precio de venta *</span>
-          <input type="number" min="0" step="0.01" formControlName="precio_venta" />
-        </label>
-        <label>
-          <span>Costo de compra *</span>
-          <input type="number" min="0" step="0.01" formControlName="costo_compra" />
-        </label>
-        <label>
-          <span>Stock actual</span>
-          <input type="number" min="0" formControlName="stock_actual" />
-        </label>
-        <label>
-          <span>Stock mínimo</span>
-          <input type="number" min="0" formControlName="stock_minimo" />
-        </label>
-        <label>
-          <span>Proveedor</span>
-          <select formControlName="id_proveedor">
-            <option [ngValue]="null">Sin proveedor</option>
-            @for (proveedor of inventario.proveedores(); track proveedor.id) {
-              <option [ngValue]="proveedor.id">{{ proveedor.nombre_comercial }}</option>
+    <div class="modal-overlay" (click)="cancelar()">
+      <form class="cliente-modal producto-modal" [formGroup]="form" (ngSubmit)="guardar()" (click)="$event.stopPropagation()">
+        <header class="cliente-modal-header">
+          <div>
+            <h2>{{ tituloModal() }}</h2>
+            <p class="modal-subtitle">Datos base, impuestos y precios.</p>
+          </div>
+          <button type="button" class="modal-close" (click)="cancelar()" aria-label="Cerrar">
+            <app-icon name="close" />
+          </button>
+        </header>
+
+        <div class="cliente-modal-body">
+          @if (errorMessage()) {
+            <p class="alert-error" role="alert">{{ errorMessage() }}</p>
+          }
+
+          <p class="modal-section">Información básica</p>
+          <div class="tipo-radios">
+            <label [class.active]="form.controls.tipo.value === 'producto'">
+              <input type="radio" formControlName="tipo" value="producto" />
+              Producto
+            </label>
+            <label [class.active]="form.controls.tipo.value === 'servicio'">
+              <input type="radio" formControlName="tipo" value="servicio" />
+              Servicio
+            </label>
+          </div>
+
+          <div class="cliente-grid producto-grid-3">
+            <label class="outline-field" [class.invalid]="invalid('sku')">
+              <span>Código *</span>
+              <input type="text" formControlName="sku" />
+              @if (requiredError('sku')) {
+                <small>Este campo es requerido</small>
+              }
+            </label>
+            <label class="outline-field" [class.invalid]="invalid('nombre')">
+              <span>Nombre *</span>
+              <input type="text" formControlName="nombre" />
+              @if (requiredError('nombre')) {
+                <small>Este campo es requerido</small>
+              }
+            </label>
+            <label class="outline-field" [class.invalid]="invalid('unidad_medida')">
+              <span>Unidad de medida *</span>
+              <select formControlName="unidad_medida">
+                @for (unidad of unidades; track unidad) {
+                  <option [value]="unidad">{{ unidad }}</option>
+                }
+              </select>
+            </label>
+            <label class="outline-field span-2">
+              <span>Detalle</span>
+              <textarea rows="3" formControlName="detalle"></textarea>
+            </label>
+            <label class="outline-field">
+              <span>Ubicación</span>
+              <input type="text" formControlName="ubicacion" />
+            </label>
+          </div>
+
+          <p class="modal-section">Impuestos</p>
+          <div class="cliente-grid">
+            <label class="outline-field">
+              <span>Selecciona Tipo de Impuesto</span>
+              <select formControlName="impuesto_tipo">
+                @for (tipo of tiposImpuesto; track tipo.id) {
+                  <option [value]="tipo.id">{{ tipo.nombre }}</option>
+                }
+              </select>
+            </label>
+            <label class="outline-field">
+              <span>Buscar Impuesto %</span>
+              <select [value]="form.controls.impuesto_nombre.value" (change)="aplicarImpuesto($any($event.target).value)">
+                @for (imp of impuestosOpciones(); track imp.nombre) {
+                  <option [value]="imp.nombre">{{ imp.nombre }}</option>
+                }
+              </select>
+            </label>
+          </div>
+          <div class="tax-table">
+            <div class="tax-head">
+              <span>Nombre</span>
+              <span>Descripción</span>
+              <span>%</span>
+            </div>
+            <div class="tax-row">
+              <strong>{{ impuestoAplicado().nombre }}</strong>
+              <span>{{ impuestoAplicado().descripcion }}</span>
+              <span>{{ impuestoAplicado().porcentaje | number: '1.2-2' }}</span>
+            </div>
+          </div>
+
+          <p class="modal-section">Costos y precios</p>
+          <div class="cliente-grid producto-grid-4">
+            <label class="outline-field" [class.invalid]="invalid('costo_compra')">
+              <span>Costo compra *</span>
+              <input type="number" min="0" step="0.01" formControlName="costo_compra" />
+            </label>
+            <label class="outline-field" [class.invalid]="invalid('stock_minimo')">
+              <span>Stock mínimo *</span>
+              <input type="number" min="0" formControlName="stock_minimo" />
+            </label>
+            <label class="outline-field">
+              <span>Reorden</span>
+              <input type="number" min="0" formControlName="stock_reorden" />
+            </label>
+            <label class="outline-field">
+              <span>Stock máximo</span>
+              <input type="number" min="0" formControlName="stock_maximo" />
+            </label>
+          </div>
+
+          <div class="price-table">
+            <div class="price-head">
+              <span>Lista</span>
+              <span>Precio sin impuesto</span>
+              <span>Precio con impuesto</span>
+              <span>Utilidad</span>
+            </div>
+            @for (lista of listasPrecio; track lista) {
+              <div class="price-row">
+                <span class="lista-pill">{{ lista }}</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  [value]="precioSin(lista)"
+                  (input)="setPrecioSin(lista, $any($event.target).value)"
+                />
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  [value]="precioCon(lista)"
+                  (input)="setPrecioCon(lista, $any($event.target).value)"
+                />
+                <div class="utilidad-box">
+                  <strong>{{ utilidadPct(lista) | number: '1.2-2' }}%</strong>
+                  <small>{{ utilidadMonto(lista) | number: '1.2-2' }}</small>
+                </div>
+              </div>
             }
-          </select>
-        </label>
-        <label class="checkbox-row">
-          <input type="checkbox" formControlName="estado" />
-          <span>Activo</span>
-        </label>
-      </div>
-      <div class="form-actions">
-        <button type="submit" class="btn btn-accent" [disabled]="saving()">
-          {{ saving() ? 'Guardando...' : 'Guardar' }}
-        </button>
-        <button type="button" class="btn btn-ghost" (click)="cancelar()" [disabled]="saving()">
-          Cancelar
-        </button>
-      </div>
-    </form>
+          </div>
+
+          <p class="modal-section">Opcionales</p>
+          <div class="cliente-grid producto-grid-3">
+            <label class="outline-field">
+              <span>Categoría</span>
+              <input type="text" list="categorias-opciones" formControlName="categoria" />
+            </label>
+            <label class="outline-field">
+              <span>Subcategoría</span>
+              <input type="text" formControlName="subcategoria" />
+            </label>
+            <label class="outline-field">
+              <span>Marca</span>
+              <input type="text" formControlName="marca" />
+            </label>
+            <label class="outline-field">
+              <span>U.M. compra</span>
+              <select formControlName="unidad_compra">
+                @for (unidad of unidades; track unidad) {
+                  <option [value]="unidad">{{ unidad }}</option>
+                }
+              </select>
+            </label>
+            <label class="outline-field">
+              <span>Factor conversión</span>
+              <input type="number" min="0" step="0.0001" formControlName="factor_conversion" />
+            </label>
+            <label class="switch modal-check">
+              <input type="checkbox" formControlName="es_padre_variantes" />
+              <span>Producto padre de variantes</span>
+            </label>
+            <label class="outline-field">
+              <span>+ Agregar bodega</span>
+              <select formControlName="bodega">
+                <option value="">Seleccionar bodega</option>
+                @for (almacen of inventario.almacenes(); track almacen.id) {
+                  <option [value]="almacen.nombre">{{ almacen.nombre }}</option>
+                }
+              </select>
+            </label>
+            <label class="outline-field">
+              <span>Stock inicial</span>
+              <input type="number" min="0" formControlName="stock_actual" />
+            </label>
+            <label class="outline-field">
+              <span>Proveedor</span>
+              <select formControlName="id_proveedor">
+                <option [ngValue]="null">Sin proveedor</option>
+                @for (proveedor of inventario.proveedores(); track proveedor.id) {
+                  <option [ngValue]="proveedor.id">{{ proveedor.nombre_comercial || proveedor.nombre }}</option>
+                }
+              </select>
+            </label>
+            <label class="checkbox-row modal-check">
+              <input type="checkbox" formControlName="estado" />
+              <span>Activo</span>
+            </label>
+          </div>
+          <p class="bodega-hint">
+            <app-icon name="info" />
+            Seleccione una bodega para definir el stock inicial de este artículo.
+          </p>
+          <datalist id="categorias-opciones">
+            @for (cat of categoriasFiltro(); track cat) {
+              <option [value]="cat"></option>
+            }
+          </datalist>
+        </div>
+
+        <footer class="cliente-modal-footer">
+          <button type="button" class="btn btn-ghost" (click)="cancelar()" [disabled]="saving()">
+            <app-icon name="close" /> Cancelar
+          </button>
+          <button type="submit" class="btn btn-accent" [disabled]="saving()">
+            <app-icon name="save" /> {{ saving() ? 'Guardando...' : 'Guardar' }}
+          </button>
+        </footer>
+      </form>
+    </div>
   }
 
   <div class="table-wrap">
@@ -158,18 +377,22 @@
               </td>
               <td>{{ item.sku }}</td>
               <td><span class="badge badge-muted">{{ tipo(item) }}</span></td>
-              <td><span class="badge badge-warn">Gravado</span></td>
+              <td>
+                <span class="badge" [class.badge-warn]="gravamen(item) === 'Gravado'" [class.badge-muted]="gravamen(item) !== 'Gravado'">
+                  {{ gravamen(item) }}
+                </span>
+              </td>
               <td>
                 <span class="badge" [class.badge-ok]="item.estado" [class.badge-off]="!item.estado">
                   {{ item.estado ? 'Activado' : 'Inactivo' }}
                 </span>
               </td>
-              <td>Unidad</td>
+              <td>{{ unidad(item) }}</td>
               <td class="num">{{ item.costo_compra | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
-              <td class="num">{{ sinItbis(item.costo_compra) | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
+              <td class="num">{{ sinImpuesto(item.costo_compra, item.impuesto_porcentaje) | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
               <td class="num">{{ valorCosto(item) | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
               <td class="num">{{ item.precio_venta | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
-              <td class="num">{{ item.precio_venta | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
+              <td class="num">{{ (item.precio_2 ?? item.precio_venta) | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
               <td class="num">{{ valorCosto(item) | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
               <td>
                 <app-row-menu

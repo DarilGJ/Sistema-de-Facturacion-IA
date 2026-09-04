@@ -25,6 +25,16 @@ export async function findUserById(id) {
   return rows[0] || null;
 }
 
+export async function listVendedores() {
+  const [rows] = await pool.execute(
+    `SELECT id, nombre, email, rol
+     FROM usuarios
+     WHERE activo = 1 AND rol IN ('vendedor', 'admin')
+     ORDER BY nombre ASC`
+  );
+  return rows;
+}
+
 export async function login(email, password) {
   const user = await findUserByEmail(email);
 

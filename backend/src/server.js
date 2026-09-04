@@ -3,6 +3,9 @@ import cors from 'cors';
 import { env } from './config/env.js';
 import { testSequelize } from './config/sequelize.js';
 import { sequelize } from './models/index.js';
+import { ensureClienteSchema } from './utils/ensure-cliente-schema.js';
+import { ensureProveedorSchema } from './utils/ensure-proveedor-schema.js';
+import { ensureProductoSchema } from './utils/ensure-producto-schema.js';
 import authRoutes from './routes/auth.routes.js';
 import aiRoutes from './routes/ai.routes.js';
 import proveedorRoutes from './routes/proveedor.routes.js';
@@ -44,6 +47,9 @@ async function start() {
   try {
     await testSequelize();
     await sequelize.sync();
+    await ensureClienteSchema();
+    await ensureProveedorSchema();
+    await ensureProductoSchema();
     console.log('MySQL (Sequelize) conectado y modelos sincronizados');
   } catch (error) {
     console.warn('Advertencia: no se pudo conectar a MySQL todavía.');
