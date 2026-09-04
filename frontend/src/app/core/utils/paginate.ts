@@ -27,3 +27,23 @@ export function pageRange(total: number, page: number, size = PAGE_SIZE): { from
   const to = Math.min(current * size, total);
   return { from, to };
 }
+
+export type PageToken = number | 'gap';
+
+export function compactPages(page: number, total: number, size = PAGE_SIZE): PageToken[] {
+  const last = pageCount(total, size);
+  const current = clampPage(page, total, size);
+  if (last <= 9) {
+    return pageNumbers(total, size);
+  }
+  const wanted = new Set([1, last, current, current - 1, current + 1]);
+  const nums = [...wanted].filter((n) => n >= 1 && n <= last).sort((a, b) => a - b);
+  const tokens: PageToken[] = [];
+  nums.forEach((n, i) => {
+    if (i > 0 && n - nums[i - 1] > 1) {
+      tokens.push('gap');
+    }
+    tokens.push(n);
+  });
+  return tokens;
+}

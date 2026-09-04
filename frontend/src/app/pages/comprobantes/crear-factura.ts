@@ -6,7 +6,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { InventarioService } from '../../core/services/inventario.service';
 import { FacturaService } from '../../core/services/factura.service';
 import { CotizacionService } from '../../core/services/cotizacion.service';
-import { CarritoLinea } from '../../core/models/factura.model';
+import { CarritoLinea, TipoFactura } from '../../core/models/factura.model';
 import { Cliente, Producto } from '../../core/models/inventario.model';
 import { apiErrorMessage } from '../../core/utils/api-error';
 import { UiIcon } from '../../shared/ui-icon/ui-icon';
@@ -147,7 +147,16 @@ export class CrearFactura implements OnInit {
     this.vendedor.set(this.auth.user()?.nombre || 'Vendedor');
     this.loading.set(true);
     this.inventario.cargarCatalogos().subscribe({
-      next: () => this.loading.set(false),
+      next: () => {
+        this.loading.set(false);
+        const principal =
+          this.inventario.almacenes().find((item) => item.principal && item.estado) ||
+          this.inventario.almacenes().find((item) => item.estado);
+        if (principal) {
+          this.bodegaId.set(principal.id);
+        }
+        this.cargarReutilizar();
+      },
       error: () => this.loading.set(false),
     });
     if (modo === 'cotizacion') {
@@ -397,6 +406,12 @@ export class CrearFactura implements OnInit {
       .crear({
         id_cliente: idCliente,
         metodo_pago: this.formaPago() as 'efectivo' | 'tarjeta' | 'transferencia',
+        condicion_venta: this.condicionVenta() === 'credito' ? 'credito' : 'contado',
+        tipo_factura: this.tipoPayload(),
+        vendedor: this.vendedor(),
+        moneda: this.moneda(),
+        descuento: this.descuentoMonto(),
+        notas: this.notas(),
         items,
       })
       .subscribe({
@@ -412,6 +427,70 @@ export class CrearFactura implements OnInit {
           this.errorMessage.set(apiErrorMessage(err, 'No se pudo procesar la factura.'));
         },
       });
+  }
+
+  private tipoPayload(): TipoFactura {
+    const label = this.tipoComprobante();
+    if (label === 'Factura especial') {
+      return 'factura_especial';
+    }
+    if (label === 'Factura cambiaria') {
+      return 'factura_cambiaria';
+    }
+    if (label === 'Recibo') {
+      return 'recibo';
+    }
+    return 'factura';
+  }
+
+  private cargarReutilizar(): void {
+    if (this.esCotizacion()) {
+      return;
+    }
+    const id = Number(this.route.snapshot.queryParamMap.get('reutilizar'));
+    if (!id) {
+      return;
+    }
+    this.facturas.obtener(id).subscribe({
+      next: (doc) => {
+        this.clienteId.set(doc.id_cliente);
+        const cliente = this.inventario.clientes().find((c) => c.id === doc.id_cliente);
+        if (cliente) {
+          this.busquedaCliente.set(`${cliente.nombre} · ${cliente.nit}`);
+        }
+        this.condicionVenta.set(doc.condicion_venta === 'credito' ? 'credito' : 'contado');
+        this.formaPago.set(doc.metodo_pago);
+        this.tipoComprobante.set(this.labelTipo(doc.tipo_factura));
+        this.moneda.set(doc.moneda || 'Quetzal');
+        this.vendedor.set(doc.vendedor || this.auth.user()?.nombre || 'Vendedor');
+        this.descuento.set(Number(doc.descuento) || 0);
+        this.notas.set(doc.notas || '');
+        const lineas = (doc.items || []).map((linea) => ({
+          uid: this.lineaSeq++,
+          id_producto: linea.id_producto,
+          sku: linea.producto?.sku || '',
+          nombre: linea.descripcion,
+          precio: Number(linea.precio_unitario) || 0,
+          stock: 9999,
+          cantidad: Number(linea.cantidad) || 1,
+        }));
+        this.lineas.set(lineas.length ? [...lineas, this.lineaVacia()] : [this.lineaVacia()]);
+      },
+      error: (err: unknown) => this.errorMessage.set(apiErrorMessage(err, 'No se pudo reutilizar la factura.')),
+    });
+  }
+
+  private labelTipo(tipo?: string): string {
+    if (tipo === 'factura_especial') {
+      return 'Factura especial';
+    }
+    if (tipo === 'factura_cambiaria') {
+      return 'Factura cambiaria';
+    }
+    if (tipo === 'recibo') {
+      return 'Recibo';
+    }
+    return 'Factura';
   }
 
   private lineaVacia(): CarritoLinea {

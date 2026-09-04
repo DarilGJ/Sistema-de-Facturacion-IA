@@ -6,6 +6,8 @@ import { sequelize } from './models/index.js';
 import { ensureClienteSchema } from './utils/ensure-cliente-schema.js';
 import { ensureProveedorSchema } from './utils/ensure-proveedor-schema.js';
 import { ensureProductoSchema } from './utils/ensure-producto-schema.js';
+import { ensureFacturaSchema } from './utils/ensure-factura-schema.js';
+import { getOrCreateInventarioConfig } from './utils/inventario-config.js';
 import authRoutes from './routes/auth.routes.js';
 import aiRoutes from './routes/ai.routes.js';
 import proveedorRoutes from './routes/proveedor.routes.js';
@@ -14,6 +16,7 @@ import productoRoutes from './routes/producto.routes.js';
 import facturaRoutes from './routes/factura.routes.js';
 import cotizacionRoutes from './routes/cotizacion.routes.js';
 import dashboardRoutes from './routes/dashboard.routes.js';
+import inventarioRoutes from './routes/inventario.routes.js';
 
 const app = express();
 
@@ -37,6 +40,7 @@ app.use('/api/productos', productoRoutes);
 app.use('/api/facturas', facturaRoutes);
 app.use('/api/cotizaciones', cotizacionRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/inventario', inventarioRoutes);
 
 app.use((err, _req, res, _next) => {
   console.error(err);
@@ -50,6 +54,8 @@ async function start() {
     await ensureClienteSchema();
     await ensureProveedorSchema();
     await ensureProductoSchema();
+    await ensureFacturaSchema();
+    await getOrCreateInventarioConfig();
     console.log('MySQL (Sequelize) conectado y modelos sincronizados');
   } catch (error) {
     console.warn('Advertencia: no se pudo conectar a MySQL todavía.');

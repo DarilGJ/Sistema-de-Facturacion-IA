@@ -1,0 +1,37 @@
+.cat-toolbar {
+  align-items: center;
+}
+
+.inline-filter {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.inline-filter span {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.inline-filter select,
+.page-size {
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #0f172a;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.categoria-modal {
+  width: min(420px, 100%);
+}
+
+.categoria-modal .cliente-modal-body {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.categoria-modal .cliente-modal-footer {
+  justify-content: space-between;
+}

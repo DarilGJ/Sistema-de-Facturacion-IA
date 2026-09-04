@@ -8,6 +8,9 @@
   margin: 0;
   font-size: 1.45rem;
   color: #0f172a;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
 }
 
 .page-header p {
@@ -251,6 +254,31 @@ th {
   color: #475569;
 }
 
+.badge-venta,
+.badge-materia,
+.badge-principal {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  text-transform: lowercase;
+}
+
+.badge-venta {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.badge-materia {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.badge-principal {
+  background: #1e3a5f;
+  color: #fff;
+  text-transform: none;
+}
+
 .cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
@@ -423,9 +451,10 @@ th {
   color: #fff;
 }
 
-.pager button:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
+.pager-gap {
+  min-width: 2rem;
+  text-align: center;
+  color: #94a3b8;
 }
 
 .receptores-header h1 {

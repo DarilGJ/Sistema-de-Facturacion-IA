@@ -1,5 +1,5 @@
 import { Op } from 'sequelize';
-import { Cliente, Factura, FacturaItem, Producto, Proveedor } from '../models/index.js';
+import { Cliente, Factura, FacturaItem, InventarioDevolucion, Producto, Proveedor } from '../models/index.js';
 import { handleSequelizeError } from '../utils/http-error.js';
 
 const PLAN = {
@@ -186,7 +186,7 @@ export async function resumen(req, res) {
     const yearStart = new Date(now.getFullYear(), 0, 1);
     const yearAgo = new Date(now.getFullYear() - 1, now.getMonth(), 1);
 
-    const [clientes, proveedores, productos, facturas, emitidasTotales] = await Promise.all([
+    const [clientes, proveedores, productos, facturas, emitidasTotales, devolucionesAnio] = await Promise.all([
       Cliente.count({ where: { estado: true } }),
       Proveedor.count({ where: { estado: true } }),
       Producto.findAll(),
@@ -196,6 +196,10 @@ export async function resumen(req, res) {
         order: [['fecha', 'ASC']],
       }),
       Factura.count({ where: { estado: 'emitida' } }),
+      InventarioDevolucion.findAll({
+        where: { fecha: { [Op.between]: [yearStart, endOfDay(now)] } },
+        attributes: ['id', 'total_devuelto', 'fecha'],
+      }),
     ]);
 
     const productosById = new Map(productos.map((p) => [p.id, p]));
@@ -325,8 +329,11 @@ export async function resumen(req, res) {
           vencido: money(cxPVencido),
         },
         devoluciones: {
-          total: anio.devoluciones,
-          documentos: anio.anuladas,
+          total: money(
+            anio.devoluciones +
+              devolucionesAnio.reduce((sum, item) => sum + money(item.total_devuelto), 0)
+          ),
+          documentos: anio.anuladas + devolucionesAnio.length,
         },
         cobrado: money(cobradas.reduce((sum, f) => sum + money(f.total), 0)),
       },

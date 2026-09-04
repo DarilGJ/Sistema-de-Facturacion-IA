@@ -1,0 +1,434 @@
+<section class="module-page">
+  <app-inventario-nav />
+
+  <header class="page-header tr-head">
+    <div>
+      <h1>Devoluciones de mercadería</h1>
+      <p>Las devoluciones se procesan al guardar: inventario, caja o nota de crédito quedan aplicadas.</p>
+    </div>
+    <div class="vista-toggle" role="tablist" aria-label="Estado">
+      <button type="button" class="active" role="tab" aria-selected="true">Procesadas</button>
+    </div>
+  </header>
+
+  <div class="crud-toolbar cat-toolbar">
+    <label class="inline-filter">
+      <span>Razón de devolución</span>
+      <select [value]="razonFiltro()" (change)="setFiltroRazon($any($event.target).value)">
+        @for (opcion of razones; track opcion.id) {
+          <option [value]="opcion.id">{{ opcion.label }}</option>
+        }
+      </select>
+    </label>
+    <label class="search-field">
+      <app-icon name="search" />
+      <input
+        type="search"
+        placeholder="Buscar por nombre o código..."
+        [value]="busqueda()"
+        (input)="setBusqueda($any($event.target).value)"
+      />
+    </label>
+    <button type="button" class="icon-action" (click)="cargar()" title="Actualizar">
+      <app-icon name="refresh" />
+    </button>
+    <select class="page-size" [value]="pageSize()" (change)="setPageSize($any($event.target).value)">
+      <option [value]="10">10</option>
+      <option [value]="25">25</option>
+      <option [value]="50">50</option>
+      <option [value]="100">100</option>
+    </select>
+    <button type="button" class="btn btn-accent" (click)="abrirNuevo()">+ Nueva devolución</button>
+  </div>
+
+  @if (errorMessage() && !formOpen()) {
+    <p class="alert-error" role="alert">{{ errorMessage() }}</p>
+  }
+
+  <div class="table-wrap">
+    <table class="aj-table">
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>NC / Referencia</th>
+          <th>Cliente</th>
+          <th>Razón</th>
+          <th class="num">Cant.</th>
+          <th>Bodega</th>
+          <th>Fecha</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading()) {
+          <tr>
+            <td colspan="8" class="muted">Cargando devoluciones...</td>
+          </tr>
+        } @else {
+          @for (item of visibles(); track item.id) {
+            <tr>
+              <td>
+                <strong>{{ productosResumen(item) }}</strong>
+                <div class="tr-sub">{{ etiquetaResolucion(item.resolucion) }} · {{ item.factura }}</div>
+              </td>
+              <td class="aj-num">{{ item.referencia_nc || item.numero }}</td>
+              <td>{{ item.cliente }}</td>
+              <td>{{ etiquetaRazon(item.razon) }}</td>
+              <td class="num">{{ formatoCantidad(cantidadTotal(item)) }}</td>
+              <td>{{ item.bodega }}</td>
+              <td>{{ formatoFecha(item.fecha) }}</td>
+              <td>
+                <div class="row-menu" (click)="$event.stopPropagation()">
+                  <button type="button" class="kebab" (click)="toggleMenu(item.id, $event)" aria-label="Acciones">
+                    <app-icon name="more" />
+                  </button>
+                  @if (menuId() === item.id) {
+                    <div class="menu" role="menu">
+                      <button type="button" (click)="ver(item, $event)">
+                        <app-icon name="eye" /> Ver
+                      </button>
+                    </div>
+                  }
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" class="muted">No hay devoluciones procesadas.</td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+    <footer class="table-footer">
+      <span>Viendo {{ rango().from }} a {{ rango().to }} de {{ filtrados().length }} entradas</span>
+      <div class="pager">
+        <button type="button" [disabled]="paginaActual() === 1" (click)="irPagina(paginaActual() - 1)">Atrás</button>
+        @for (n of paginas(); track $index) {
+          @if (n === 'gap') {
+            <span class="pager-gap">…</span>
+          } @else {
+            <button type="button" [class.active]="n === paginaActual()" (click)="irPagina(n)">{{ n }}</button>
+          }
+        }
+        <button type="button" [disabled]="paginaActual() === totalPaginas()" (click)="irPagina(paginaActual() + 1)">
+          Siguiente
+        </button>
+      </div>
+    </footer>
+  </div>
+</section>
+
+@if (formOpen()) {
+  <div class="modal-overlay" (click)="cancelar()">
+    <div class="aj-modal" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="dev-title">
+      <header class="aj-modal-header">
+        <button type="button" class="aj-close" (click)="cancelar()" aria-label="Cerrar">
+          <app-icon name="close" />
+        </button>
+        <h2 id="dev-title">Nueva devolución</h2>
+      </header>
+
+      <div class="aj-modal-body">
+        @if (formError()) {
+          <p class="alert-error" role="alert">{{ formError() }}</p>
+        }
+
+        <div class="dev-grid">
+          <label class="outline-field">
+            <span>Bodega</span>
+            <select [value]="bodegaId() ?? ''" (change)="seleccionarBodega($any($event.target).value)">
+              <option value="">Selecciona una bodega</option>
+              @for (bodega of inventario.almacenes(); track bodega.id) {
+                @if (bodega.estado) {
+                  <option [value]="bodega.id">{{ bodega.nombre }}</option>
+                }
+              }
+            </select>
+          </label>
+          <label class="outline-field">
+            <span>Razón de devolución</span>
+            <select [value]="razon()" (change)="setRazon($any($event.target).value)">
+              @for (opcion of razones; track opcion.id) {
+                @if (opcion.id) {
+                  <option [value]="opcion.id">{{ opcion.label }}</option>
+                }
+              }
+            </select>
+          </label>
+          @if (!esCambio()) {
+            <label class="outline-field">
+              <span>Resolución</span>
+              <select [value]="resolucion()" (change)="setResolucion($any($event.target).value)">
+                <option value="reembolso_efectivo">Reembolso en efectivo</option>
+                <option value="nota_credito">Nota de crédito</option>
+              </select>
+            </label>
+          }
+        </div>
+
+        <p class="dev-hint">
+          @if (razon() === 'danado' || razon() === 'vencido') {
+            El producto no reingresa a existencias vendibles. Sí se aplica el reembolso o la nota de crédito.
+          } @else if (esCambio()) {
+            Entra el artículo devuelto y sale el de reemplazo. Si los precios no coinciden, el cliente paga o recibe la diferencia en efectivo.
+          } @else {
+            El artículo reingresa a la bodega y se liquida con reembolso o nota de crédito.
+          }
+        </p>
+
+        <div class="aj-split">
+          <section class="aj-card">
+            <h3>Factura origen</h3>
+            <label class="search-field">
+              <app-icon name="search" />
+              <input
+                type="search"
+                placeholder="Buscar factura, cliente o NIT"
+                [value]="busquedaFactura()"
+                (input)="setBusquedaFactura($any($event.target).value)"
+              />
+            </label>
+            @if (factura(); as fac) {
+              <article class="dev-factura">
+                <strong>{{ fac.numero }}</strong>
+                <span>{{ fac.cliente }} · {{ fac.metodo_pago }}</span>
+              </article>
+            }
+            <div class="table-wrap aj-inner-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Factura</th>
+                    <th>Cliente</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of facturasFiltradas(); track item.id) {
+                    <tr class="click-row" (click)="elegirFactura(item)">
+                      <td>{{ item.numero }}</td>
+                      <td>{{ item.cliente?.nombre }}</td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="2" class="muted">No hay facturas emitidas.</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="aj-card">
+            <h3>Productos a devolver</h3>
+            @if (loadingFactura()) {
+              <p class="muted">Cargando líneas de la factura...</p>
+            } @else if (!factura()) {
+              <div class="ppb-empty">
+                <app-icon name="return-box" />
+                <strong>Selecciona una factura</strong>
+                <p>Elige el documento de venta para devolver mercancía.</p>
+              </div>
+            } @else {
+              @for (item of lineas(); track item.id_factura_item) {
+                <article class="aj-line">
+                  <header>
+                    <div>
+                      <strong>{{ item.producto }}</strong>
+                      <span>
+                        {{ item.sku }} · Vendidas {{ formatoCantidad(item.cantidad_vendida) }} · Ya devueltas
+                        {{ formatoCantidad(item.cantidad_devuelta) }}
+                      </span>
+                    </div>
+                  </header>
+                  <div class="dev-line-grid" [class.cambio]="esCambio()">
+                    <span>Devolver</span>
+                    <span>Precio orig.</span>
+                    <span>Disponible</span>
+                    @if (esCambio()) {
+                      <span>Entregar</span>
+                      <span>Cant. entrega</span>
+                      <span>Precio nuevo</span>
+                    }
+                    <input
+                      class="qty-input"
+                      type="number"
+                      min="0"
+                      [max]="item.cantidad_disponible"
+                      [value]="item.cantidad_devolver"
+                      (input)="setCantidad(item, $any($event.target).value)"
+                      [disabled]="item.cantidad_disponible < 1"
+                    />
+                    <strong>{{ moneda(item.precio_unitario) }}</strong>
+                    <strong>{{ formatoCantidad(item.cantidad_disponible) }}</strong>
+                    @if (esCambio()) {
+                      <select
+                        class="qty-input dev-select"
+                        [value]="item.id_producto_cambio ?? ''"
+                        (change)="setProductoCambio(item, $any($event.target).value)"
+                      >
+                        <option value="">Producto</option>
+                        @for (prod of catalogo(); track prod.id) {
+                          <option [value]="prod.id_producto">{{ prod.nombre }} ({{ formatoCantidad(prod.cantidad) }})</option>
+                        }
+                      </select>
+                      <input
+                        class="qty-input"
+                        type="number"
+                        min="0"
+                        [value]="item.cantidad_cambio"
+                        (input)="setCantidadCambio(item, $any($event.target).value)"
+                      />
+                      <input
+                        class="qty-input"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        [value]="item.precio_cambio"
+                        (input)="setPrecioCambio(item, $any($event.target).value)"
+                      />
+                    }
+                  </div>
+                </article>
+              }
+            }
+          </section>
+        </div>
+
+        <div class="dev-resumen">
+          <div>
+            <span>Mercancía devuelta</span>
+            <strong>{{ moneda(resumen().total) }}</strong>
+            <small>ITBIS {{ moneda(resumen().itbis) }}</small>
+          </div>
+          @if (esCambio()) {
+            <div>
+              <span>Mercancía entregada</span>
+              <strong>{{ moneda(resumen().totalCambio) }}</strong>
+              <small>ITBIS {{ moneda(resumen().itbisCambio) }}</small>
+            </div>
+            <div>
+              <span>Diferencia de precios</span>
+              <strong>{{ moneda(resumen().diferencia) }}</strong>
+              <small>{{ resumen().diferencia > 0 ? 'Cliente paga' : resumen().diferencia < 0 ? 'A favor del cliente' : 'Sin diferencia' }}</small>
+            </div>
+          }
+          @if (resumen().reembolso > 0) {
+            <div>
+              <span>Reembolso efectivo</span>
+              <strong>{{ moneda(resumen().reembolso) }}</strong>
+              <small>Sale de caja</small>
+            </div>
+          }
+          @if (resumen().cobro > 0) {
+            <div>
+              <span>Cobro diferencia</span>
+              <strong>{{ moneda(resumen().cobro) }}</strong>
+              <small>Entra a caja</small>
+            </div>
+          }
+          @if (resumen().nota > 0) {
+            <div>
+              <span>Nota de crédito</span>
+              <strong>{{ moneda(resumen().nota) }}</strong>
+              <small>Se genera referencia NC</small>
+            </div>
+          }
+        </div>
+
+        <label class="outline-field">
+          <span>Observación</span>
+          <textarea
+            rows="2"
+            [value]="observacion()"
+            (input)="observacion.set($any($event.target).value)"
+            placeholder="Detalle adicional de la devolución"
+          ></textarea>
+        </label>
+      </div>
+
+      <footer class="aj-modal-footer">
+        <button type="button" class="btn btn-ghost" (click)="cancelar()" [disabled]="saving()">Cancelar</button>
+        <button type="button" class="btn btn-accent" (click)="guardar()" [disabled]="!puedeGuardar()">
+          {{ saving() ? 'Procesando...' : 'Procesar devolución' }}
+        </button>
+      </footer>
+    </div>
+  </div>
+}
+
+@if (detalle(); as doc) {
+  <div class="modal-overlay" (click)="detalle.set(null)">
+    <div class="aj-modal aj-modal-detail" (click)="$event.stopPropagation()" role="dialog">
+      <header class="aj-modal-header">
+        <button type="button" class="aj-close" (click)="detalle.set(null)" aria-label="Cerrar">
+          <app-icon name="close" />
+        </button>
+        <h2>Devolución {{ doc.numero }}</h2>
+      </header>
+      <div class="aj-meta">
+        <div><span>Referencia</span><strong>{{ doc.referencia_nc || doc.numero }}</strong></div>
+        <div><span>Factura</span><strong>{{ doc.factura }}</strong></div>
+        <div><span>Cliente</span><strong>{{ doc.cliente }}</strong></div>
+        <div><span>Fecha</span><strong>{{ formatoFecha(doc.fecha) }}</strong></div>
+        <div><span>Razón</span><strong>{{ etiquetaRazon(doc.razon) }}</strong></div>
+        <div><span>Resolución</span><strong>{{ etiquetaResolucion(doc.resolucion) }}</strong></div>
+        <div><span>Bodega</span><strong>{{ doc.bodega }}</strong></div>
+        <div>
+          <span>Estado contable</span>
+          <strong class="aj-asiento"><app-icon name="warn" /> No contabilizado</strong>
+        </div>
+      </div>
+      <div class="aj-modal-body">
+        <h3>Productos</h3>
+        @for (linea of doc.items; track linea.id) {
+          <article class="aj-line">
+            <header>
+              <div>
+                <strong>{{ linea.producto }}</strong>
+                <span>
+                  {{ linea.sku }} ·
+                  {{ linea.restablece_stock ? 'Reingresa a stock' : 'No reingresa (no apto para venta)' }}
+                </span>
+              </div>
+            </header>
+            <p class="dev-line-money">
+              {{ formatoCantidad(linea.cantidad) }} × {{ moneda(linea.precio_unitario) }} =
+              {{ moneda(linea.subtotal) }}
+            </p>
+            @if (linea.cantidad_cambio) {
+              <p class="dev-line-money">
+                Entrega: {{ linea.producto_cambio }} · {{ formatoCantidad(linea.cantidad_cambio) }} ×
+                {{ moneda(linea.precio_cambio) }} = {{ moneda(linea.subtotal_cambio) }}
+              </p>
+            }
+          </article>
+        }
+
+        <h3>Impacto</h3>
+        <ul class="dev-impacto">
+          <li><strong>Inventario:</strong> {{ impactoInventario(doc) }} Valor a costo {{ moneda(doc.valor_inventario) }}.</li>
+          <li><strong>Ventas:</strong> se revierte {{ moneda(doc.total_devuelto) }} (incluye ITBIS {{ moneda(doc.itbis_devuelto) }}).</li>
+          @if (doc.total_cambio) {
+            <li><strong>Nueva venta / entrega:</strong> {{ moneda(doc.total_cambio) }} (ITBIS {{ moneda(doc.itbis_cambio) }}).</li>
+          }
+          @if (doc.reembolso) {
+            <li><strong>Caja:</strong> egreso por reembolso {{ moneda(doc.reembolso) }}.</li>
+          }
+          @if (doc.cobro) {
+            <li><strong>Caja:</strong> ingreso por diferencia de precios {{ moneda(doc.cobro) }}.</li>
+          }
+          @if (doc.nota_credito_monto) {
+            <li><strong>Cuentas:</strong> nota de crédito {{ moneda(doc.nota_credito_monto) }} ({{ doc.referencia_nc }}).</li>
+          }
+        </ul>
+        @if (doc.observacion) {
+          <label class="outline-field">
+            <span>Observación</span>
+            <textarea rows="2" [value]="doc.observacion" readOnly></textarea>
+          </label>
+        }
+      </div>
+    </div>
+  </div>
+}

@@ -1,74 +1,195 @@
-<div class="inv-shell">
-  <div class="inv-brand">
-    <span class="mark"><app-icon name="box" /></span>
-    <div>
-      <strong>FacturaAI</strong>
-      <span>Inventario</span>
-    </div>
+<nav class="inv-tabs" aria-label="Módulos de inventario">
+  <a routerLink="/inventario" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+    <app-icon name="home" />
+    Inicio
+  </a>
+
+  <div class="drop" (click)="$event.stopPropagation()">
+    <button
+      type="button"
+      [class.open]="openMenu() === 'catalogo'"
+      [class.active]="catalogoActivo()"
+      (click)="toggle('catalogo', $event)"
+    >
+      <app-icon name="layers" />
+      Catálogo
+      <app-icon name="chevron" />
+    </button>
+    @if (openMenu() === 'catalogo') {
+      <div class="drop-panel">
+        <a routerLink="/inventario/productos" (click)="close()">
+          <app-icon name="box" /> Productos
+        </a>
+        <a routerLink="/inventario/categorias" (click)="close()">
+          <app-icon name="grid" /> Categorías
+        </a>
+        <a routerLink="/inventario/subcategorias" (click)="close()">
+          <app-icon name="tree" /> Subcategorías
+        </a>
+        <a routerLink="/inventario/marcas" (click)="close()">
+          <app-icon name="bookmark" /> Marcas
+        </a>
+        <a routerLink="/inventario/listas-precios" (click)="close()">
+          <app-icon name="tag" /> Listas de Precios
+        </a>
+      </div>
+    }
   </div>
 
-  <nav class="inv-tabs" aria-label="Módulos de inventario">
-    <a routerLink="/inventario" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-      <app-icon name="home" />
-      Inicio
-    </a>
+  <div class="drop" (click)="$event.stopPropagation()">
+    <button
+      type="button"
+      [class.open]="openMenu() === 'almacenes'"
+      [class.active]="almacenesActivo()"
+      (click)="toggle('almacenes', $event)"
+    >
+      <app-icon name="warehouse" />
+      Almacenes
+      <app-icon name="chevron" />
+    </button>
+    @if (openMenu() === 'almacenes') {
+      <div class="drop-panel">
+        <a routerLink="/inventario/almacenes" (click)="close()">
+          <app-icon name="warehouse" /> Bodegas
+        </a>
+        <a routerLink="/inventario/existencias" (click)="close()">
+          <app-icon name="clipboard" /> Productos por Bodega
+        </a>
+      </div>
+    }
+  </div>
 
-    <div class="drop" (click)="$event.stopPropagation()">
-      <button type="button" [class.open]="openMenu() === 'catalogo'" (click)="toggle('catalogo', $event)">
-        <app-icon name="tag" />
-        Catálogo
-        <app-icon name="chevron" />
-      </button>
-      @if (openMenu() === 'catalogo') {
-        <div class="drop-panel">
-          <a routerLink="/inventario/productos" (click)="openMenu.set(null)">Artículos / Servicios</a>
-          <a routerLink="/inventario/categorias" (click)="openMenu.set(null)">Categorías</a>
-          <a routerLink="/inventario/proveedores" (click)="openMenu.set(null)">Proveedores</a>
-        </div>
-      }
-    </div>
-
-    <div class="drop" (click)="$event.stopPropagation()">
-      <button type="button" [class.open]="openMenu() === 'almacenes'" (click)="toggle('almacenes', $event)">
-        <app-icon name="warehouse" />
-        Almacenes
-        <app-icon name="chevron" />
-      </button>
-      @if (openMenu() === 'almacenes') {
-        <div class="drop-panel">
-          <a routerLink="/inventario/almacenes" (click)="openMenu.set(null)">Bodegas</a>
-          <a routerLink="/inventario/existencias" (click)="openMenu.set(null)">Existencias</a>
-        </div>
-      }
-    </div>
-
-    <a routerLink="/inventario/movimientos" routerLinkActive="active">
+  <div class="drop" (click)="$event.stopPropagation()">
+    <button
+      type="button"
+      [class.open]="openMenu() === 'movimientos'"
+      [class.active]="movimientosActivo()"
+      (click)="toggle('movimientos', $event)"
+    >
       <app-icon name="swap" />
       Movimientos
-    </a>
+      <app-icon name="chevron" />
+    </button>
+    @if (openMenu() === 'movimientos') {
+      <div class="drop-panel">
+        <a routerLink="/inventario/ajustes" (click)="close()">
+          <app-icon name="sliders" /> Ajustes de Cantidad
+        </a>
+        <a routerLink="/inventario/traslados" (click)="close()">
+          <app-icon name="transfer" /> Traslados entre Bodegas
+        </a>
+        <a routerLink="/inventario/toma-fisica" (click)="close()">
+          <app-icon name="count" /> Toma Física
+        </a>
+        <a routerLink="/inventario/devoluciones" (click)="close()">
+          <app-icon name="return-box" /> Devoluciones
+        </a>
+        <a routerLink="/inventario/movimientos" (click)="close()">
+          <app-icon name="history" /> Bitácora de Inventario
+        </a>
+      </div>
+    }
+  </div>
 
-    <div class="drop" (click)="$event.stopPropagation()">
-      <button type="button" [class.open]="openMenu() === 'reportes'" (click)="toggle('reportes', $event)">
-        <app-icon name="clipboard" />
-        Reportes
-        <app-icon name="chevron" />
-      </button>
-      @if (openMenu() === 'reportes') {
-        <div class="drop-panel">
-          <a routerLink="/contabilidad" (click)="openMenu.set(null)">Contabilidad / ITBIS</a>
-          <a routerLink="/inventario" (click)="openMenu.set(null)">Centro de control</a>
+  <div class="drop" (click)="$event.stopPropagation()">
+    <button
+      type="button"
+      [class.open]="openMenu() === 'reportes'"
+      [class.active]="reportesActivo()"
+      (click)="toggle('reportes', $event)"
+    >
+      <app-icon name="report" />
+      Reportes
+      <app-icon name="chevron" />
+    </button>
+    @if (openMenu() === 'reportes') {
+      <div class="drop-panel flyout-host">
+        <a routerLink="/inventario/reportes/alertas-stock" (click)="close()" (mouseenter)="openFlyout.set(null)">
+          <app-icon name="chart" /> Alertas de stock
+        </a>
+        <div class="menu-row" (mouseenter)="showFlyout('stock', $event)">
+          <button
+            type="button"
+            class="flyout-trigger"
+            [class.open]="openFlyout() === 'stock'"
+            (click)="showFlyout('stock', $event)"
+          >
+            <span><app-icon name="box" /> Stock</span>
+            <app-icon name="chevron" />
+          </button>
+          @if (openFlyout() === 'stock') {
+            <div class="flyout">
+              <a routerLink="/inventario/reportes/listado" (click)="close()">
+                <app-icon name="clipboard" /> Listado de Inventario
+              </a>
+              <a routerLink="/inventario/reportes/existencias-margen" (click)="close()">
+                <app-icon name="box" /> Existencias y Margen
+              </a>
+              <a routerLink="/inventario/reportes/valorizacion" (click)="close()">
+                <app-icon name="coins" /> Valorización
+              </a>
+              <a routerLink="/inventario/reportes/vencimientos" (click)="close()">
+                <app-icon name="calendar-x" /> Vencimientos
+              </a>
+            </div>
+          }
         </div>
-      }
-    </div>
+        <div class="menu-row" (mouseenter)="showFlyout('movimientos', $event)">
+          <button
+            type="button"
+            class="flyout-trigger"
+            [class.open]="openFlyout() === 'movimientos'"
+            (click)="showFlyout('movimientos', $event)"
+          >
+            <span><app-icon name="swap" /> Movimientos</span>
+            <app-icon name="chevron" />
+          </button>
+          @if (openFlyout() === 'movimientos') {
+            <div class="flyout">
+              <a routerLink="/inventario/reportes/kardex" (click)="close()">
+                <app-icon name="list-num" /> Kardex
+              </a>
+              <a routerLink="/inventario/reportes/historial-acumulado" (click)="close()">
+                <app-icon name="table" /> Historial Acumulado
+              </a>
+              <a routerLink="/inventario/reportes/historico-ventas" (click)="close()">
+                <app-icon name="history" /> Histórico de Ventas
+              </a>
+            </div>
+          }
+        </div>
+        <div class="menu-row" (mouseenter)="showFlyout('analisis', $event)">
+          <button
+            type="button"
+            class="flyout-trigger"
+            [class.open]="openFlyout() === 'analisis'"
+            (click)="showFlyout('analisis', $event)"
+          >
+            <span><app-icon name="gauge" /> Análisis</span>
+            <app-icon name="chevron" />
+          </button>
+          @if (openFlyout() === 'analisis') {
+            <div class="flyout">
+              <a routerLink="/inventario/reportes/rentabilidad" (click)="close()">
+                <app-icon name="rotate" /> Rentabilidad por Categoría
+              </a>
+              <a routerLink="/inventario/reportes/rotacion-abc" (click)="close()">
+                <app-icon name="rotate" /> Rotación (ABC)
+              </a>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
 
-    <a routerLink="/inventario/clientes" routerLinkActive="active">
-      <app-icon name="users" />
-      Receptores
-    </a>
+  <a routerLink="/inventario/configuracion" routerLinkActive="active" [class.active]="configActivo()">
+    <app-icon name="sliders" />
+    Configuración
+  </a>
 
-    <a routerLink="/dashboard">
-      <app-icon name="back" />
-      Volver
-    </a>
-  </nav>
-</div>
+  <a routerLink="/dashboard">
+    <app-icon name="logout" />
+    Volver
+  </a>
+</nav>

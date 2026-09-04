@@ -6,15 +6,29 @@ import { environment } from '../../../environments/environment';
 import {
   Almacen,
   Categoria,
+  CategoriaPayload,
+  Subcategoria,
+  SubcategoriaPayload,
+  Marca,
+  MarcaPayload,
+  BodegaPayload,
   Cliente,
   ClientePayload,
   Existencia,
   VendedorOpcion,
-  Movimiento,
+  KardexPage,
   Producto,
   ProductoPayload,
   Proveedor,
   ProveedorPayload,
+  InventarioConfig,
+  AjusteInventario,
+  AjustePayload,
+  TrasladoInventario,
+  TrasladoPayload,
+  DevolucionInventario,
+  DevolucionFactura,
+  DevolucionPayload,
 } from '../models/inventario.model';
 
 @Injectable({ providedIn: 'root' })
@@ -27,34 +41,24 @@ export class InventarioService {
   readonly vendedores = signal<VendedorOpcion[]>([]);
   readonly productos = signal<Producto[]>([]);
 
-  readonly categorias = signal<Categoria[]>([
-    { id: 1, nombre: 'Papelería', descripcion: 'Hojas, tintas y artículos de oficina', productos: 12 },
-    { id: 2, nombre: 'Tecnología', descripcion: 'Equipos y accesorios informáticos', productos: 8 },
-    { id: 3, nombre: 'Limpieza', descripcion: 'Insumos de aseo e higiene', productos: 6 },
-    { id: 4, nombre: 'Servicios', descripcion: 'Ítems facturables sin stock físico', productos: 3 },
-  ]);
+  readonly categorias = signal<Categoria[]>([]);
+  readonly subcategorias = signal<Subcategoria[]>([]);
+  readonly marcas = signal<Marca[]>([]);
+  readonly almacenes = signal<Almacen[]>([]);
 
-  readonly almacenes = signal<Almacen[]>([
-    { id: 1, nombre: 'Almacén central', ubicacion: 'Santo Domingo, Zona Industrial', responsable: 'Ana Pérez', activo: true },
-    { id: 2, nombre: 'Sucursal Norte', ubicacion: 'Santiago, Calle Principal 45', responsable: 'Luis Gómez', activo: true },
-    { id: 3, nombre: 'Bodega temporal', ubicacion: 'Boca Chica, almacén 2', responsable: 'María Cruz', activo: false },
-  ]);
+  readonly existencias = signal<Existencia[]>([]);
+  readonly ajustes = signal<AjusteInventario[]>([]);
+  readonly traslados = signal<TrasladoInventario[]>([]);
+  readonly devoluciones = signal<DevolucionInventario[]>([]);
+  readonly kardex = signal<KardexPage['rows']>([]);
+  readonly kardexTotal = signal(0);
 
-  readonly existencias = signal<Existencia[]>([
-    { id: 1, producto: 'Resma papel carta', sku: 'PAP-001', almacen: 'Almacén central', cantidad: 84, minimo: 20 },
-    { id: 2, producto: 'Tinta laser negra', sku: 'PAP-014', almacen: 'Almacén central', cantidad: 9, minimo: 12 },
-    { id: 3, producto: 'Mouse inalámbrico', sku: 'TEC-003', almacen: 'Sucursal Norte', cantidad: 31, minimo: 10 },
-    { id: 4, producto: 'Teclado USB', sku: 'TEC-021', almacen: 'Sucursal Norte', cantidad: 4, minimo: 8 },
-    { id: 5, producto: 'Detergente 5L', sku: 'LIM-008', almacen: 'Almacén central', cantidad: 18, minimo: 6 },
-  ]);
-
-  readonly movimientos = signal<Movimiento[]>([
-    { id: 18, fecha: '2026-08-24', tipo: 'entrada', producto: 'Resma papel carta', almacen: 'Almacén central', cantidad: 40, referencia: 'OC-1042' },
-    { id: 17, fecha: '2026-08-23', tipo: 'salida', producto: 'Tinta laser negra', almacen: 'Almacén central', cantidad: 3, referencia: 'FAC-331' },
-    { id: 16, fecha: '2026-08-22', tipo: 'ajuste', producto: 'Teclado USB', almacen: 'Sucursal Norte', cantidad: -2, referencia: 'AJ-015' },
-    { id: 15, fecha: '2026-08-21', tipo: 'salida', producto: 'Mouse inalámbrico', almacen: 'Sucursal Norte', cantidad: 5, referencia: 'FAC-328' },
-    { id: 14, fecha: '2026-08-20', tipo: 'entrada', producto: 'Detergente 5L', almacen: 'Almacén central', cantidad: 12, referencia: 'OC-1038' },
-  ]);
+  readonly config = signal<InventarioConfig>({
+    control_lotes: false,
+    bloquear_ventas_sin_stock: true,
+    reserva_stock: false,
+    merma_ajustes: false,
+  });
 
   listarProveedores(): Observable<Proveedor[]> {
     return this.http
@@ -134,11 +138,219 @@ export class InventarioService {
       .pipe(switchMap(() => this.listarProductos()));
   }
 
-  cargarCatalogos(): Observable<{ proveedores: Proveedor[]; clientes: Cliente[]; productos: Producto[] }> {
+  cargarCatalogos(): Observable<{
+    proveedores: Proveedor[];
+    clientes: Cliente[];
+    productos: Producto[];
+    categorias: Categoria[];
+    subcategorias: Subcategoria[];
+    marcas: Marca[];
+    bodegas: Almacen[];
+  }> {
     return forkJoin({
       proveedores: this.listarProveedores(),
       clientes: this.listarClientes(),
       productos: this.listarProductos(),
+      categorias: this.listarCategorias(),
+      subcategorias: this.listarSubcategorias(),
+      marcas: this.listarMarcas(),
+      bodegas: this.listarBodegas(),
     });
+  }
+
+  listarCategorias(): Observable<Categoria[]> {
+    return this.http
+      .get<Categoria[]>(`${this.api}/inventario/categorias`)
+      .pipe(tap((rows) => this.categorias.set(rows)));
+  }
+
+  crearCategoria(payload: CategoriaPayload): Observable<Categoria[]> {
+    return this.http
+      .post<Categoria>(`${this.api}/inventario/categorias`, payload)
+      .pipe(switchMap(() => this.listarCategorias()));
+  }
+
+  actualizarCategoria(id: number, payload: Partial<CategoriaPayload>): Observable<Categoria[]> {
+    return this.http
+      .put<Categoria>(`${this.api}/inventario/categorias/${id}`, payload)
+      .pipe(switchMap(() => this.listarCategorias()));
+  }
+
+  listarSubcategorias(): Observable<Subcategoria[]> {
+    return this.http
+      .get<Subcategoria[]>(`${this.api}/inventario/subcategorias`)
+      .pipe(tap((rows) => this.subcategorias.set(rows)));
+  }
+
+  crearSubcategoria(payload: SubcategoriaPayload): Observable<Subcategoria[]> {
+    return this.http
+      .post<Subcategoria>(`${this.api}/inventario/subcategorias`, payload)
+      .pipe(switchMap(() => this.listarSubcategorias()));
+  }
+
+  actualizarSubcategoria(id: number, payload: Partial<SubcategoriaPayload>): Observable<Subcategoria[]> {
+    return this.http
+      .put<Subcategoria>(`${this.api}/inventario/subcategorias/${id}`, payload)
+      .pipe(switchMap(() => this.listarSubcategorias()));
+  }
+
+  listarMarcas(): Observable<Marca[]> {
+    return this.http
+      .get<Marca[]>(`${this.api}/inventario/marcas`)
+      .pipe(tap((rows) => this.marcas.set(rows)));
+  }
+
+  crearMarca(payload: MarcaPayload): Observable<Marca[]> {
+    return this.http
+      .post<Marca>(`${this.api}/inventario/marcas`, payload)
+      .pipe(switchMap(() => this.listarMarcas()));
+  }
+
+  actualizarMarca(id: number, payload: Partial<MarcaPayload>): Observable<Marca[]> {
+    return this.http
+      .put<Marca>(`${this.api}/inventario/marcas/${id}`, payload)
+      .pipe(switchMap(() => this.listarMarcas()));
+  }
+
+  listarBodegas(): Observable<Almacen[]> {
+    return this.http
+      .get<Almacen[]>(`${this.api}/inventario/bodegas`)
+      .pipe(tap((rows) => this.almacenes.set(rows)));
+  }
+
+  crearBodega(payload: BodegaPayload): Observable<Almacen[]> {
+    return this.http
+      .post<Almacen>(`${this.api}/inventario/bodegas`, payload)
+      .pipe(switchMap(() => this.listarBodegas()));
+  }
+
+  actualizarBodega(id: number, payload: Partial<BodegaPayload>): Observable<Almacen[]> {
+    return this.http
+      .put<Almacen>(`${this.api}/inventario/bodegas/${id}`, payload)
+      .pipe(switchMap(() => this.listarBodegas()));
+  }
+
+  listarExistencias(idBodega: number): Observable<Existencia[]> {
+    return this.http
+      .get<Existencia[]>(`${this.api}/inventario/existencias`, { params: { id_bodega: String(idBodega) } })
+      .pipe(tap((rows) => this.existencias.set(rows)));
+  }
+
+  guardarExistencias(
+    idBodega: number,
+    productos: Array<{ id_producto: number; cantidad: number }>
+  ): Observable<Existencia[]> {
+    return this.http
+      .put<Existencia[]>(`${this.api}/inventario/existencias/${idBodega}`, { productos })
+      .pipe(tap((rows) => this.existencias.set(rows)));
+  }
+
+  listarAjustes(): Observable<AjusteInventario[]> {
+    return this.http
+      .get<AjusteInventario[]>(`${this.api}/inventario/ajustes`)
+      .pipe(tap((rows) => this.ajustes.set(rows)));
+  }
+
+  obtenerAjuste(id: number): Observable<AjusteInventario> {
+    return this.http.get<AjusteInventario>(`${this.api}/inventario/ajustes/${id}`);
+  }
+
+  descargarAjusteExcel(id: number): Observable<Blob> {
+    return this.http.get(`${this.api}/inventario/ajustes/${id}/excel`, {
+      responseType: 'blob',
+    });
+  }
+
+  crearAjuste(payload: AjustePayload): Observable<AjusteInventario> {
+    return this.http
+      .post<AjusteInventario>(`${this.api}/inventario/ajustes`, payload)
+      .pipe(
+        tap((created) => this.ajustes.update((lista) => [created, ...lista.filter((row) => row.id !== created.id)]))
+      );
+  }
+
+  listarTraslados(): Observable<TrasladoInventario[]> {
+    return this.http
+      .get<TrasladoInventario[]>(`${this.api}/inventario/traslados`)
+      .pipe(tap((rows) => this.traslados.set(rows)));
+  }
+
+  crearTraslado(payload: TrasladoPayload): Observable<TrasladoInventario> {
+    return this.http
+      .post<TrasladoInventario>(`${this.api}/inventario/traslados`, payload)
+      .pipe(
+        tap((created) => this.traslados.update((lista) => [created, ...lista.filter((row) => row.id !== created.id)]))
+      );
+  }
+
+  anularTraslado(id: number): Observable<TrasladoInventario> {
+    return this.http
+      .post<TrasladoInventario>(`${this.api}/inventario/traslados/${id}/anular`, {})
+      .pipe(
+        tap((updated) =>
+          this.traslados.update((lista) => lista.map((row) => (row.id === updated.id ? updated : row)))
+        )
+      );
+  }
+
+  descargarTrasladoExcel(id: number): Observable<Blob> {
+    return this.http.get(`${this.api}/inventario/traslados/${id}/excel`, {
+      responseType: 'blob',
+    });
+  }
+
+  listarDevoluciones(): Observable<DevolucionInventario[]> {
+    return this.http
+      .get<DevolucionInventario[]>(`${this.api}/inventario/devoluciones`)
+      .pipe(tap((rows) => this.devoluciones.set(rows)));
+  }
+
+  facturaDevolucion(idFactura: number): Observable<DevolucionFactura> {
+    return this.http.get<DevolucionFactura>(`${this.api}/inventario/devoluciones/factura/${idFactura}`);
+  }
+
+  crearDevolucion(payload: DevolucionPayload): Observable<DevolucionInventario> {
+    return this.http.post<DevolucionInventario>(`${this.api}/inventario/devoluciones`, payload).pipe(
+      tap((created) =>
+        this.devoluciones.update((lista) => [created, ...lista.filter((row) => row.id !== created.id)])
+      )
+    );
+  }
+
+  listarKardex(params: {
+    q?: string;
+    proceso?: string;
+    documento_origen?: string;
+    desde?: string;
+    hasta?: string;
+    page?: number;
+    size?: number;
+  }): Observable<KardexPage> {
+    const query: Record<string, string> = {};
+    if (params.q) query['q'] = params.q;
+    if (params.proceso) query['proceso'] = params.proceso;
+    if (params.documento_origen) query['documento_origen'] = params.documento_origen;
+    if (params.desde) query['desde'] = params.desde;
+    if (params.hasta) query['hasta'] = params.hasta;
+    query['page'] = String(params.page || 1);
+    query['size'] = String(params.size || 20);
+    return this.http.get<KardexPage>(`${this.api}/inventario/movimientos`, { params: query }).pipe(
+      tap((page) => {
+        this.kardex.set(page.rows);
+        this.kardexTotal.set(page.total);
+      })
+    );
+  }
+
+  cargarConfig(): Observable<InventarioConfig> {
+    return this.http
+      .get<InventarioConfig>(`${this.api}/inventario/config`)
+      .pipe(tap((config) => this.config.set(config)));
+  }
+
+  actualizarConfig(payload: Partial<InventarioConfig>): Observable<InventarioConfig> {
+    return this.http
+      .put<InventarioConfig>(`${this.api}/inventario/config`, payload)
+      .pipe(tap((config) => this.config.set(config)));
   }
 }

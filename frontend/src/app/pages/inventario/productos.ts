@@ -1,13 +1,14 @@
 import { Component, HostListener, OnInit, computed, signal } from '@angular/core';
-import { CurrencyPipe, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { InventarioService } from '../../core/services/inventario.service';
 import { Producto, ProductoPayload, TipoArticulo } from '../../core/models/inventario.model';
 import { apiErrorMessage } from '../../core/utils/api-error';
-import { clampPage, pageNumbers, pageRange, pageSlice } from '../../core/utils/paginate';
+import { clampPage, compactPages, pageRange, pageSlice, PageToken } from '../../core/utils/paginate';
 import { UiIcon } from '../../shared/ui-icon/ui-icon';
 import { RowMenu } from '../../shared/row-menu/row-menu';
+import { InventarioNav } from './inventario-nav';
 
 const UNIDADES_MEDIDA = [
   'unidad',
@@ -48,9 +49,9 @@ const IMPUESTOS = [
 
 @Component({
   selector: 'app-productos',
-  imports: [CurrencyPipe, DecimalPipe, ReactiveFormsModule, UiIcon, RowMenu],
+  imports: [DecimalPipe, ReactiveFormsModule, UiIcon, RowMenu, InventarioNav],
   templateUrl: './productos.html',
-  styleUrl: './inventario-shared.css',
+  styleUrls: ['./inventario-shared.css', './productos.css'],
 })
 export class Productos implements OnInit {
   readonly busqueda = signal('');
@@ -59,6 +60,9 @@ export class Productos implements OnInit {
   readonly filtroCategoria = signal('');
   readonly filtroSubcategoria = signal('');
   readonly filtroMarca = signal('');
+  readonly categoriaForm = signal('');
+  readonly subcategoriaForm = signal('');
+  readonly marcaForm = signal('');
   readonly filtroProveedor = signal('');
   readonly filtroCantidad = signal('');
   readonly filtrosOpen = signal(false);
@@ -73,23 +77,62 @@ export class Productos implements OnInit {
   readonly tiposImpuesto = TIPOS_IMPUESTO;
   readonly listasPrecio = ['P1', 'P2', 'P3'] as const;
 
-  readonly categoriasFiltro = computed(() => {
-    const fromCatalog = this.inventario.categorias().map((c) => c.nombre);
-    const fromItems = this.inventario.productos().map((p) => p.categoria || '').filter(Boolean);
-    return unique([...fromCatalog, ...fromItems]);
-  });
-
-  readonly subcategoriasFiltro = computed(() =>
-    unique(this.inventario.productos().map((p) => p.subcategoria || '').filter(Boolean))
+  readonly categoriasFiltro = computed(() =>
+    this.inventario
+      .categorias()
+      .filter((c) => c.estado)
+      .map((c) => c.nombre)
   );
 
-  readonly marcasFiltro = computed(() => unique(this.inventario.productos().map((p) => p.marca || '').filter(Boolean)));
-
-  readonly bodegasFiltro = computed(() => {
-    const fromAlmacenes = this.inventario.almacenes().map((a) => a.nombre);
-    const fromItems = this.inventario.productos().map((p) => p.bodega || '').filter(Boolean);
-    return unique([...fromAlmacenes, ...fromItems]);
+  readonly subcategoriasFiltro = computed(() => {
+    const categoria = this.filtroCategoria();
+    return this.inventario
+      .subcategorias()
+      .filter((item) => item.estado && (!categoria || item.categoria === categoria))
+      .map((item) => item.nombre);
   });
+
+  readonly marcasFiltro = computed(() =>
+    this.inventario
+      .marcas()
+      .filter((item) => item.estado)
+      .map((item) => item.nombre)
+  );
+
+  readonly categoriasFormulario = computed(() => {
+    const actual = this.categoriaForm();
+    return this.inventario
+      .categorias()
+      .filter((item) => item.estado || item.nombre === actual)
+      .map((item) => item.nombre);
+  });
+
+  readonly subcategoriasFormulario = computed(() => {
+    const categoria = this.categoriaForm();
+    const actual = this.subcategoriaForm();
+    return this.inventario
+      .subcategorias()
+      .filter(
+        (item) =>
+          item.categoria === categoria && (item.estado || item.nombre === actual)
+      )
+      .map((item) => item.nombre);
+  });
+
+  readonly marcasFormulario = computed(() => {
+    const actual = this.marcaForm();
+    return this.inventario
+      .marcas()
+      .filter((item) => item.estado || item.nombre === actual)
+      .map((item) => item.nombre);
+  });
+
+  readonly bodegasFiltro = computed(() =>
+    this.inventario
+      .almacenes()
+      .filter((item) => item.estado)
+      .map((item) => item.nombre)
+  );
 
   impuestosOpciones() {
     const tipo = this.form.controls.impuesto_tipo.value;
@@ -137,9 +180,12 @@ export class Productos implements OnInit {
   });
 
   readonly visibles = computed(() => pageSlice(this.filtrados(), this.pagina(), this.pageSize()));
-  readonly paginas = computed(() => pageNumbers(this.filtrados().length, this.pageSize()));
+  readonly paginas = computed(() => compactPages(this.pagina(), this.filtrados().length, this.pageSize()));
   readonly rango = computed(() => pageRange(this.filtrados().length, this.pagina(), this.pageSize()));
   readonly paginaActual = computed(() => clampPage(this.pagina(), this.filtrados().length, this.pageSize()));
+  readonly totalPaginas = computed(() =>
+    Math.max(1, Math.ceil(Math.max(this.filtrados().length, 0) / this.pageSize()))
+  );
   readonly montoInventario = computed(() =>
     this.filtrados().reduce((total, item) => total + this.valorCosto(item), 0)
   );
@@ -179,6 +225,19 @@ export class Productos implements OnInit {
       estado: [true],
     });
 
+    this.form.controls.categoria.valueChanges.subscribe((value) => {
+      this.categoriaForm.set(value || '');
+      const sub = this.form.controls.subcategoria.value || '';
+      const pertenece = this.inventario
+        .subcategorias()
+        .some((item) => item.categoria === value && item.nombre === sub);
+      if (sub && !pertenece) {
+        this.form.controls.subcategoria.setValue('');
+      }
+    });
+    this.form.controls.subcategoria.valueChanges.subscribe((value) => this.subcategoriaForm.set(value || ''));
+    this.form.controls.marca.valueChanges.subscribe((value) => this.marcaForm.set(value || ''));
+
     this.form.controls.impuesto_tipo.valueChanges.subscribe((tipo) => {
       const opciones = IMPUESTOS.filter((item) => item.tipo === tipo);
       const actual = this.form.controls.impuesto_nombre.value;
@@ -205,6 +264,10 @@ export class Productos implements OnInit {
     forkJoin({
       proveedores: this.inventario.listarProveedores(),
       productos: this.inventario.listarProductos(),
+      categorias: this.inventario.listarCategorias(),
+      subcategorias: this.inventario.listarSubcategorias(),
+      marcas: this.inventario.listarMarcas(),
+      bodegas: this.inventario.listarBodegas(),
     }).subscribe({
       next: () => this.loading.set(false),
       error: (err) => {
@@ -440,6 +503,12 @@ export class Productos implements OnInit {
     this.pagina.set(1);
   }
 
+  setFiltroCategoria(value: string): void {
+    this.filtroCategoria.set(value);
+    this.filtroSubcategoria.set('');
+    this.pagina.set(1);
+  }
+
   setFiltroEstado(value: string): void {
     this.filtroEstado.set(value);
     this.pagina.set(1);
@@ -448,6 +517,13 @@ export class Productos implements OnInit {
   setPageSize(value: string): void {
     this.pageSize.set(Number(value) || 10);
     this.pagina.set(1);
+  }
+
+  irPagina(n: PageToken): void {
+    if (n === 'gap') {
+      return;
+    }
+    this.pagina.set(clampPage(n, this.filtrados().length, this.pageSize()));
   }
 
   toggleFiltros(): void {
@@ -481,7 +557,18 @@ export class Productos implements OnInit {
   }
 
   unidad(item: Producto): string {
-    return item.unidad_medida || 'unidad';
+    const unidad = item.unidad_medida || 'unidad';
+    return unidad.charAt(0).toUpperCase() + unidad.slice(1);
+  }
+
+  precioLista(item: Producto, lista: 1 | 2 | 3): number {
+    if (lista === 2) {
+      return Number(item.precio_2 || 0);
+    }
+    if (lista === 3) {
+      return Number(item.precio_3 || 0);
+    }
+    return Number(item.precio_venta || 0);
   }
 
   iniciales(nombre: string): string {
@@ -504,8 +591,4 @@ export class Productos implements OnInit {
     const tipo = this.form.controls.tipo.value === 'servicio' ? 'Servicio' : 'Producto';
     return this.editingId() ? `Editar ${tipo}` : `Nuevo ${tipo}`;
   }
-}
-
-function unique(values: string[]): string[] {
-  return [...new Set(values)].sort((a, b) => a.localeCompare(b, 'es'));
 }

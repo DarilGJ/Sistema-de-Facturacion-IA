@@ -1,0 +1,13 @@
+.productos-table {
+  min-width: 1280px;
+}
+
+.productos-summary {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.productos-summary strong {
+  color: #0f172a;
+  font-weight: 700;
+}

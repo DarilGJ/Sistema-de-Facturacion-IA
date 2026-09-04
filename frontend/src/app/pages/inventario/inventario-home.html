@@ -131,12 +131,14 @@
       <h2>Auditoría de movimientos</h2>
       <p class="hint">Entradas, salidas y ajustes registrados en el kardex.</p>
       <ul class="audit">
-        @for (item of inventario.movimientos(); track item.id) {
+        @for (item of inventario.kardex(); track item.id) {
           <li>
             <strong>{{ item.fecha }}</strong>
-            <span>{{ item.tipo }} · {{ item.producto }}</span>
-            <em>{{ item.cantidad }} · {{ item.referencia }}</em>
+            <span>{{ item.proceso }} · {{ item.producto }}</span>
+            <em>{{ item.cantidad }} · {{ item.documento }}</em>
           </li>
+        } @empty {
+          <li class="empty">Aún no hay movimientos en la bitácora.</li>
         }
       </ul>
       <a class="link" routerLink="/inventario/movimientos">Ver kardex completo</a>
@@ -163,7 +165,7 @@
       <a class="op" routerLink="/inventario/movimientos">
         <span class="icon orange"><app-icon name="swap" /></span>
         <div>
-          <strong>{{ inventario.movimientos().length }}</strong>
+          <strong>{{ inventario.kardexTotal() }}</strong>
           <p>Ajustes, transferencias y salidas</p>
         </div>
       </a>

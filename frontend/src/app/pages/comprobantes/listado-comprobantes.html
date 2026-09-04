@@ -1,39 +1,48 @@
 <section class="module-page">
-  <header class="page-header">
-    <h1>{{ titulo() }}</h1>
-    <p>{{ subtitulo() }}</p>
+  <header class="page-header cotizacion-header">
+    <div>
+      <h1>{{ titulo() }}</h1>
+      <p>{{ subtitulo() }}</p>
+    </div>
+    <span class="count-pill">{{ filtrados().length }}</span>
   </header>
 
   <div class="top-filters filters-4">
     <label>
       <span>Seleccionar método</span>
       <select [value]="filtroMetodo()" (change)="setFiltro('metodo', $any($event.target).value)">
-        <option value="">Todos los métodos</option>
-        <option value="efectivo">Contado</option>
-        <option value="tarjeta">Tarjeta</option>
-        <option value="transferencia">Transferencia</option>
+        <option value="">Seleccionar método</option>
+        <option value="contado">Contado</option>
+        <option value="credito">Crédito</option>
       </select>
     </label>
     <label>
       <span>Seleccionar Estado</span>
       <select [value]="filtroEstado()" (change)="setFiltro('estado', $any($event.target).value)">
-        <option value="">Todos los estados</option>
-        <option value="emitida">Emitida</option>
+        <option value="">Seleccionar Estado</option>
+        <option value="cancelada">Cancelada</option>
+        <option value="pendiente">Pendiente</option>
         <option value="anulada">Anulada</option>
       </select>
     </label>
     <label>
       <span>Seleccionar Tributación</span>
       <select [value]="filtroTributacion()" (change)="setFiltro('tributacion', $any($event.target).value)">
-        <option value="">Todas</option>
-        <option value="aceptado">Aceptado</option>
+        <option value="">Seleccionar Tributación</option>
+        <option value="no_entregado">No entregado</option>
+        <option value="aceptadas">Aceptadas</option>
+        <option value="rechazadas">Rechazadas</option>
+        <option value="desconocido">Desconocido</option>
       </select>
     </label>
     <label>
       <span>Seleccionar Tipo de Factura</span>
       <select [value]="filtroTipo()" (change)="setFiltro('tipo', $any($event.target).value)">
-        <option value="">Todos los tipos</option>
+        <option value="">Seleccionar Tipo de Factura</option>
         <option value="factura">Factura</option>
+        <option value="factura_especial">Factura especial</option>
+        <option value="factura_cambiaria">Factura cambiaria</option>
+        <option value="recibo">Recibo</option>
       </select>
     </label>
   </div>
@@ -64,44 +73,10 @@
         Archivado
       </label>
     }
-    <span class="count-pill">{{ filtrados().length }}</span>
   </div>
 
   @if (errorMessage()) {
     <p class="alert-error" role="alert">{{ errorMessage() }}</p>
-  }
-
-  @if (detalle(); as doc) {
-    <aside class="form-panel">
-      <h2>Documento {{ doc.numero }}</h2>
-      <p class="muted">{{ doc.cliente?.nombre || 'Consumidor final' }} · {{ metodoLabel(doc.metodo_pago) }}</p>
-      <div class="table-wrap" style="border: 0; box-shadow: none">
-        <table>
-          <thead>
-            <tr>
-              <th>Descripción</th>
-              <th class="num">Cant.</th>
-              <th class="num">Precio</th>
-              <th class="num">Subtotal</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (linea of doc.items || []; track linea.id) {
-              <tr>
-                <td>{{ linea.descripcion }}</td>
-                <td class="num">{{ linea.cantidad }}</td>
-                <td class="num">{{ linea.precio_unitario | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
-                <td class="num">{{ linea.subtotal | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-      <div class="form-actions">
-        <strong>Total: {{ doc.total | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</strong>
-        <button type="button" class="btn btn-ghost" (click)="detalle.set(null)">Cerrar</button>
-      </div>
-    </aside>
   }
 
   <div class="table-wrap">
@@ -114,7 +89,7 @@
           <th>Método</th>
           <th class="num">Total</th>
           <th class="num">Saldo</th>
-          <th>NC|ND</th>
+          <th>NC/ND</th>
           <th>Estado</th>
           <th>Tributación</th>
           <th>Correo</th>
@@ -136,29 +111,60 @@
               <td>
                 <div class="item-name">
                   <span class="avatar">{{ iniciales(item.cliente?.nombre || 'CF') }}</span>
-                  <strong>{{ item.cliente?.nombre || 'CF CONSUMIDOR FINAL' }}</strong>
+                  <div class="item-copy">
+                    <strong>{{ item.cliente?.nombre || 'CF CONSUMIDOR FINAL' }}</strong>
+                    @if (item.cliente?.email) {
+                      <span>{{ item.cliente?.email }}</span>
+                    }
+                  </div>
                 </div>
               </td>
-              <td><span class="badge badge-muted">{{ metodoLabel(item.metodo_pago) }}</span></td>
-              <td class="num">{{ item.total | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
-              <td class="num">0.00</td>
-              <td>0|0</td>
               <td>
-                <span class="badge" [class.badge-ok]="item.estado === 'emitida'" [class.badge-off]="item.estado === 'anulada'">
-                  {{ estadoLabel(item.estado) }}
+                <span class="badge badge-muted badge-ico">
+                  <app-icon name="clock" />
+                  {{ metodoLabel(item) }}
                 </span>
               </td>
-              <td><span class="badge badge-ok">Aceptado</span></td>
+              <td class="num">GTQ {{ item.total | number: '1.2-2' }}</td>
+              <td class="num">{{ saldo(item) | number: '1.2-2' }}</td>
+              <td>0 | 0</td>
               <td>
-                <span class="badge" [class.badge-ok]="!!item.cliente?.email" [class.badge-off]="!item.cliente?.email">
+                <span
+                  class="badge badge-ico"
+                  [class.badge-ok]="estadoFiltro(item) === 'cancelada'"
+                  [class.badge-warn]="estadoFiltro(item) === 'pendiente'"
+                  [class.badge-off]="estadoFiltro(item) === 'anulada'"
+                >
+                  <app-icon name="document" />
+                  {{ estadoLabel(item) }}
+                </span>
+              </td>
+              <td>
+                <span
+                  class="badge badge-ico"
+                  [class.badge-ok]="item.tributacion === 'aceptadas'"
+                  [class.badge-off]="item.tributacion === 'rechazadas' || item.tributacion === 'no_entregado'"
+                  [class.badge-muted]="!item.tributacion || item.tributacion === 'desconocido'"
+                >
+                  <app-icon name="check" />
+                  {{ tributacionLabel(item) }}
+                </span>
+              </td>
+              <td>
+                <span
+                  class="badge"
+                  [class.badge-sent]="item.correo_estado === 'enviado'"
+                  [class.badge-off]="item.correo_estado !== 'enviado'"
+                >
                   {{ correoLabel(item) }}
                 </span>
               </td>
               <td>
                 <div class="row-actions">
-                  <button type="button" class="icon-action" title="Ver" (click)="ver(item)">
+                  <button type="button" class="icon-action accent" title="Ver" (click)="ver(item)">
                     <app-icon name="eye" />
                   </button>
+                  <app-row-menu [items]="acciones" (select)="onAccion(item, $event)" />
                 </div>
               </td>
             </tr>
@@ -180,10 +186,14 @@
       <span>Viendo {{ rango().from }} a {{ rango().to }} de {{ filtrados().length }} entradas</span>
       <div class="pager">
         <button type="button" [disabled]="paginaActual() === 1" (click)="pagina.set(paginaActual() - 1)">Atrás</button>
-        @for (n of paginas(); track n) {
-          <button type="button" [class.active]="n === paginaActual()" (click)="pagina.set(n)">{{ n }}</button>
+        @for (n of paginas(); track $index) {
+          @if (n === 'gap') {
+            <span class="pager-gap">…</span>
+          } @else {
+            <button type="button" [class.active]="n === paginaActual()" (click)="pagina.set(n)">{{ n }}</button>
+          }
         }
-        <button type="button" [disabled]="paginaActual() === paginas().length" (click)="pagina.set(paginaActual() + 1)">
+        <button type="button" [disabled]="paginaActual() === ultimaPagina()" (click)="pagina.set(paginaActual() + 1)">
           Siguiente
         </button>
       </div>

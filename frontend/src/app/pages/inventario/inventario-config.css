@@ -1,0 +1,113 @@
+.cfg-page {
+  display: grid;
+  gap: 1rem;
+}
+
+.cfg-error {
+  margin: 0;
+  padding: 0.75rem 0.9rem;
+  border-radius: 10px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+}
+
+.cfg-list {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.cfg-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1.1rem 1.2rem 1.15rem;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+}
+
+.cfg-card h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #0f172a;
+}
+
+.cfg-desc {
+  margin: 0.35rem 0 0.9rem;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.cfg-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  color: #334155;
+  font-weight: 600;
+}
+
+.switch {
+  width: 46px;
+  height: 26px;
+  border: 0;
+  border-radius: 999px;
+  background: #cbd5e1;
+  padding: 3px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.switch.on {
+  background: #16a34a;
+}
+
+.switch:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.knob {
+  display: block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.25);
+  transition: transform 0.16s ease;
+}
+
+.switch.on .knob {
+  transform: translateX(20px);
+}
+
+.cfg-state {
+  margin: 0.55rem 0 0;
+  font-size: 0.86rem;
+  color: #64748b;
+}
+
+.cfg-state.on {
+  color: #15803d;
+}
+
+.cfg-warn {
+  display: flex;
+  gap: 0.65rem;
+  margin-top: 0.85rem;
+  padding: 0.8rem 0.9rem;
+  border-radius: 10px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  color: #9a3412;
+}
+
+.cfg-warn app-icon {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.cfg-warn p {
+  margin: 0;
+  font-size: 0.86rem;
+  line-height: 1.4;
+}

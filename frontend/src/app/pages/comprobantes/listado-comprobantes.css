@@ -1,0 +1,31 @@
+.badge-ico {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.badge-ico app-icon {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.badge-sent {
+  background: #334155;
+  color: #fff;
+}
+
+.row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.pager-gap {
+  padding: 0.35rem 0.2rem;
+  color: #94a3b8;
+}
+
+.icon-action.accent {
+  color: #ea580c;
+  border-color: #fdba74;
+}

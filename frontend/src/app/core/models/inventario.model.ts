@@ -2,34 +2,57 @@ export interface Categoria {
   id: number;
   nombre: string;
   descripcion: string;
+  estado: boolean;
   productos: number;
 }
+
+export type TipoBodega = 'venta' | 'materia_prima';
 
 export interface Almacen {
   id: number;
   nombre: string;
   ubicacion: string;
-  responsable: string;
-  activo: boolean;
+  tipo: TipoBodega;
+  estado: boolean;
+  principal: boolean;
+}
+
+export interface BodegaPayload {
+  nombre: string;
+  ubicacion?: string | null;
+  tipo?: TipoBodega;
+  estado?: boolean;
+  principal?: boolean;
 }
 
 export interface Existencia {
   id: number;
-  producto: string;
+  id_bodega: number;
+  id_producto: number;
   sku: string;
-  almacen: string;
+  nombre: string;
   cantidad: number;
-  minimo: number;
 }
 
-export interface Movimiento {
+export interface KardexMovimiento {
   id: number;
   fecha: string;
-  tipo: 'entrada' | 'salida' | 'ajuste';
+  modulo: string;
+  proceso: string;
+  documento_origen: string;
+  documento: string;
+  sku: string;
   producto: string;
-  almacen: string;
   cantidad: number;
-  referencia: string;
+  bodega: string;
+  usuario: string;
+}
+
+export interface KardexPage {
+  rows: KardexMovimiento[];
+  total: number;
+  page: number;
+  size: number;
 }
 
 export type TipoIdentificacion = 'nit' | 'cui_dpi' | 'consumidor_final' | 'extranjero';
@@ -204,4 +227,216 @@ export interface ProductoPayload {
   bodega?: string | null;
   id_proveedor?: number | null;
   estado?: boolean;
+}
+
+export interface CategoriaPayload {
+  nombre: string;
+  descripcion?: string | null;
+  estado?: boolean;
+}
+
+export interface Subcategoria {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  estado: boolean;
+  id_categoria: number;
+  categoria: string;
+}
+
+export interface SubcategoriaPayload {
+  nombre: string;
+  descripcion?: string | null;
+  estado?: boolean;
+  id_categoria: number;
+}
+
+export interface Marca {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  estado: boolean;
+}
+
+export interface MarcaPayload {
+  nombre: string;
+  descripcion?: string | null;
+  estado?: boolean;
+}
+
+export type InventarioConfigKey =
+  | 'control_lotes'
+  | 'bloquear_ventas_sin_stock'
+  | 'reserva_stock'
+  | 'merma_ajustes';
+
+export interface InventarioConfig {
+  control_lotes: boolean;
+  bloquear_ventas_sin_stock: boolean;
+  reserva_stock: boolean;
+  merma_ajustes: boolean;
+}
+
+export type TipoAjuste = 'mas' | 'menos';
+
+export interface AjusteItem {
+  id: number;
+  id_bodega: number;
+  id_producto: number;
+  sku: string;
+  producto: string;
+  bodega: string;
+  cantidad_anterior: number;
+  tipo: TipoAjuste;
+  cantidad_ajuste: number;
+  cantidad_final: number;
+}
+
+export interface AjusteInventario {
+  id: number;
+  descripcion: string;
+  id_usuario: number | null;
+  realizado_por: string;
+  fecha: string;
+  contabilizado: boolean;
+  items: AjusteItem[];
+}
+
+export interface AjusteItemPayload {
+  id_bodega: number;
+  id_producto: number;
+  tipo: TipoAjuste;
+  cantidad_ajuste: number;
+}
+
+export interface AjustePayload {
+  descripcion?: string | null;
+  items: AjusteItemPayload[];
+}
+
+export type EstadoTraslado = 'finalizado' | 'anulado';
+
+export interface TrasladoItem {
+  id: number;
+  id_producto: number;
+  sku: string;
+  producto: string;
+  cantidad_anterior: number;
+  cantidad_traslado: number;
+  precio_unitario: number;
+  subtotal: number;
+}
+
+export interface TrasladoInventario {
+  id: number;
+  fecha: string;
+  realizado_por: string;
+  estado: EstadoTraslado;
+  tipo: 'interno' | 'empresa';
+  id_bodega_origen: number;
+  id_bodega_destino: number;
+  bodega_origen: string;
+  bodega_destino: string;
+  total_articulos: number;
+  total_valor: number;
+  items: TrasladoItem[];
+}
+
+export interface TrasladoPayload {
+  id_bodega_origen: number;
+  id_bodega_destino: number;
+  items: Array<{ id_producto: number; cantidad_traslado: number }>;
+}
+
+export type RazonDevolucion = 'danado' | 'vencido' | 'no_gusto' | 'cambio_producto';
+export type ResolucionDevolucion = 'reembolso_efectivo' | 'nota_credito' | 'cambio';
+
+export interface DevolucionItem {
+  id: number;
+  id_factura_item: number;
+  id_producto: number;
+  sku: string;
+  producto: string;
+  cantidad: number;
+  precio_unitario: number;
+  subtotal: number;
+  restablece_stock: boolean;
+  cantidad_anterior: number;
+  cantidad_final: number;
+  id_producto_cambio: number | null;
+  sku_cambio: string;
+  producto_cambio: string;
+  cantidad_cambio: number;
+  precio_cambio: number;
+  subtotal_cambio: number;
+  cantidad_anterior_cambio: number | null;
+  cantidad_final_cambio: number | null;
+}
+
+export interface DevolucionInventario {
+  id: number;
+  numero: string;
+  referencia_nc: string;
+  id_factura: number;
+  factura: string;
+  id_cliente: number;
+  cliente: string;
+  id_bodega: number;
+  bodega: string;
+  razon: RazonDevolucion;
+  resolucion: ResolucionDevolucion;
+  observacion: string;
+  subtotal_devuelto: number;
+  itbis_devuelto: number;
+  total_devuelto: number;
+  subtotal_cambio: number;
+  itbis_cambio: number;
+  total_cambio: number;
+  diferencia: number;
+  reembolso: number;
+  cobro: number;
+  nota_credito_monto: number;
+  valor_inventario: number;
+  contabilizado: boolean;
+  realizado_por: string;
+  fecha: string;
+  items: DevolucionItem[];
+}
+
+export interface DevolucionFacturaItem {
+  id_factura_item: number;
+  id_producto: number;
+  sku: string;
+  producto: string;
+  tipo?: string;
+  cantidad_vendida: number;
+  cantidad_devuelta: number;
+  cantidad_disponible: number;
+  precio_unitario: number;
+  precio_venta: number;
+}
+
+export interface DevolucionFactura {
+  id: number;
+  numero: string;
+  fecha: string;
+  metodo_pago: string;
+  id_cliente: number;
+  cliente: string;
+  items: DevolucionFacturaItem[];
+}
+
+export interface DevolucionPayload {
+  id_factura: number;
+  id_bodega: number;
+  razon: RazonDevolucion;
+  resolucion: ResolucionDevolucion;
+  observacion?: string | null;
+  items: Array<{
+    id_factura_item: number;
+    cantidad: number;
+    id_producto_cambio?: number | null;
+    cantidad_cambio?: number;
+    precio_cambio?: number;
+  }>;
 }

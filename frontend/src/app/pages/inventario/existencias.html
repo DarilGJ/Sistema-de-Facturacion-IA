@@ -1,69 +1,180 @@
-<section class="module-page">
-  <header class="page-header">
-    <h1>Existencias</h1>
-    <p>Stock actual por producto y almacén.</p>
-  </header>
-
+<section class="module-page ppb-page">
   <app-inventario-nav />
 
-  <div class="crud-toolbar">
-    <label class="search-field">
-      <app-icon name="search" />
-      <input
-        type="search"
-        placeholder="Buscar por nombre o código"
-        [value]="busqueda()"
-        (input)="setBusqueda($any($event.target).value)"
-      />
-    </label>
+  <header class="page-header ppb-head">
+    <div>
+      <h1>Productos por bodega</h1>
+      <p>Define qué productos están disponibles y su existencia inicial en cada bodega.</p>
+    </div>
+    <button type="button" class="btn btn-ghost" disabled title="Próximamente">
+      <app-icon name="upload" /> Importar
+    </button>
+  </header>
+
+  <div class="ppb-notes">
+    <aside class="cfg-warn">
+      <app-icon name="info" />
+      <p>
+        Retira un producto de la bodega solo cuando su existencia sea 0. Si aún tiene unidades, registra un
+        ajuste primero.
+      </p>
+    </aside>
+    <aside class="cfg-warn">
+      <app-icon name="info" />
+      <p>
+        La existencia inicial se define al asignar el producto. Los cambios posteriores deben hacerse en
+        Ajustes de Cantidad.
+      </p>
+    </aside>
   </div>
 
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>SKU</th>
-          <th>Producto</th>
-          <th>Almacén</th>
-          <th class="num">Cantidad</th>
-          <th class="num">Mínimo</th>
-          <th>Estado</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (item of visibles(); track item.id) {
-          <tr>
-            <td>{{ item.sku }}</td>
-            <td>{{ item.producto }}</td>
-            <td>{{ item.almacen }}</td>
-            <td class="num">{{ item.cantidad }}</td>
-            <td class="num">{{ item.minimo }}</td>
-            <td>
-              @if (item.cantidad < item.minimo) {
-                <span class="badge badge-warn">Bajo mínimo</span>
-              } @else {
-                <span class="badge badge-ok">Disponible</span>
-              }
-            </td>
-          </tr>
-        } @empty {
-          <tr>
-            <td colspan="6" class="muted">No hay existencias que coincidan.</td>
-          </tr>
-        }
-      </tbody>
-    </table>
-    <footer class="table-footer">
-      <span>Viendo {{ rango().from }} a {{ rango().to }} de {{ filtrados().length }} entradas</span>
-      <div class="pager">
-        <button type="button" [disabled]="paginaActual() === 1" (click)="pagina.set(paginaActual() - 1)">Atrás</button>
-        @for (n of paginas(); track n) {
-          <button type="button" [class.active]="n === paginaActual()" (click)="pagina.set(n)">{{ n }}</button>
-        }
-        <button type="button" [disabled]="paginaActual() === paginas().length" (click)="pagina.set(paginaActual() + 1)">
-          Siguiente
-        </button>
+  @if (errorMessage()) {
+    <p class="alert-error" role="alert">{{ errorMessage() }}</p>
+  }
+
+  <div class="ppb-layout">
+    <section class="ppb-card">
+      <h2>Selección de productos</h2>
+      <div class="crud-toolbar cat-toolbar">
+        <label class="search-field">
+          <app-icon name="search" />
+          <input
+            type="search"
+            placeholder="Buscar por código o nombre"
+            [value]="busqueda()"
+            (input)="setBusqueda($any($event.target).value)"
+          />
+        </label>
+        <select class="page-size" [value]="pageSize()" (change)="setPageSize($any($event.target).value)">
+          <option [value]="10">10</option>
+          <option [value]="25">25</option>
+          <option [value]="50">50</option>
+        </select>
       </div>
-    </footer>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Nombre</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (loading()) {
+              <tr>
+                <td colspan="2" class="muted">Cargando productos...</td>
+              </tr>
+            } @else {
+              @for (item of visibles(); track item.id) {
+                <tr class="click-row" (click)="agregar(item)">
+                  <td>{{ item.sku }}</td>
+                  <td>{{ item.nombre }}</td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="2" class="muted">No hay productos disponibles para asignar.</td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+        <footer class="table-footer">
+          <span>Viendo {{ rango().from }} a {{ rango().to }} de {{ catalogo().length }} entradas</span>
+          <div class="pager">
+            <button type="button" [disabled]="paginaActual() === 1" (click)="irPagina(paginaActual() - 1)">Atrás</button>
+            @for (n of paginas(); track $index) {
+              @if (n === 'gap') {
+                <span class="pager-gap">…</span>
+              } @else {
+                <button type="button" [class.active]="n === paginaActual()" (click)="irPagina(n)">{{ n }}</button>
+              }
+            }
+            <button type="button" [disabled]="paginaActual() === totalPaginas()" (click)="irPagina(paginaActual() + 1)">
+              Siguiente
+            </button>
+          </div>
+        </footer>
+      </div>
+    </section>
+
+    <section class="ppb-card">
+      <label class="outline-field">
+        <span>Selecciona una bodega</span>
+        <select [value]="bodegaId() ?? ''" (change)="seleccionarBodega($any($event.target).value)">
+          <option value="">Selecciona una bodega</option>
+          @for (bodega of inventario.almacenes(); track bodega.id) {
+            @if (bodega.estado) {
+              <option [value]="bodega.id">{{ bodega.nombre }}</option>
+            }
+          }
+        </select>
+      </label>
+
+      <h2>Productos o servicios en bodega</h2>
+
+      @if (!bodegaId()) {
+        <div class="ppb-empty">
+          <app-icon name="warehouse" />
+          <strong>Selecciona una bodega</strong>
+          <p>Elige una bodega para consultar y administrar sus existencias.</p>
+        </div>
+      } @else if (loadingAsignados()) {
+        <p class="muted">Cargando existencias...</p>
+      } @else {
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Nombre</th>
+                <th class="num">Existencia inicial</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of asignados(); track item.id_producto) {
+                <tr>
+                  <td>{{ item.sku }}</td>
+                  <td>{{ item.nombre }}</td>
+                  <td class="num">
+                    <input
+                      class="qty-input"
+                      type="number"
+                      min="0"
+                      [value]="item.cantidad"
+                      [readOnly]="item.persistido"
+                      [title]="item.persistido ? 'Usa Ajustes de Cantidad para modificar' : 'Existencia inicial'"
+                      (input)="setCantidad(item, $any($event.target).value)"
+                    />
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      class="icon-action"
+                      (click)="quitar(item)"
+                      [title]="item.persistido && item.cantidad > 0 ? 'Solo se puede retirar con existencia 0' : 'Quitar'"
+                    >
+                      <app-icon name="close" />
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="4" class="muted">
+                    No hay productos en {{ bodegaActual()?.nombre }}. Elige filas a la izquierda para asignarlos.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
   </div>
+
+  <footer class="ppb-actions">
+    <button type="button" class="btn btn-accent" (click)="guardar()" [disabled]="saving() || !bodegaId()">
+      {{ saving() ? 'Guardando...' : 'Guardar' }}
+    </button>
+  </footer>
 </section>
