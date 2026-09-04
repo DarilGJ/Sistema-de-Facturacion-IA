@@ -1,22 +1,90 @@
 <section class="module-page">
-  <header class="page-header">
-    <h1>Almacenes</h1>
-    <p>Ubicaciones donde se guarda el stock.</p>
-  </header>
-
   <app-inventario-nav />
 
-  <div class="crud-toolbar">
+  <header class="page-header">
+    <h1><app-icon name="warehouse" /> Bodegas</h1>
+    <p>Consulta y administra los almacenes disponibles para el inventario.</p>
+  </header>
+
+  <div class="crud-toolbar cat-toolbar">
+    <label class="inline-filter">
+      <span>Estado</span>
+      <select [value]="filtroEstado()" (change)="setFiltroEstado($any($event.target).value)">
+        <option value="">Todos</option>
+        <option value="activo">Activado</option>
+        <option value="inactivo">Inactivo</option>
+      </select>
+    </label>
     <label class="search-field">
       <app-icon name="search" />
       <input
         type="search"
-        placeholder="Buscar por nombre o ubicación"
+        placeholder="Buscar por nombre"
         [value]="busqueda()"
         (input)="setBusqueda($any($event.target).value)"
       />
     </label>
+    <button type="button" class="icon-action" (click)="cargar()" title="Actualizar">
+      <app-icon name="refresh" />
+    </button>
+    <select class="page-size" [value]="pageSize()" (change)="setPageSize($any($event.target).value)" title="Filas por página">
+      <option [value]="10">10</option>
+      <option [value]="25">25</option>
+      <option [value]="50">50</option>
+      <option [value]="100">100</option>
+    </select>
+    <button type="button" class="btn btn-ghost" disabled title="Próximamente">
+      <app-icon name="upload" /> Importar
+    </button>
+    <button type="button" class="btn btn-accent" (click)="abrirNuevo()">+ Nueva Bodega</button>
   </div>
+
+  @if (errorMessage() && !formOpen()) {
+    <p class="alert-error" role="alert">{{ errorMessage() }}</p>
+  }
+
+  @if (formOpen()) {
+    <div class="modal-overlay" (click)="cancelar()">
+      <form class="cliente-modal categoria-modal" [formGroup]="form" (ngSubmit)="guardar()" (click)="$event.stopPropagation()">
+        <header class="cliente-modal-header">
+          <h2>{{ editingId() ? 'Editar bodega' : 'Nueva bodega' }}</h2>
+          <button type="button" class="modal-close" (click)="cancelar()" aria-label="Cerrar">
+            <app-icon name="close" />
+          </button>
+        </header>
+        <div class="cliente-modal-body">
+          @if (errorMessage()) {
+            <p class="alert-error" role="alert">{{ errorMessage() }}</p>
+          }
+          <label class="outline-field" [class.invalid]="form.controls.nombre.touched && form.controls.nombre.invalid">
+            <span>Nombre</span>
+            <input type="text" formControlName="nombre" placeholder="Nombre" />
+            @if (form.controls.nombre.touched && form.controls.nombre.invalid) {
+              <small>Este campo es requerido</small>
+            }
+          </label>
+          <label class="outline-field">
+            <span>Ubicación o domicilio</span>
+            <input type="text" formControlName="ubicacion" placeholder="Ubicación o domicilio" />
+          </label>
+          <label class="outline-field" [class.invalid]="form.controls.tipo.touched && form.controls.tipo.invalid">
+            <span>Tipo de bodega</span>
+            <select formControlName="tipo">
+              @for (tipo of tipos; track tipo.id) {
+                <option [value]="tipo.id">{{ tipo.label }}</option>
+              }
+            </select>
+          </label>
+        </div>
+        <footer class="cliente-modal-footer">
+          <button type="button" class="btn btn-ghost" (click)="cancelar()" [disabled]="saving()">Cancelar</button>
+          <button type="submit" class="btn btn-accent" [disabled]="saving()">
+            {{ saving() ? 'Guardando...' : 'Guardar' }}
+          </button>
+        </footer>
+      </form>
+    </div>
+  }
 
   <div class="table-wrap">
     <table>
@@ -24,38 +92,72 @@
         <tr>
           <th>Nombre</th>
           <th>Ubicación</th>
-          <th>Responsable</th>
           <th>Estado</th>
+          <th>Tipo</th>
+          <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
-        @for (item of visibles(); track item.id) {
+        @if (loading()) {
           <tr>
-            <td>{{ item.nombre }}</td>
-            <td>{{ item.ubicacion }}</td>
-            <td>{{ item.responsable }}</td>
-            <td>
-              <span class="badge" [class.badge-ok]="item.activo" [class.badge-off]="!item.activo">
-                {{ item.activo ? 'Activado' : 'Inactivo' }}
-              </span>
-            </td>
+            <td colspan="5" class="muted">Cargando bodegas...</td>
           </tr>
-        } @empty {
-          <tr>
-            <td colspan="4" class="muted">No hay almacenes que coincidan.</td>
-          </tr>
+        } @else {
+          @for (item of visibles(); track item.id) {
+            <tr>
+              <td>{{ item.nombre }}</td>
+              <td>{{ item.ubicacion || '—' }}</td>
+              <td>
+                <span class="badge" [class.badge-ok]="item.estado" [class.badge-off]="!item.estado">
+                  {{ item.estado ? 'Activado' : 'Inactivo' }}
+                </span>
+              </td>
+              <td>
+                @if (item.principal) {
+                  <span class="badge badge-principal"><app-icon name="star" /> Principal</span>
+                } @else {
+                  <span class="badge" [class.badge-venta]="item.tipo === 'venta'" [class.badge-materia]="item.tipo !== 'venta'">
+                    <app-icon name="home" /> {{ etiquetaTipo(item.tipo) }}
+                  </span>
+                }
+              </td>
+              <td>
+                <app-row-menu
+                  deactivateLabel="Cambiar Estado"
+                  [deactivateDanger]="false"
+                  [canPromote]="!item.principal"
+                  (edit)="abrirEditar(item)"
+                  (deactivate)="cambiarEstado(item)"
+                  (promote)="marcarPrincipal(item)"
+                />
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="muted">No hay bodegas que coincidan.</td>
+            </tr>
+          }
         }
       </tbody>
     </table>
     <footer class="table-footer">
       <span>Viendo {{ rango().from }} a {{ rango().to }} de {{ filtrados().length }} entradas</span>
       <div class="pager">
-        <button type="button" [disabled]="paginaActual() === 1" (click)="pagina.set(paginaActual() - 1)">Atrás</button>
+        <button type="button" [disabled]="paginaActual() === 1" (click)="irPagina(1)" title="Primera página">«</button>
+        <button type="button" [disabled]="paginaActual() === 1" (click)="irPagina(paginaActual() - 1)">Atrás</button>
         @for (n of paginas(); track n) {
-          <button type="button" [class.active]="n === paginaActual()" (click)="pagina.set(n)">{{ n }}</button>
+          <button type="button" [class.active]="n === paginaActual()" (click)="irPagina(n)">{{ n }}</button>
         }
-        <button type="button" [disabled]="paginaActual() === paginas().length" (click)="pagina.set(paginaActual() + 1)">
+        <button type="button" [disabled]="paginaActual() === paginas().length" (click)="irPagina(paginaActual() + 1)">
           Siguiente
+        </button>
+        <button
+          type="button"
+          [disabled]="paginaActual() === paginas().length"
+          (click)="irPagina(paginas().length)"
+          title="Última página"
+        >
+          »
         </button>
       </div>
     </footer>

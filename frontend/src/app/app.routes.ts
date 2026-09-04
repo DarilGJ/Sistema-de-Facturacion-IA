@@ -52,10 +52,129 @@ export const routes: Routes = [
       },
       { path: 'inventario/clientes', loadComponent: () => import('./pages/inventario/clientes').then((m) => m.Clientes) },
       {
+        path: 'inventario/subcategorias',
+        loadComponent: () => import('./pages/inventario/subcategorias').then((m) => m.Subcategorias),
+      },
+      {
+        path: 'inventario/marcas',
+        loadComponent: () => import('./pages/inventario/marcas').then((m) => m.Marcas),
+      },
+      {
+        path: 'inventario/listas-precios',
+        loadComponent: () =>
+          import('./pages/inventario/inventario-placeholder').then((m) => m.InventarioPlaceholder),
+        data: {
+          titulo: 'Listas de Precios',
+          subtitulo: 'Define precios por lista, cliente o canal de venta.',
+        },
+      },
+      {
+        path: 'inventario/ajustes',
+        loadComponent: () =>
+          import('./pages/inventario/ajustes').then((m) => m.AjustesCantidad),
+      },
+      {
+        path: 'inventario/traslados',
+        loadComponent: () => import('./pages/inventario/traslados').then((m) => m.TrasladosInventario),
+      },
+      {
+        path: 'inventario/toma-fisica',
+        loadComponent: () =>
+          import('./pages/inventario/inventario-placeholder').then((m) => m.InventarioPlaceholder),
+        data: {
+          titulo: 'Toma Física',
+          subtitulo: 'Registra el conteo físico y concilia contra el stock del sistema.',
+        },
+      },
+      {
+        path: 'inventario/devoluciones',
+        loadComponent: () =>
+          import('./pages/inventario/devoluciones').then((m) => m.DevolucionesInventario),
+      },
+      {
+        path: 'inventario/configuracion',
+        loadComponent: () =>
+          import('./pages/inventario/inventario-config').then((m) => m.InventarioConfigPage),
+      },
+      {
+        path: 'inventario/reportes/alertas-stock',
+        loadComponent: () =>
+          import('./pages/inventario/inventario-placeholder').then((m) => m.InventarioPlaceholder),
+        data: {
+          titulo: 'Alertas de stock',
+          subtitulo: 'Productos bajo mínimo o con existencias críticas.',
+        },
+      },
+      {
+        path: 'inventario/reportes/listado',
+        loadComponent: () =>
+          import('./pages/inventario/inventario-placeholder').then((m) => m.InventarioPlaceholder),
+        data: { titulo: 'Listado de Inventario', subtitulo: 'Consulta general de artículos y existencias.' },
+      },
+      {
+        path: 'inventario/reportes/existencias-margen',
+        loadComponent: () =>
+          import('./pages/inventario/inventario-placeholder').then((m) => m.InventarioPlaceholder),
+        data: {
+          titulo: 'Existencias y Margen',
+          subtitulo: 'Stock actual junto al margen estimado por producto.',
+        },
+      },
+      {
+        path: 'inventario/reportes/valorizacion',
+        loadComponent: () =>
+          import('./pages/inventario/inventario-placeholder').then((m) => m.InventarioPlaceholder),
+        data: { titulo: 'Valorización', subtitulo: 'Valor del inventario según costo y existencias.' },
+      },
+      {
+        path: 'inventario/reportes/vencimientos',
+        loadComponent: () =>
+          import('./pages/inventario/inventario-placeholder').then((m) => m.InventarioPlaceholder),
+        data: { titulo: 'Vencimientos', subtitulo: 'Lotes y productos próximos a vencer.' },
+      },
+      {
+        path: 'inventario/reportes/kardex',
+        loadComponent: () =>
+          import('./pages/inventario/inventario-placeholder').then((m) => m.InventarioPlaceholder),
+        data: { titulo: 'Kardex', subtitulo: 'Movimientos detallados por producto.' },
+      },
+      {
+        path: 'inventario/reportes/historial-acumulado',
+        loadComponent: () =>
+          import('./pages/inventario/inventario-placeholder').then((m) => m.InventarioPlaceholder),
+        data: { titulo: 'Historial Acumulado', subtitulo: 'Entradas y salidas acumuladas en el período.' },
+      },
+      {
+        path: 'inventario/reportes/historico-ventas',
+        loadComponent: () =>
+          import('./pages/inventario/inventario-placeholder').then((m) => m.InventarioPlaceholder),
+        data: { titulo: 'Histórico de Ventas', subtitulo: 'Unidades vendidas por producto y fecha.' },
+      },
+      {
+        path: 'inventario/reportes/rentabilidad',
+        loadComponent: () =>
+          import('./pages/inventario/inventario-placeholder').then((m) => m.InventarioPlaceholder),
+        data: {
+          titulo: 'Rentabilidad por Categoría',
+          subtitulo: 'Margen y contribución de cada categoría del catálogo.',
+        },
+      },
+      {
+        path: 'inventario/reportes/rotacion-abc',
+        loadComponent: () =>
+          import('./pages/inventario/inventario-placeholder').then((m) => m.InventarioPlaceholder),
+        data: { titulo: 'Rotación (ABC)', subtitulo: 'Clasifica productos por rotación e importancia.' },
+      },
+      {
         path: 'comprobantes/facturas/crear',
         loadComponent: () =>
           import('./pages/comprobantes/crear-factura').then((m) => m.CrearFactura),
         data: { modo: 'factura' },
+      },
+      {
+        path: 'comprobantes/facturas/:id',
+        loadComponent: () =>
+          import('./pages/comprobantes/seguimiento-factura').then((m) => m.SeguimientoFactura),
       },
       {
         path: 'comprobantes/facturas',

@@ -1,0 +1,232 @@
+<section class="module-page seg">
+  <div class="seg-nav">
+    <a routerLink="/comprobantes/facturas" class="btn btn-ghost">
+      <app-icon name="back" /> Volver al listado
+    </a>
+    <h1>Seguimiento del comprobante</h1>
+    <button type="button" class="btn btn-ghost" (click)="compartir()">
+      <app-icon name="share" /> Compartir documento
+    </button>
+  </div>
+
+  @if (errorMessage()) {
+    <p class="alert-error" role="alert">{{ errorMessage() }}</p>
+  }
+  @if (loading()) {
+    <p class="muted">Cargando comprobante...</p>
+  }
+
+  @if (factura(); as doc) {
+    <ol class="stepper">
+      <li class="done">
+        <span class="dot"><app-icon name="check" /></span>
+        <div>
+          <strong>Generación</strong>
+          <small>{{ pasoGeneracion() }}</small>
+        </div>
+      </li>
+      <li class="current">
+        <span class="dot"><app-icon name="document" /></span>
+        <div>
+          <strong>Estado tributario</strong>
+          <small>{{ pasoTributario() }}</small>
+        </div>
+      </li>
+      <li [class.warn]="doc.correo_estado !== 'enviado'">
+        <span class="dot"><app-icon name="mail" /></span>
+        <div>
+          <strong>Envío por correo</strong>
+          <small>{{ pasoCorreo() }}</small>
+        </div>
+      </li>
+      <li [class.void]="doc.estado === 'anulada'" [class.done]="doc.estado !== 'anulada' && doc.estado !== 'pendiente'">
+        <span class="dot"><app-icon [name]="doc.estado === 'anulada' ? 'ban' : 'clock'" /></span>
+        <div>
+          <strong>Finalizada</strong>
+          <small>{{ pasoFinal() }}</small>
+        </div>
+      </li>
+    </ol>
+
+    <div class="seg-grid">
+      <div class="preview-wrap">
+        <iframe title="Vista del documento" [srcdoc]="html()"></iframe>
+      </div>
+
+      <aside class="manage">
+        <h2>Gestionar comprobante</h2>
+        <p class="muted">{{ tituloDoc() }} · {{ condicion() }}</p>
+
+        <p class="group-label">Acciones principales</p>
+        <button type="button" class="btn-block primary" (click)="enviarCorreo()">
+          <app-icon name="mail" />
+          <span>
+            Enviar correo
+            <small>El correo incluye el PDF y el archivo fiscal como adjuntos.</small>
+          </span>
+        </button>
+        <button type="button" class="btn-block" (click)="descargarPdf()">
+          <app-icon name="pdf" /> Descargar PDF
+        </button>
+        <button type="button" class="btn-block soft" (click)="abrirPdf()">
+          <app-icon name="eye" /> Abrir PDF aparte
+        </button>
+        <button type="button" class="btn-block" (click)="imprimirPos()">
+          <app-icon name="ticket" /> Impresión POS
+        </button>
+        <button type="button" class="btn-block" (click)="reutilizar()">
+          <app-icon name="copy" /> Reutilizar
+        </button>
+
+        <p class="group-label">Archivos fiscales</p>
+        <button type="button" class="btn-block" disabled>
+          <app-icon name="document" /> Descargar XML
+        </button>
+        <button type="button" class="btn-block" disabled>
+          <app-icon name="document" /> Descargar respuesta XML
+        </button>
+
+        <p class="group-label">Ajustes del documento</p>
+        <button type="button" class="btn-block danger-soft" disabled>Aplicar nota de crédito</button>
+        <button type="button" class="btn-block ok-soft" disabled>Aplicar nota de débito</button>
+        <button type="button" class="btn-block dark" (click)="anular()" [disabled]="doc.estado === 'anulada'">
+          Aplicar nota anulación
+        </button>
+      </aside>
+    </div>
+
+    <section class="trace">
+      <p class="trace-kicker">Trazabilidad interna</p>
+      <div class="trace-head">
+        <div>
+          <h2>Movimientos relacionados</h2>
+          <p>Consulta los pagos y las notas aplicadas a este comprobante.</p>
+        </div>
+        <app-icon name="swap" />
+      </div>
+
+      <button type="button" class="acc-h" (click)="toggle('pagos')">
+        <span><app-icon class="ok" name="check" /> Pagos aplicados</span>
+        <app-icon name="chevron" [class.open]="abierto() === 'pagos'" />
+      </button>
+      @if (abierto() === 'pagos') {
+        <div class="acc-b">
+          <label class="search-field">
+            <app-icon name="search" />
+            <input type="search" placeholder="Buscar por número" [value]="buscaPago()" (input)="buscaPago.set($any($event.target).value)" />
+          </label>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Número</th>
+                  <th>Fecha</th>
+                  <th>Abono</th>
+                  <th>Saldo anterior</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="5" class="muted">Este comprobante no tiene detalles para mostrar.</td>
+                </tr>
+              </tbody>
+            </table>
+            <footer class="table-footer">
+              <span>Viendo 0 a 0 de 0 entradas</span>
+              <div class="pager">
+                <button type="button" disabled>Atrás</button>
+                <button type="button" class="active">1</button>
+                <button type="button" disabled>Siguiente</button>
+              </div>
+            </footer>
+          </div>
+        </div>
+      }
+
+      <button type="button" class="acc-h" (click)="toggle('nc')">
+        <span><app-icon class="warn" name="minus-doc" /> Notas de crédito</span>
+        <app-icon name="chevron" [class.open]="abierto() === 'nc'" />
+      </button>
+      @if (abierto() === 'nc') {
+        <div class="acc-b">
+          <label class="search-field">
+            <app-icon name="search" />
+            <input type="search" placeholder="Buscar por número" [value]="buscaNc()" (input)="buscaNc.set($any($event.target).value)" />
+          </label>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Número</th>
+                  <th>Fecha</th>
+                  <th>Referencia</th>
+                  <th>Motivo</th>
+                  <th>Saldo anterior</th>
+                  <th>Monto</th>
+                  <th>Actual</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="8" class="muted">Este comprobante no tiene detalles para mostrar.</td>
+                </tr>
+              </tbody>
+            </table>
+            <footer class="table-footer">
+              <span>Viendo 0 a 0 de 0 entradas</span>
+              <div class="pager">
+                <button type="button" disabled>Atrás</button>
+                <button type="button" class="active">1</button>
+                <button type="button" disabled>Siguiente</button>
+              </div>
+            </footer>
+          </div>
+        </div>
+      }
+
+      <button type="button" class="acc-h" (click)="toggle('nd')">
+        <span><app-icon class="warn" name="document" /> Notas de débito</span>
+        <app-icon name="chevron" [class.open]="abierto() === 'nd'" />
+      </button>
+      @if (abierto() === 'nd') {
+        <div class="acc-b">
+          <label class="search-field">
+            <app-icon name="search" />
+            <input type="search" placeholder="Buscar por número" [value]="buscaNd()" (input)="buscaNd.set($any($event.target).value)" />
+          </label>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Número</th>
+                  <th>Fecha</th>
+                  <th>Referencia</th>
+                  <th>Motivo</th>
+                  <th>Saldo anterior</th>
+                  <th>Monto</th>
+                  <th>Actual</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="8" class="muted">Este comprobante no tiene detalles para mostrar.</td>
+                </tr>
+              </tbody>
+            </table>
+            <footer class="table-footer">
+              <span>Viendo 0 a 0 de 0 entradas</span>
+              <div class="pager">
+                <button type="button" disabled>Atrás</button>
+                <button type="button" class="active">1</button>
+                <button type="button" disabled>Siguiente</button>
+              </div>
+            </footer>
+          </div>
+        </div>
+      }
+    </section>
+  }
+</section>

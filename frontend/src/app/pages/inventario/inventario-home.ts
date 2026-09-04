@@ -60,6 +60,7 @@ export class InventarioHome implements OnInit {
     forkJoin({
       catalogos: this.inventario.cargarCatalogos(),
       dashboard: this.dashboardApi.cargar('mes'),
+      kardex: this.inventario.listarKardex({ page: 1, size: 8 }),
     }).subscribe({ error: () => undefined });
   }
 

@@ -206,7 +206,9 @@ export async function convertirAFactura(req, res) {
     const factura = await emitirFactura({
       id_cliente: cotizacion.id_cliente,
       metodo_pago: metodo,
+      condicion_venta: cotizacion.metodo_pago === 'credito' ? 'credito' : 'contado',
       items,
+      user: req.user,
       transaction: t,
     });
 

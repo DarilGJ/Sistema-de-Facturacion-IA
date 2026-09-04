@@ -4,12 +4,35 @@
   </button>
   @if (open()) {
     <div class="menu" role="menu">
-      <button type="button" (click)="edit.emit(); open.set(false)">Editar</button>
-      @if (canConvert()) {
-        <button type="button" (click)="convert.emit(); open.set(false)">Convertir a factura</button>
-      }
-      @if (canDeactivate()) {
-        <button type="button" class="danger" (click)="deactivate.emit(); open.set(false)">Desactivar</button>
+      @if (items().length) {
+        @for (item of items(); track item.id) {
+          <button type="button" [class.accent]="item.accent" (click)="pick(item.id)">
+            <app-icon [name]="item.icon" /> {{ item.label }}
+          </button>
+        }
+      } @else {
+        <button type="button" (click)="edit.emit(); open.set(false)">
+          <app-icon name="pencil" /> Editar
+        </button>
+        @if (canPromote()) {
+          <button type="button" (click)="promote.emit(); open.set(false)">
+            <app-icon name="star" /> {{ promoteLabel() }}
+          </button>
+        }
+        @if (canConvert()) {
+          <button type="button" (click)="convert.emit(); open.set(false)">
+            <app-icon name="document" /> Convertir
+          </button>
+        }
+        @if (canDeactivate()) {
+          <button
+            type="button"
+            [class.danger]="deactivateDanger()"
+            (click)="deactivate.emit(); open.set(false)"
+          >
+            <app-icon name="rotate" /> {{ deactivateLabel() }}
+          </button>
+        }
       }
     </div>
   }

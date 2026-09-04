@@ -26,6 +26,9 @@
             <option>Cotización</option>
           } @else {
             <option>Factura</option>
+            <option>Factura especial</option>
+            <option>Factura cambiaria</option>
+            <option>Recibo</option>
           }
         </select>
       </label>
@@ -158,7 +161,9 @@
             <span>Bodega:</span>
             <select [ngModel]="bodegaId()" (ngModelChange)="bodegaId.set(toNumber($event))">
               @for (almacen of inventario.almacenes(); track almacen.id) {
-                <option [ngValue]="almacen.id">{{ almacen.nombre }}</option>
+                @if (almacen.estado) {
+                  <option [ngValue]="almacen.id">{{ almacen.nombre }}</option>
+                }
               }
             </select>
           </label>

@@ -1,4 +1,5 @@
 <section class="module-page receptores-page">
+  <app-inventario-nav />
   <header class="page-header receptores-header clientes-header">
     <div>
       <h1><app-icon name="tag" /> Artículos y servicios</h1>
@@ -37,7 +38,7 @@
       </label>
       <label>
         <span>Categoría</span>
-        <select [value]="filtroCategoria()" (change)="filtroCategoria.set($any($event.target).value); pagina.set(1)">
+        <select [value]="filtroCategoria()" (change)="setFiltroCategoria($any($event.target).value)">
           <option value="">Categoría</option>
           @for (cat of categoriasFiltro(); track cat) {
             <option [value]="cat">{{ cat }}</option>
@@ -266,15 +267,30 @@
           <div class="cliente-grid producto-grid-3">
             <label class="outline-field">
               <span>Categoría</span>
-              <input type="text" list="categorias-opciones" formControlName="categoria" />
+              <select formControlName="categoria">
+                <option value="">Seleccionar categoría</option>
+                @for (cat of categoriasFormulario(); track cat) {
+                  <option [value]="cat">{{ cat }}</option>
+                }
+              </select>
             </label>
             <label class="outline-field">
               <span>Subcategoría</span>
-              <input type="text" formControlName="subcategoria" />
+              <select formControlName="subcategoria">
+                <option value="">{{ categoriaForm() ? 'Seleccionar subcategoría' : 'Elija una categoría' }}</option>
+                @for (sub of subcategoriasFormulario(); track sub) {
+                  <option [value]="sub">{{ sub }}</option>
+                }
+              </select>
             </label>
             <label class="outline-field">
               <span>Marca</span>
-              <input type="text" formControlName="marca" />
+              <select formControlName="marca">
+                <option value="">Seleccionar marca</option>
+                @for (marca of marcasFormulario(); track marca) {
+                  <option [value]="marca">{{ marca }}</option>
+                }
+              </select>
             </label>
             <label class="outline-field">
               <span>U.M. compra</span>
@@ -297,7 +313,9 @@
               <select formControlName="bodega">
                 <option value="">Seleccionar bodega</option>
                 @for (almacen of inventario.almacenes(); track almacen.id) {
-                  <option [value]="almacen.nombre">{{ almacen.nombre }}</option>
+                  @if (almacen.estado || almacen.nombre === form.controls.bodega.value) {
+                    <option [value]="almacen.nombre">{{ almacen.nombre }}</option>
+                  }
                 }
               </select>
             </label>
@@ -323,11 +341,6 @@
             <app-icon name="info" />
             Seleccione una bodega para definir el stock inicial de este artículo.
           </p>
-          <datalist id="categorias-opciones">
-            @for (cat of categoriasFiltro(); track cat) {
-              <option [value]="cat"></option>
-            }
-          </datalist>
         </div>
 
         <footer class="cliente-modal-footer">
@@ -343,7 +356,7 @@
   }
 
   <div class="table-wrap">
-    <table>
+    <table class="productos-table">
       <thead>
         <tr>
           <th>Nombre</th>
@@ -357,6 +370,8 @@
           <th class="num">Valor al costo</th>
           <th class="num">Precio 1 con impuesto</th>
           <th class="num">Precio 2 con impuesto</th>
+          <th class="num">Precio 3 con impuesto</th>
+          <th class="num">Cantidad total</th>
           <th class="num">Costo total</th>
           <th>Acciones</th>
         </tr>
@@ -364,7 +379,7 @@
       <tbody>
         @if (loading()) {
           <tr>
-            <td colspan="13" class="muted">Cargando productos...</td>
+            <td colspan="15" class="muted">Cargando productos...</td>
           </tr>
         } @else {
           @for (item of visibles(); track item.id) {
@@ -388,12 +403,14 @@
                 </span>
               </td>
               <td>{{ unidad(item) }}</td>
-              <td class="num">{{ item.costo_compra | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
-              <td class="num">{{ sinImpuesto(item.costo_compra, item.impuesto_porcentaje) | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
-              <td class="num">{{ valorCosto(item) | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
-              <td class="num">{{ item.precio_venta | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
-              <td class="num">{{ (item.precio_2 ?? item.precio_venta) | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
-              <td class="num">{{ valorCosto(item) | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
+              <td class="num">{{ item.costo_compra | number: '1.2-2' }}</td>
+              <td class="num">{{ sinImpuesto(item.costo_compra, item.impuesto_porcentaje) | number: '1.2-2' }}</td>
+              <td class="num">{{ valorCosto(item) | number: '1.2-2' }}</td>
+              <td class="num">{{ precioLista(item, 1) | number: '1.2-2' }}</td>
+              <td class="num">{{ precioLista(item, 2) | number: '1.2-2' }}</td>
+              <td class="num">{{ precioLista(item, 3) | number: '1.2-2' }}</td>
+              <td class="num">{{ item.stock_actual | number: '1.2-2' }}</td>
+              <td class="num">{{ valorCosto(item) | number: '1.2-2' }}</td>
               <td>
                 <app-row-menu
                   [canDeactivate]="!!item.estado"
@@ -404,23 +421,27 @@
             </tr>
           } @empty {
             <tr>
-              <td colspan="13" class="muted">No hay productos que coincidan.</td>
+              <td colspan="15" class="muted">No hay productos que coincidan.</td>
             </tr>
           }
         }
       </tbody>
     </table>
-    <footer class="table-footer">
-      <span>
-        Viendo {{ rango().from }} a {{ rango().to }} de {{ filtrados().length }} entradas
-        · Monto total inventario (costo): {{ montoInventario() | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}
-      </span>
+    <footer class="table-footer productos-footer">
+      <div class="productos-summary">
+        <span>Viendo {{ rango().from }} a {{ rango().to }} de {{ filtrados().length }} entradas</span>
+        <strong>Monto total inventario (costo) {{ montoInventario() | number: '1.2-2' }}</strong>
+      </div>
       <div class="pager">
-        <button type="button" [disabled]="paginaActual() === 1" (click)="pagina.set(paginaActual() - 1)">Atrás</button>
-        @for (n of paginas(); track n) {
-          <button type="button" [class.active]="n === paginaActual()" (click)="pagina.set(n)">{{ n }}</button>
+        <button type="button" [disabled]="paginaActual() === 1" (click)="irPagina(paginaActual() - 1)">Atrás</button>
+        @for (n of paginas(); track $index) {
+          @if (n === 'gap') {
+            <span class="pager-gap">…</span>
+          } @else {
+            <button type="button" [class.active]="n === paginaActual()" (click)="irPagina(n)">{{ n }}</button>
+          }
         }
-        <button type="button" [disabled]="paginaActual() === paginas().length" (click)="pagina.set(paginaActual() + 1)">
+        <button type="button" [disabled]="paginaActual() === totalPaginas()" (click)="irPagina(paginaActual() + 1)">
           Siguiente
         </button>
       </div>

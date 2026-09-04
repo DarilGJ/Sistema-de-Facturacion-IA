@@ -1,0 +1,152 @@
+<section class="module-page">
+  <app-inventario-nav />
+
+  <header class="page-header">
+    <h1>Marcas</h1>
+    <p>Organiza las marcas del catálogo de inventario.</p>
+  </header>
+
+  <div class="crud-toolbar cat-toolbar">
+    <label class="inline-filter">
+      <span>Estado</span>
+      <select [value]="filtroEstado()" (change)="setFiltroEstado($any($event.target).value)">
+        <option value="">Todos</option>
+        <option value="activo">Activado</option>
+        <option value="inactivo">Inactivo</option>
+      </select>
+    </label>
+    <label class="search-field">
+      <app-icon name="search" />
+      <input
+        type="search"
+        placeholder="Buscar por nombre"
+        [value]="busqueda()"
+        (input)="setBusqueda($any($event.target).value)"
+      />
+    </label>
+    <button type="button" class="icon-action" (click)="cargar()" title="Actualizar">
+      <app-icon name="refresh" />
+    </button>
+    <select class="page-size" [value]="pageSize()" (change)="setPageSize($any($event.target).value)" title="Filas por página">
+      <option [value]="10">10</option>
+      <option [value]="25">25</option>
+      <option [value]="50">50</option>
+      <option [value]="100">100</option>
+    </select>
+    <button type="button" class="btn btn-accent" (click)="abrirNuevo()">+ Nueva Marca</button>
+    <div class="acciones-wrap" (click)="$event.stopPropagation()">
+      <button type="button" class="btn btn-ghost" (click)="toggleAcciones($event)">
+        <app-icon name="menu" /> Acciones
+      </button>
+      @if (accionesOpen()) {
+        <div class="acciones-menu">
+          <button type="button" (click)="cargar(); accionesOpen.set(false)">Actualizar lista</button>
+        </div>
+      }
+    </div>
+  </div>
+
+  @if (errorMessage() && !formOpen()) {
+    <p class="alert-error" role="alert">{{ errorMessage() }}</p>
+  }
+
+  @if (formOpen()) {
+    <div class="modal-overlay" (click)="cancelar()">
+      <form class="cliente-modal categoria-modal" [formGroup]="form" (ngSubmit)="guardar()" (click)="$event.stopPropagation()">
+        <header class="cliente-modal-header">
+          <h2>{{ editingId() ? 'Editar marca' : 'Nueva marca' }}</h2>
+          <button type="button" class="modal-close" (click)="cancelar()" aria-label="Cerrar">
+            <app-icon name="close" />
+          </button>
+        </header>
+        <div class="cliente-modal-body">
+          @if (errorMessage()) {
+            <p class="alert-error" role="alert">{{ errorMessage() }}</p>
+          }
+          <label class="outline-field" [class.invalid]="form.controls.nombre.touched && form.controls.nombre.invalid">
+            <span>Nombre</span>
+            <input type="text" formControlName="nombre" placeholder="Nombre" />
+            @if (form.controls.nombre.touched && form.controls.nombre.invalid) {
+              <small>Este campo es requerido</small>
+            }
+          </label>
+          <label class="outline-field">
+            <span>Descripción</span>
+            <input type="text" formControlName="descripcion" placeholder="Descripción" />
+          </label>
+        </div>
+        <footer class="cliente-modal-footer">
+          <button type="button" class="btn btn-ghost" (click)="cancelar()" [disabled]="saving()">Cancelar</button>
+          <button type="submit" class="btn btn-accent" [disabled]="saving()">
+            {{ saving() ? 'Guardando...' : 'Guardar' }}
+          </button>
+        </footer>
+      </form>
+    </div>
+  }
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Descripción</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading()) {
+          <tr>
+            <td colspan="4" class="muted">Cargando marcas...</td>
+          </tr>
+        } @else {
+          @for (item of visibles(); track item.id) {
+            <tr>
+              <td>{{ item.nombre }}</td>
+              <td>{{ item.descripcion || '—' }}</td>
+              <td>
+                <span class="badge" [class.badge-ok]="item.estado" [class.badge-off]="!item.estado">
+                  {{ item.estado ? 'Activado' : 'Inactivo' }}
+                </span>
+              </td>
+              <td>
+                <app-row-menu
+                  deactivateLabel="Cambiar Estado"
+                  [deactivateDanger]="false"
+                  (edit)="abrirEditar(item)"
+                  (deactivate)="cambiarEstado(item)"
+                />
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4" class="muted">No hay marcas que coincidan.</td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+    <footer class="table-footer">
+      <span>Viendo {{ rango().from }} a {{ rango().to }} de {{ filtrados().length }} entradas</span>
+      <div class="pager">
+        <button type="button" [disabled]="paginaActual() === 1" (click)="irPagina(1)" title="Primera página">«</button>
+        <button type="button" [disabled]="paginaActual() === 1" (click)="irPagina(paginaActual() - 1)">Atrás</button>
+        @for (n of paginas(); track n) {
+          <button type="button" [class.active]="n === paginaActual()" (click)="irPagina(n)">{{ n }}</button>
+        }
+        <button type="button" [disabled]="paginaActual() === paginas().length" (click)="irPagina(paginaActual() + 1)">
+          Siguiente
+        </button>
+        <button
+          type="button"
+          [disabled]="paginaActual() === paginas().length"
+          (click)="irPagina(paginas().length)"
+          title="Última página"
+        >
+          »
+        </button>
+      </div>
+    </footer>
+  </div>
+</section>

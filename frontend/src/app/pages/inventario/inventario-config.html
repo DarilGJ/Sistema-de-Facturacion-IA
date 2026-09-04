@@ -1,0 +1,48 @@
+<section class="module-page cfg-page">
+  <app-inventario-nav />
+
+  <header class="page-header">
+    <h1>Configuración de Inventario</h1>
+    <p>Activa o desactiva las reglas operativas del módulo. Los cambios se guardan al instante.</p>
+  </header>
+
+  @if (error()) {
+    <p class="cfg-error">{{ error() }}</p>
+  }
+
+  <div class="cfg-list">
+    @for (opcion of opciones; track opcion.key) {
+      <article class="cfg-card">
+        <h2>{{ opcion.titulo }}</h2>
+        <p class="cfg-desc">{{ opcion.descripcion }}</p>
+
+        <div class="cfg-row">
+          <span>{{ opcion.toggle }}</span>
+          <button
+            type="button"
+            class="switch"
+            [class.on]="activo(opcion.key)"
+            [disabled]="saving() === opcion.key"
+            role="switch"
+            [attr.aria-checked]="activo(opcion.key)"
+            [attr.aria-label]="opcion.toggle"
+            (click)="toggle(opcion.key)"
+          >
+            <span class="knob"></span>
+          </button>
+        </div>
+
+        <p class="cfg-state" [class.on]="activo(opcion.key)">
+          {{ activo(opcion.key) ? opcion.estadoOn : opcion.estadoOff }}
+        </p>
+
+        @if (activo(opcion.key) ? opcion.warnOn : opcion.warnOff) {
+          <aside class="cfg-warn">
+            <app-icon name="info" />
+            <p>{{ activo(opcion.key) ? opcion.warnOn : opcion.warnOff }}</p>
+          </aside>
+        }
+      </article>
+    }
+  </div>
+</section>

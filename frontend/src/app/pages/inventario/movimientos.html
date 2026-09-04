@@ -1,71 +1,129 @@
 <section class="module-page">
-  <header class="page-header">
-    <h1>Movimientos</h1>
-    <p>Kardex de entradas, salidas y ajustes.</p>
-  </header>
-
   <app-inventario-nav />
 
-  <div class="crud-toolbar">
+  <header class="page-header">
+    <h1>Bitácora de Inventario</h1>
+    <p>
+      Todos los movimientos del módulo inventario — qué módulo, qué proceso, qué se hizo, dónde y quién lo hizo.
+      Cubre ventas, compras, ajustes, traslados, devoluciones, egresos, producción y anulaciones.
+    </p>
+  </header>
+
+  <div class="top-filters bit-filters">
+    <label>
+      <span>Tipo de movimiento</span>
+      <select [value]="proceso()" (change)="setFiltro('proceso', $any($event.target).value)">
+        @for (opcion of procesos; track opcion.id) {
+          <option [value]="opcion.id">{{ opcion.label }}</option>
+        }
+      </select>
+    </label>
+    <label>
+      <span>Documento origen</span>
+      <select [value]="documentoOrigen()" (change)="setFiltro('documentoOrigen', $any($event.target).value)">
+        @for (opcion of documentos; track opcion.id) {
+          <option [value]="opcion.id">{{ opcion.label }}</option>
+        }
+      </select>
+    </label>
+    <label>
+      <span>Desde</span>
+      <input type="date" [value]="desde()" (change)="setFiltro('desde', $any($event.target).value)" />
+    </label>
+    <label>
+      <span>Hasta</span>
+      <input type="date" [value]="hasta()" (change)="setFiltro('hasta', $any($event.target).value)" />
+    </label>
+    <button type="button" class="btn btn-ghost" (click)="limpiar()">Limpiar</button>
+  </div>
+
+  <div class="crud-toolbar cat-toolbar">
     <label class="search-field">
       <app-icon name="search" />
       <input
         type="search"
-        placeholder="Buscar por producto o referencia"
+        placeholder="Buscar por producto, código, número de documento o fuente"
         [value]="busqueda()"
-        (input)="setBusqueda($any($event.target).value)"
+        (input)="setFiltro('busqueda', $any($event.target).value)"
       />
     </label>
+    <button type="button" class="icon-action" (click)="cargar()" title="Actualizar">
+      <app-icon name="refresh" />
+    </button>
+    <select class="page-size" [value]="pageSize()" (change)="setPageSize($any($event.target).value)">
+      <option [value]="10">10</option>
+      <option [value]="20">20</option>
+      <option [value]="50">50</option>
+      <option [value]="100">100</option>
+    </select>
   </div>
+
+  @if (errorMessage()) {
+    <p class="alert-error" role="alert">{{ errorMessage() }}</p>
+  }
 
   <div class="table-wrap">
     <table>
       <thead>
         <tr>
           <th>Fecha</th>
-          <th>Tipo</th>
+          <th>Módulo</th>
+          <th>Proceso</th>
           <th>Producto</th>
-          <th>Almacén</th>
-          <th class="num">Cantidad</th>
-          <th>Referencia</th>
+          <th class="num">Cant.</th>
+          <th>Bodega</th>
+          <th>Documento</th>
+          <th>Usuario</th>
         </tr>
       </thead>
       <tbody>
-        @for (item of visibles(); track item.id) {
+        @if (loading()) {
           <tr>
-            <td>{{ item.fecha | date: 'dd/MM/yyyy' }}</td>
-            <td>
-              <span
-                class="badge"
-                [class.badge-in]="item.tipo === 'entrada'"
-                [class.badge-out]="item.tipo === 'salida'"
-                [class.badge-warn]="item.tipo === 'ajuste'"
-              >
-                {{ etiqueta(item.tipo) }}
-              </span>
-            </td>
-            <td>{{ item.producto }}</td>
-            <td>{{ item.almacen }}</td>
-            <td class="num">{{ item.cantidad }}</td>
-            <td>{{ item.referencia }}</td>
+            <td colspan="8" class="muted">Cargando bitácora...</td>
           </tr>
-        } @empty {
-          <tr>
-            <td colspan="6" class="muted">No hay movimientos que coincidan.</td>
-          </tr>
+        } @else {
+          @for (item of filas(); track item.id) {
+            <tr>
+              <td>{{ item.fecha | date: "d/M/yyyy, h:mm:ss a" }}</td>
+              <td><span class="badge bit-mod">{{ etiquetaModulo(item.modulo) }}</span></td>
+              <td>
+                <span class="badge" [class.badge-out]="esSalida(item.cantidad)" [class.badge-in]="!esSalida(item.cantidad)">
+                  {{ etiquetaProceso(item.proceso) }}
+                </span>
+              </td>
+              <td>
+                <strong>{{ item.producto }}</strong>
+                @if (item.sku) {
+                  <div class="bit-sku">{{ item.sku }}</div>
+                }
+              </td>
+              <td class="num" [class.bit-neg]="esSalida(item.cantidad)" [class.bit-pos]="!esSalida(item.cantidad)">
+                {{ item.cantidad | number: '1.2-2' }}
+              </td>
+              <td>{{ item.bodega || '—' }}</td>
+              <td>{{ item.documento }}</td>
+              <td>{{ item.usuario || '—' }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" class="muted">No hay movimientos que coincidan.</td>
+            </tr>
+          }
         }
       </tbody>
     </table>
     <footer class="table-footer">
-      <span>Viendo {{ rango().from }} a {{ rango().to }} de {{ filtrados().length }} entradas</span>
+      <span>Viendo {{ rango().from }} a {{ rango().to }} de {{ total() }} movimientos</span>
       <div class="pager">
-        <button type="button" [disabled]="paginaActual() === 1" (click)="pagina.set(paginaActual() - 1)">Atrás</button>
-        @for (n of paginas(); track n) {
-          <button type="button" [class.active]="n === paginaActual()" (click)="pagina.set(n)">{{ n }}</button>
+        <button type="button" [disabled]="pagina() === 1" (click)="irPagina(pagina() - 1)">Atrás</button>
+        @for (n of paginas(); track $index) {
+          @if (n === 'gap') {
+            <span class="pager-gap">…</span>
+          } @else {
+            <button type="button" [class.active]="n === pagina()" (click)="irPagina(n)">{{ n }}</button>
+          }
         }
-        <button type="button" [disabled]="paginaActual() === paginas().length" (click)="pagina.set(paginaActual() + 1)">
-          Siguiente
-        </button>
+        <button type="button" [disabled]="pagina() === totalPaginas()" (click)="irPagina(pagina() + 1)">Siguiente</button>
       </div>
     </footer>
   </div>

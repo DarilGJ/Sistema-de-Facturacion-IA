@@ -1,0 +1,39 @@
+.bit-filters {
+  align-items: end;
+}
+
+.bit-filters input[type='date'] {
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #0f172a;
+  padding: 0.5rem 0.7rem;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.bit-mod {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.bit-sku {
+  color: #64748b;
+  font-size: 0.8rem;
+  margin-top: 0.15rem;
+}
+
+.bit-neg {
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+.bit-pos {
+  color: #15803d;
+  font-weight: 700;
+}
+
+.pager-gap {
+  min-width: 2rem;
+  text-align: center;
+  color: #94a3b8;
+}

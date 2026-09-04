@@ -24,7 +24,7 @@
   right: 0;
   top: calc(100% + 0.2rem);
   z-index: 20;
-  min-width: 140px;
+  min-width: 210px;
   background: #fff;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
@@ -41,6 +41,9 @@
   border-radius: 8px;
   cursor: pointer;
   color: #0f172a;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
 }
 
 .menu button:hover {
@@ -49,4 +52,9 @@
 
 .menu .danger {
   color: #b91c1c;
+}
+
+.menu .accent {
+  color: #ea580c;
+  font-weight: 600;
 }

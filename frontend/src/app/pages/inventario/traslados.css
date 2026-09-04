@@ -1,0 +1,181 @@
+.tr-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.vista-toggle {
+  display: flex;
+  gap: 0.35rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.25rem;
+}
+
+.vista-toggle button {
+  border: 0;
+  background: transparent;
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.vista-toggle button.active {
+  background: var(--brand-yellow);
+  color: #fff;
+}
+
+.tr-sub {
+  color: #64748b;
+  font-size: 0.82rem;
+  margin-top: 0.15rem;
+}
+
+.tr-line-grid {
+  display: grid;
+  grid-template-columns: 2.2rem 6.5rem 6.5rem 6.5rem;
+  gap: 0.45rem 0.55rem;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.tr-line-grid > span {
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.tr-line-grid > strong {
+  color: #0f172a;
+  font-size: 0.92rem;
+}
+
+.menu .danger {
+  color: #b91c1c;
+}
+
+.ticket-sheet {
+  width: min(520px, 100%);
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+  background: #fff;
+  color: #111;
+  padding: 1.4rem 1.5rem 1.1rem;
+  border-radius: 8px;
+}
+
+.ticket-kicker {
+  margin: 0 0 0.35rem;
+  font-size: 0.85rem;
+}
+
+.ticket-sheet h2 {
+  margin: 0 0 1rem;
+  text-align: center;
+  font-size: 1.35rem;
+}
+
+.ticket-meta {
+  margin: 0 0 1rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.ticket-meta div {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  gap: 0.4rem;
+}
+
+.ticket-meta dt {
+  font-weight: 700;
+}
+
+.ticket-meta dd {
+  margin: 0;
+}
+
+.ticket-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.ticket-cols span:last-child,
+.ticket-prices span:last-child {
+  text-align: right;
+}
+
+.ticket-item {
+  margin: 0.55rem 0 0.15rem;
+  font-weight: 700;
+}
+
+.ticket-prices {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.ticket-total {
+  margin-top: 1.4rem;
+  text-align: center;
+  border-top: 1px solid #cbd5e1;
+  padding-top: 0.9rem;
+}
+
+.ticket-total strong {
+  display: block;
+  font-size: 1.35rem;
+  margin: 0.25rem 0 0.45rem;
+}
+
+.ticket-total p {
+  margin: 0 0 1rem;
+  font-weight: 700;
+}
+
+@media print {
+  app-inventario-nav,
+  .module-page,
+  .ticket-overlay {
+    background: #fff !important;
+  }
+
+  app-inventario-nav,
+  .module-page {
+    display: none !important;
+  }
+
+  .ticket-overlay {
+    position: static;
+    inset: auto;
+    padding: 0;
+    display: block;
+  }
+
+  .ticket-sheet {
+    width: 100%;
+    max-height: none;
+    box-shadow: none;
+    border-radius: 0;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .tr-head,
+  .tr-line-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}

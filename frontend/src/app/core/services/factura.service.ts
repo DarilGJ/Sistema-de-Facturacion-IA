@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { Factura, FacturaPayload } from '../models/factura.model';
+import { Factura, FacturaPatch, FacturaPayload } from '../models/factura.model';
 
 @Injectable({ providedIn: 'root' })
 export class FacturaService {
@@ -25,7 +25,16 @@ export class FacturaService {
     return this.http.post<Factura>(`${this.api}/facturas`, payload).pipe(
       tap((factura) => {
         this.ultima.set(factura);
-        this.facturas.update((rows) => [factura, ...rows]);
+        this.facturas.update((rows) => [factura, ...rows.filter((row) => row.id !== factura.id)]);
+      })
+    );
+  }
+
+  actualizar(id: number, payload: FacturaPatch): Observable<Factura> {
+    return this.http.patch<Factura>(`${this.api}/facturas/${id}`, payload).pipe(
+      tap((factura) => {
+        this.ultima.set(factura);
+        this.facturas.update((rows) => rows.map((row) => (row.id === factura.id ? factura : row)));
       })
     );
   }

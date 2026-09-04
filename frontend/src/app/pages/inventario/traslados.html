@@ -1,0 +1,344 @@
+<section class="module-page">
+  <app-inventario-nav />
+
+  <header class="page-header tr-head">
+    <div>
+      <h1>Traslados de inventario</h1>
+      <p>Consulta los movimientos entre bodegas y empresas</p>
+    </div>
+    <div class="vista-toggle" role="radiogroup" aria-label="Tipo de consulta">
+      <button type="button" [class.active]="vista() === 'realizados'" (click)="setVista('realizados')">
+        Realizados
+      </button>
+      <button type="button" [class.active]="vista() === 'recibidos'" (click)="setVista('recibidos')">
+        Recibidos
+      </button>
+    </div>
+  </header>
+
+  <div class="crud-toolbar cat-toolbar">
+    <label class="search-field">
+      <app-icon name="search" />
+      <input
+        type="search"
+        placeholder="Buscar"
+        [value]="busqueda()"
+        (input)="setBusqueda($any($event.target).value)"
+      />
+    </label>
+    <button type="button" class="icon-action" (click)="cargar()" title="Actualizar">
+      <app-icon name="refresh" />
+    </button>
+    <select class="page-size" [value]="pageSize()" (change)="setPageSize($any($event.target).value)">
+      <option [value]="10">10</option>
+      <option [value]="25">25</option>
+      <option [value]="50">50</option>
+      <option [value]="100">100</option>
+    </select>
+    <button type="button" class="btn btn-accent" (click)="abrirNuevo()">+ Entre Bodegas</button>
+    <button type="button" class="btn btn-accent" disabled title="Próximamente">+ A Otra Empresa</button>
+  </div>
+
+  @if (errorMessage() && !formOpen()) {
+    <p class="alert-error" role="alert">{{ errorMessage() }}</p>
+  }
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Número</th>
+          <th>Productos / Destino</th>
+          <th>Fecha</th>
+          <th>Estado</th>
+          <th>Realizado por</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading()) {
+          <tr>
+            <td colspan="6" class="muted">Cargando traslados...</td>
+          </tr>
+        } @else {
+          @for (item of visibles(); track item.id) {
+            <tr>
+              <td>{{ item.id }}</td>
+              <td>
+                <strong>Bodega {{ item.bodega_destino }}</strong>
+                <div class="tr-sub">{{ item.tipo === 'interno' ? 'Traslado interno' : 'A otra empresa' }}</div>
+              </td>
+              <td>{{ formatoFecha(item.fecha) }}</td>
+              <td>
+                <span class="badge" [class.badge-ok]="item.estado === 'finalizado'" [class.badge-off]="item.estado === 'anulado'">
+                  {{ item.estado === 'finalizado' ? 'Finalizado' : 'Anulado' }}
+                </span>
+              </td>
+              <td>
+                <span class="aj-user">
+                  <app-icon name="user" />
+                  {{ item.realizado_por }}
+                </span>
+              </td>
+              <td>
+                <div class="row-menu" (click)="$event.stopPropagation()">
+                  <button type="button" class="kebab" (click)="toggleMenu(item.id, $event)" aria-label="Acciones">
+                    <app-icon name="more" />
+                  </button>
+                  @if (menuId() === item.id) {
+                    <div class="menu" role="menu">
+                      <button type="button" (click)="verTiquete(item, $event)">
+                        <app-icon name="printer" /> Tiquete
+                      </button>
+                      <button type="button" (click)="descargarExcel(item, $event)">
+                        <app-icon name="file-excel" /> Excel
+                      </button>
+                      @if (item.estado === 'finalizado') {
+                        <button type="button" class="danger" (click)="anular(item, $event)">
+                          <app-icon name="ban" /> Anular
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="muted">No hay traslados registrados.</td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+    <footer class="table-footer">
+      <span>Viendo {{ rango().from }} a {{ rango().to }} de {{ filtrados().length }} entradas</span>
+      <div class="pager">
+        <button type="button" [disabled]="paginaActual() === 1" (click)="irPagina(paginaActual() - 1)">Atrás</button>
+        @for (n of paginas(); track $index) {
+          @if (n === 'gap') {
+            <span class="pager-gap">…</span>
+          } @else {
+            <button type="button" [class.active]="n === paginaActual()" (click)="irPagina(n)">{{ n }}</button>
+          }
+        }
+        <button type="button" [disabled]="paginaActual() === totalPaginas()" (click)="irPagina(paginaActual() + 1)">
+          Siguiente
+        </button>
+      </div>
+    </footer>
+  </div>
+</section>
+
+@if (formOpen()) {
+  <div class="modal-overlay" (click)="cancelar()">
+    <div class="aj-modal" (click)="$event.stopPropagation()" role="dialog">
+      <header class="aj-modal-header">
+        <button type="button" class="aj-close" (click)="cancelar()" aria-label="Cerrar">
+          <app-icon name="close" />
+        </button>
+        <h2>Nuevo traslado entre bodegas</h2>
+      </header>
+      <div class="aj-modal-body">
+        @if (formError()) {
+          <p class="alert-error" role="alert">{{ formError() }}</p>
+        }
+        <div class="aj-split">
+          <section class="aj-card">
+            <h3>Selección de productos</h3>
+            <label class="outline-field">
+              <span>Bodega</span>
+              <select [value]="bodegaOrigenId() ?? ''" (change)="seleccionarOrigen($any($event.target).value)">
+                <option value="">Selecciona una bodega</option>
+                @for (bodega of inventario.almacenes(); track bodega.id) {
+                  @if (bodega.estado) {
+                    <option [value]="bodega.id">{{ bodega.nombre }}</option>
+                  }
+                }
+              </select>
+            </label>
+            <div class="crud-toolbar cat-toolbar aj-mini-bar">
+              <label class="search-field">
+                <app-icon name="search" />
+                <input
+                  type="search"
+                  placeholder="Buscar por código o nombre"
+                  [value]="busquedaProducto()"
+                  (input)="setBusquedaProducto($any($event.target).value)"
+                  [disabled]="!bodegaOrigenId()"
+                />
+              </label>
+              <button type="button" class="icon-action" (click)="recargarCatalogo()" [disabled]="!bodegaOrigenId()">
+                <app-icon name="refresh" />
+              </button>
+              <select
+                class="page-size"
+                [value]="pageSizeProducto()"
+                (change)="setPageSizeProducto($any($event.target).value)"
+              >
+                <option [value]="10">10</option>
+                <option [value]="25">25</option>
+                <option [value]="50">50</option>
+              </select>
+            </div>
+            @if (!bodegaOrigenId()) {
+              <div class="ppb-empty">
+                <app-icon name="warehouse" />
+                <strong>Selecciona una bodega</strong>
+                <p>Elige la bodega de origen para consultar sus productos disponibles.</p>
+              </div>
+            } @else if (loadingCatalogo()) {
+              <p class="muted">Cargando productos...</p>
+            } @else {
+              <div class="table-wrap aj-inner-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Código</th>
+                      <th>Nombre</th>
+                      <th class="num">Cantidad bodega</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (item of productosVisibles(); track item.id) {
+                      <tr class="click-row" (click)="agregar(item)">
+                        <td>{{ item.sku }}</td>
+                        <td>{{ item.nombre }}</td>
+                        <td class="num">{{ formatoCantidad(item.cantidad) }}</td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="3" class="muted">No hay productos asignados a esta bodega.</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+                <footer class="table-footer">
+                  <span>
+                    Viendo {{ productosRango().from }} a {{ productosRango().to }} de
+                    {{ catalogoFiltrado().length }} entradas
+                  </span>
+                  <div class="pager">
+                    <button
+                      type="button"
+                      [disabled]="productosPaginaActual() === 1"
+                      (click)="irPaginaProducto(productosPaginaActual() - 1)"
+                    >
+                      Atrás
+                    </button>
+                    @for (n of productosPaginas(); track $index) {
+                      @if (n === 'gap') {
+                        <span class="pager-gap">…</span>
+                      } @else {
+                        <button
+                          type="button"
+                          [class.active]="n === productosPaginaActual()"
+                          (click)="irPaginaProducto(n)"
+                        >
+                          {{ n }}
+                        </button>
+                      }
+                    }
+                    <button
+                      type="button"
+                      [disabled]="productosPaginaActual() === productosTotalPaginas()"
+                      (click)="irPaginaProducto(productosPaginaActual() + 1)"
+                    >
+                      Siguiente
+                    </button>
+                  </div>
+                </footer>
+              </div>
+            }
+          </section>
+
+          <section class="aj-card">
+            <label class="outline-field">
+              <span>Bodega Receptora</span>
+              <select [value]="bodegaDestinoId() ?? ''" (change)="seleccionarDestino($any($event.target).value)">
+                <option value="">Selecciona una bodega</option>
+                @for (bodega of bodegasDestino(); track bodega.id) {
+                  <option [value]="bodega.id">{{ bodega.nombre }}</option>
+                }
+              </select>
+            </label>
+            <h3>Productos seleccionados</h3>
+            @if (!seleccionados().length) {
+              <p class="muted">Elige productos a la izquierda para trasladarlos.</p>
+            }
+            @for (item of seleccionados(); track item.id_producto; let i = $index) {
+              <article class="aj-line">
+                <header>
+                  <div>
+                    <strong>{{ item.producto }}</strong>
+                    <span>Bodega: {{ item.bodega }}</span>
+                  </div>
+                  <button type="button" class="aj-remove" (click)="quitar(item)" title="Quitar">
+                    <app-icon name="close" />
+                  </button>
+                </header>
+                <div class="tr-line-grid">
+                  <span>#</span>
+                  <span>Cant. actual</span>
+                  <span>Cant. traslado</span>
+                  <span>Cant. final</span>
+                  <strong>{{ i + 1 }}</strong>
+                  <strong>{{ formatoCantidad(item.cantidad_actual) }}</strong>
+                  <input
+                    class="qty-input"
+                    type="number"
+                    min="0"
+                    [max]="item.cantidad_actual"
+                    [value]="item.cantidad_traslado"
+                    (input)="setCantidadTraslado(item, $any($event.target).value)"
+                  />
+                  <input class="qty-input" type="number" [value]="cantidadFinal(item)" readOnly />
+                </div>
+              </article>
+            }
+          </section>
+        </div>
+      </div>
+      <footer class="aj-modal-footer">
+        <button type="button" class="btn btn-ghost" (click)="cancelar()" [disabled]="saving()">Cancelar</button>
+        <button type="button" class="btn btn-accent" (click)="guardar()" [disabled]="!puedeGuardar()">
+          {{ saving() ? 'Guardando...' : 'Guardar' }}
+        </button>
+      </footer>
+    </div>
+  </div>
+}
+
+@if (tiquete(); as doc) {
+  <div class="modal-overlay ticket-overlay" (click)="tiquete.set(null)">
+    <div class="ticket-sheet" (click)="$event.stopPropagation()">
+      <p class="ticket-kicker">Traslado de inventario</p>
+      <h2>Traslado # : {{ doc.id }}</h2>
+      <dl class="ticket-meta">
+        <div><dt>Fecha</dt><dd>{{ formatoFechaCorta(doc.fecha) }}</dd></div>
+        <div><dt>Usuario</dt><dd>{{ doc.realizado_por }}</dd></div>
+        <div><dt>Origen</dt><dd>FacturaAI - {{ doc.bodega_origen }}</dd></div>
+        <div><dt>Destino</dt><dd>{{ doc.bodega_destino }}</dd></div>
+      </dl>
+      <div class="ticket-cols">
+        <span>Precio</span>
+        <span>SubTotal</span>
+      </div>
+      @for (linea of doc.items; track linea.id) {
+        <p class="ticket-item">
+          ({{ formatoCantidad(linea.cantidad_traslado) }}) - {{ linea.producto }} - {{ linea.sku }}
+        </p>
+        <p class="ticket-prices">
+          <span>{{ linea.precio_unitario | number: '1.2-2' }}</span>
+          <span>{{ linea.subtotal | number: '1.2-2' }}</span>
+        </p>
+      }
+      <div class="ticket-total">
+        <span>Total Transferido :</span>
+        <strong>{{ doc.total_valor | number: '1.2-2' }}</strong>
+        <p>Total artículos: {{ formatoCantidad(doc.total_articulos) }}</p>
+      </div>
+      <button type="button" class="btn btn-ghost no-print" (click)="imprimir()">Imprimir</button>
+    </div>
+  </div>
+}
