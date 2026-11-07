@@ -1,11 +1,19 @@
-from fastapi import FastAPI
+import os
+from pathlib import Path
+
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
+import predict_demand as motor
+
+RUTA_MODELO = Path(os.environ.get(
+    "MODELO_RUTA", Path(__file__).resolve().parent / "modelos" / "modelo_vigente.joblib"))
+
 app = FastAPI(
-    title="Motor IA - Sistema de Facturación",
-    version="0.1.0",
-    description="Stub del motor de IA. Aquí conectarás librerías como scikit-learn, pandas, etc.",
+    title="Motor predictivo - Librerías El Regalito",
+    version="1.0.0",
+    description="Pronóstico de demanda con Random Forest y cálculo del Punto de Reorden.",
 )
 
 app.add_middleware(
@@ -16,38 +24,50 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-class PredictRequest(BaseModel):
-    texto: str = Field(..., min_length=1, description="Entrada a analizar")
+_paquete: dict | None = None
 
 
-class PredictResponse(BaseModel):
-    resultado: str
-    confianza: float
-    modelo: str
+def paquete_vigente() -> dict:
+    global _paquete
+    if _paquete is None:
+        if not RUTA_MODELO.exists():
+            raise HTTPException(503, "No hay un modelo entrenado. Ejecute entrenar_modelo.py.")
+        _paquete = motor.cargar_modelo(RUTA_MODELO)
+    return _paquete
+
+
+class Venta(BaseModel):
+    periodo: str = Field(..., pattern=r"^\d{4}-\d{2}$", description="Mes en formato AAAA-MM")
+    cantidad: float = Field(..., ge=0)
+
+
+class PronosticoRequest(BaseModel):
+    sku: str
+    categoria: str = "Sin categoría"
+    tiempo_entrega_dias: float = Field(..., gt=0)
+    z: float = Field(motor.Z_NIVEL_SERVICIO, gt=0, description="Valor z del nivel de servicio")
+    historial: list[Venta]
 
 
 @app.get("/health")
 def health():
-    return {"ok": True, "service": "ai-engine"}
+    return {"ok": True, "service": "ai-engine", "modelo_cargado": RUTA_MODELO.exists()}
 
 
-@app.post("/predict", response_model=PredictResponse)
-def predict(payload: PredictRequest):
-    """
-    Reemplaza esta lógica por tu modelo real (sklearn, transformers, etc.).
-    """
-    texto = payload.texto.strip().lower()
+@app.get("/modelo")
+def modelo():
+    return paquete_vigente()["reporte"]
 
-    if "factura" in texto or "invoice" in texto:
-        return PredictResponse(
-            resultado="documento_factura",
-            confianza=0.91,
-            modelo="stub-rules-v1",
-        )
 
-    return PredictResponse(
-        resultado="documento_general",
-        confianza=0.62,
-        modelo="stub-rules-v1",
-    )
+@app.post("/modelo/recargar")
+def recargar():
+    global _paquete
+    _paquete = None
+    return paquete_vigente()["reporte"]
+
+
+@app.post("/pronostico")
+def pronostico(payload: PronosticoRequest):
+    historial = [v.model_dump() for v in payload.historial]
+    return motor.pronosticar(paquete_vigente(), payload.sku, payload.categoria, historial,
+                             payload.tiempo_entrega_dias, payload.z)

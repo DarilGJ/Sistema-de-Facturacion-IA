@@ -10,7 +10,7 @@
       <p class="muted">{{ auth.user()?.email }} · Resumen operativo de {{ data()?.empresa || 'FacturaAI' }}</p>
     </div>
     <div class="welcome-actions">
-      <a class="ghost" routerLink="/contabilidad">Guía DGII</a>
+      <a class="ghost" routerLink="/contabilidad">Guía SAT</a>
       <a class="primary" routerLink="/pos">Ir al POS</a>
     </div>
   </header>
@@ -122,7 +122,7 @@
           <span class="trend" [class.up]="resumen.pos.utilidadTrend >= 0" [class.down]="resumen.pos.utilidadTrend < 0">{{ porcentaje(resumen.pos.utilidadTrend) }}</span>
         </article>
         <article>
-          <p>Impuestos (ITBIS)</p>
+          <p>Impuestos (IVA)</p>
           <h3>{{ moneda(resumen.pos.impuestos) }}</h3>
           <span class="trend" [class.up]="resumen.pos.impuestosTrend >= 0" [class.down]="resumen.pos.impuestosTrend < 0">{{ porcentaje(resumen.pos.impuestosTrend) }}</span>
         </article>
@@ -138,7 +138,7 @@
         </article>
         <article>
           <p>Margen</p>
-          <h3>{{ resumen.pos.margen.toLocaleString('es-DO', { maximumFractionDigits: 1 }) }}%</h3>
+          <h3>{{ resumen.pos.margen.toLocaleString('es-GT', { maximumFractionDigits: 1 }) }}%</h3>
           <span class="trend" [class.up]="resumen.pos.margenTrend >= 0" [class.down]="resumen.pos.margenTrend < 0">{{ porcentaje(resumen.pos.margenTrend) }}</span>
         </article>
         <article>
@@ -287,8 +287,8 @@
 
     <article class="cta">
       <div>
-        <h2>Contabilidad lista para DGII</h2>
-        <p>Conecta el libro de ventas, ITBIS y cuentas por cobrar a partir de las facturas del POS.</p>
+        <h2>Contabilidad lista para la SAT</h2>
+        <p>Conecta el libro de ventas, el IVA y las cuentas por cobrar a partir de las facturas.</p>
       </div>
       <a routerLink="/contabilidad">Quiero automatizar</a>
     </article>

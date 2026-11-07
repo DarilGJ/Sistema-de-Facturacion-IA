@@ -10,6 +10,12 @@ export const sequelize = new Sequelize(
     port: env.db.port,
     dialect: 'mysql',
     logging: false,
+    pool: {
+      max: 20,
+      min: 0,
+      acquire: 10000,
+      idle: 10000,
+    },
     define: {
       timestamps: false,
       freezeTableName: true,

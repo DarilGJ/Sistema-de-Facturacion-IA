@@ -13,7 +13,7 @@ import { handleSequelizeError } from '../utils/http-error.js';
 import { recalcStock } from '../utils/recalc-stock.js';
 import { registrarKardex } from '../utils/kardex.js';
 
-const ITBIS_RATE = 0.18;
+const IVA_RATE = 0.12;
 const RAZONES = ['danado', 'vencido', 'no_gusto', 'cambio_producto'];
 const RESTOCK = {
   danado: false,
@@ -368,10 +368,10 @@ export async function crear(req, res) {
     }
 
     const subtotalDevuelto = roundMoney(lineas.reduce((sum, item) => sum + item.subtotal, 0));
-    const itbisDevuelto = roundMoney(subtotalDevuelto * ITBIS_RATE);
+    const itbisDevuelto = roundMoney(subtotalDevuelto * IVA_RATE);
     const totalDevuelto = roundMoney(subtotalDevuelto + itbisDevuelto);
     const subtotalCambio = roundMoney(lineas.reduce((sum, item) => sum + (item.cambio?.subtotal || 0), 0));
-    const itbisCambio = roundMoney(subtotalCambio * ITBIS_RATE);
+    const itbisCambio = roundMoney(subtotalCambio * IVA_RATE);
     const totalCambio = roundMoney(subtotalCambio + itbisCambio);
     const diferencia = roundMoney(totalCambio - totalDevuelto);
 

@@ -105,7 +105,7 @@
     @if (openMenu() === 'reportes') {
       <div class="drop-panel flyout-host">
         <a routerLink="/inventario/reportes/alertas-stock" (click)="close()" (mouseenter)="openFlyout.set(null)">
-          <app-icon name="chart" /> Alertas de stock
+          <app-icon name="chart" /> Pedido sugerido
         </a>
         <div class="menu-row" (mouseenter)="showFlyout('stock', $event)">
           <button

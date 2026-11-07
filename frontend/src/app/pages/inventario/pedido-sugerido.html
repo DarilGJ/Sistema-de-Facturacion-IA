@@ -1,0 +1,159 @@
+<section class="module-page pedido-page">
+  <app-inventario-nav />
+
+  <header class="page-header pedido-head">
+    <div>
+      <p class="eyebrow">Alertas de stock</p>
+      <h1>Pedido sugerido</h1>
+      <p>
+        La central compra una sola vez. Antes se ve qué le falta a cada bodega, por qué, y cómo se reparte el surtido.
+      </p>
+    </div>
+    <div class="pedido-actions">
+      <button type="button" class="btn btn-ghost" (click)="cargar()" [disabled]="loading()">
+        <app-icon name="refresh" /> Recalcular
+      </button>
+      <button type="button" class="btn" (click)="imprimir()" [disabled]="!pedido()">
+        <app-icon name="printer" /> Imprimir
+      </button>
+    </div>
+  </header>
+
+  @if (errorMessage()) {
+    <p class="alert-error" role="alert">{{ errorMessage() }}</p>
+  }
+
+  @if (loading()) {
+    <p class="muted">Calculando existencias, temporada y rotación…</p>
+  } @else if (pedido(); as data) {
+    <section class="pedido-kpis">
+      <article>
+        <span>Productos a comprar</span>
+        <strong>{{ data.resumen.productos }}</strong>
+      </article>
+      <article>
+        <span>Unidades</span>
+        <strong>{{ data.resumen.unidades }}</strong>
+      </article>
+      <article>
+        <span>Inversión</span>
+        <strong>{{ quetzales(data.resumen.inversion) }}</strong>
+      </article>
+      <article>
+        <span>{{ data.temporada.nombre }}</span>
+        <strong>{{ data.temporada.horizonte }}</strong>
+        <small>Referencia {{ data.temporada.periodo }}</small>
+      </article>
+    </section>
+
+    <aside class="pedido-note">
+      <app-icon name="info" />
+      <p>{{ data.motorDetalle }}</p>
+    </aside>
+
+    <div class="bodega-strip">
+      @for (bodega of data.bodegas; track bodega.id) {
+        <button
+          type="button"
+          class="bodega-card"
+          [class.active]="vista() === 'bodegas' && bodegaActiva()?.id === bodega.id"
+          (click)="elegirBodega(bodega)"
+        >
+          <span>{{ bodega.principal ? 'Principal' : 'Bodega' }}</span>
+          <strong>{{ bodega.nombre }}</strong>
+          <em>{{ bodega.productos }} productos · {{ bodega.unidades }} uds</em>
+          <b>{{ quetzales(bodega.inversion) }}</b>
+        </button>
+      }
+      <button type="button" class="bodega-card central" [class.active]="vista() === 'central'" (click)="elegirVista('central')">
+        <span>Compra única</span>
+        <strong>Pedido central</strong>
+        <em>{{ data.resumen.bodegas }} {{ data.resumen.bodegas === 1 ? 'bodega' : 'bodegas' }} reunidas</em>
+        <b>{{ quetzales(data.resumen.inversion) }}</b>
+      </button>
+    </div>
+
+    <div class="crud-toolbar">
+      <label class="search-field">
+        <app-icon name="search" />
+        <input
+          type="search"
+          placeholder="Buscar producto, SKU o proveedor"
+          [value]="busqueda()"
+          (input)="busqueda.set($any($event.target).value)"
+        />
+      </label>
+      <label class="check-line">
+        <input type="checkbox" [checked]="soloPedir()" (change)="soloPedir.set($any($event.target).checked)" />
+        Solo lo que hay que pedir
+      </label>
+    </div>
+
+    @if (!lineas().length) {
+      <p class="muted">
+        @if (soloPedir()) {
+          No hay faltante en esta vista. Quita la marca de «Solo lo que hay que pedir» para ver el excedente.
+        } @else {
+          No hay productos para este filtro.
+        }
+      </p>
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th class="num">Existencia</th>
+              <th class="num">Temporada</th>
+              <th class="num">Demanda / mes</th>
+              <th class="num">Pedir</th>
+              <th class="num">Excedente</th>
+              <th class="num">Inversión</th>
+              <th>Por qué</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (linea of lineas(); track linea.id_producto) {
+              <tr class="fila" [class.abierta]="abierto() === linea.id_producto" (click)="toggleDetalle(linea.id_producto)">
+                <td>
+                  <strong>{{ linea.nombre }}</strong>
+                  <small>{{ linea.sku }} · {{ linea.categoria }} · {{ linea.proveedor }}</small>
+                  @if (linea.reparto?.length) {
+                    <small class="reparto">Surtir: {{ reparto(linea) }}</small>
+                  }
+                </td>
+                <td class="num">{{ linea.existencia }}</td>
+                <td class="num">{{ linea.temporada }}</td>
+                <td class="num">{{ linea.demandaMensual }}</td>
+                <td class="num pedir" [class.cero]="!linea.pedir">{{ linea.pedir }}</td>
+                <td class="num sobra" [class.cero]="!linea.excedente">{{ linea.excedente }}</td>
+                <td class="num">{{ quetzales(linea.inversion) }}</td>
+                <td>
+                  <span class="clase" [attr.data-clase]="linea.clasificacion">{{ linea.clasificacion }}</span>
+                  @for (motivo of linea.motivos; track motivo) {
+                    <span class="motivo">{{ motivo }}</span>
+                  }
+                </td>
+              </tr>
+              @if (abierto() === linea.id_producto) {
+                <tr class="detalle">
+                  <td colspan="8">
+                    <p>{{ linea.explicacion }}</p>
+                    <dl>
+                      @for (factor of linea.factores; track factor.etiqueta) {
+                        <div>
+                          <dt>{{ factor.etiqueta }}</dt>
+                          <dd>{{ factor.valor }}</dd>
+                        </div>
+                      }
+                    </dl>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+</section>

@@ -7,7 +7,7 @@ import { CarritoLinea } from '../../core/models/factura.model';
 import { Producto } from '../../core/models/inventario.model';
 import { apiErrorMessage } from '../../core/utils/api-error';
 
-const ITBIS = 0.18;
+const IVA = 0.12;
 
 @Component({
   selector: 'app-pos',
@@ -44,8 +44,8 @@ export class Pos implements OnInit {
   readonly subtotal = computed(() =>
     this.carrito().reduce((acc, linea) => acc + linea.precio * linea.cantidad, 0)
   );
-  readonly itbis = computed(() => Math.round(this.subtotal() * ITBIS * 100) / 100);
-  readonly total = computed(() => Math.round((this.subtotal() + this.itbis()) * 100) / 100);
+  readonly iva = computed(() => Math.round(this.subtotal() * IVA * 100) / 100);
+  readonly total = computed(() => Math.round((this.subtotal() + this.iva()) * 100) / 100);
 
   constructor(
     readonly inventario: InventarioService,
@@ -97,7 +97,7 @@ export class Pos implements OnInit {
           nombre: producto.nombre,
           precio: this.precio(producto),
           stock: producto.stock_actual,
-          cantidad: 1,
+          cantidad: 0,
         },
       ];
     });

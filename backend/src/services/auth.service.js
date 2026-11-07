@@ -25,6 +25,16 @@ export async function findUserById(id) {
   return rows[0] || null;
 }
 
+export async function createUser({ nombre, email, password, rol }) {
+  const password_hash = await bcrypt.hash(password, 10);
+  const [result] = await pool.execute(
+    `INSERT INTO usuarios (nombre, email, password_hash, rol, activo)
+     VALUES (:nombre, :email, :password_hash, :rol, 1)`,
+    { nombre, email, password_hash, rol }
+  );
+  return findUserById(result.insertId);
+}
+
 export async function listVendedores() {
   const [rows] = await pool.execute(
     `SELECT id, nombre, email, rol

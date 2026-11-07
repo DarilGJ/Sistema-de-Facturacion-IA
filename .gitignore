@@ -6,3 +6,4 @@ dist/
 .venv/
 __pycache__/
 .angular/
+ai-engine/modelos/

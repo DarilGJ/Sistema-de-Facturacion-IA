@@ -20,6 +20,8 @@ import cotizacionRoutes from './routes/cotizacion.routes.js';
 import compraRoutes from './routes/compra.routes.js';
 import dashboardRoutes from './routes/dashboard.routes.js';
 import inventarioRoutes from './routes/inventario.routes.js';
+import registroRoutes from './routes/registro.routes.js';
+import felRoutes from './routes/fel.routes.js';
 
 const app = express();
 
@@ -29,6 +31,12 @@ app.use(
     credentials: true,
   })
 );
+app.use((_req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+  next();
+});
 app.use(express.json());
 
 app.get('/api/health', (_req, res) => {
@@ -45,10 +53,19 @@ app.use('/api/cotizaciones', cotizacionRoutes);
 app.use('/api/compras', compraRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/inventario', inventarioRoutes);
+app.use('/api/registros', registroRoutes);
+app.use('/api/fel', felRoutes);
 
 app.use((err, _req, res, _next) => {
+  if (err?.type === 'entity.parse.failed' || err instanceof SyntaxError) {
+    return res.status(400).json({ message: 'JSON mal formado' });
+  }
+  const status = Number(err.status) || Number(err.statusCode) || 500;
+  if (status >= 400 && status < 500) {
+    return res.status(status).json({ message: err.message || 'Solicitud inválida' });
+  }
   console.error(err);
-  res.status(500).json({ message: 'Error interno del servidor' });
+  return res.status(500).json({ message: 'Error interno del servidor' });
 });
 
 async function start() {

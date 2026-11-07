@@ -2,7 +2,7 @@ import { Cliente, Cotizacion, CotizacionItem, Factura, FacturaItem, Producto, se
 import { handleSequelizeError } from '../utils/http-error.js';
 import { emitirFactura } from '../services/emitir-factura.js';
 
-const ITBIS_RATE = 0.18;
+const IVA_DEFAULT = 0.12;
 
 const includeCotizacion = [
   {
@@ -52,15 +52,25 @@ async function armarLineas(items, t) {
 
     const precioOverride = Number(item.precio_unitario);
     const precio =
-      Number.isFinite(precioOverride) && precioOverride >= 0
+      Number.isFinite(precioOverride) && precioOverride > 0
         ? roundMoney(precioOverride)
         : roundMoney(producto.precio_venta);
     const lineaSubtotal = roundMoney(precio * cantidad);
     subtotal = roundMoney(subtotal + lineaSubtotal);
-    lineas.push({ producto, cantidad, precio, lineaSubtotal });
+    const tasa = Number(producto.impuesto_porcentaje);
+    lineas.push({
+      producto,
+      cantidad,
+      precio,
+      lineaSubtotal,
+      tasa: Number.isFinite(tasa) && tasa >= 0 ? tasa / 100 : IVA_DEFAULT,
+    });
   }
 
-  const itbis = roundMoney(subtotal * ITBIS_RATE);
+  let itbis = 0;
+  for (const linea of lineas) {
+    itbis = roundMoney(itbis + roundMoney(linea.lineaSubtotal * linea.tasa));
+  }
   const total = roundMoney(subtotal + itbis);
   return { lineas, subtotal, itbis, total };
 }
@@ -168,6 +178,10 @@ export async function actualizarEstado(req, res) {
     const row = await Cotizacion.findByPk(req.params.id);
     if (!row) {
       return res.status(404).json({ message: 'Cotización no encontrada' });
+    }
+
+    if (row.generada) {
+      return res.status(400).json({ message: 'Una cotización ya facturada no se puede reabrir' });
     }
 
     const { estado, generada } = req.body || {};

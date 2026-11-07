@@ -299,13 +299,13 @@
           <div>
             <span>Mercancía devuelta</span>
             <strong>{{ moneda(resumen().total) }}</strong>
-            <small>ITBIS {{ moneda(resumen().itbis) }}</small>
+            <small>IVA {{ moneda(resumen().itbis) }}</small>
           </div>
           @if (esCambio()) {
             <div>
               <span>Mercancía entregada</span>
               <strong>{{ moneda(resumen().totalCambio) }}</strong>
-              <small>ITBIS {{ moneda(resumen().itbisCambio) }}</small>
+              <small>IVA {{ moneda(resumen().itbisCambio) }}</small>
             </div>
             <div>
               <span>Diferencia de precios</span>
@@ -408,9 +408,9 @@
         <h3>Impacto</h3>
         <ul class="dev-impacto">
           <li><strong>Inventario:</strong> {{ impactoInventario(doc) }} Valor a costo {{ moneda(doc.valor_inventario) }}.</li>
-          <li><strong>Ventas:</strong> se revierte {{ moneda(doc.total_devuelto) }} (incluye ITBIS {{ moneda(doc.itbis_devuelto) }}).</li>
+          <li><strong>Ventas:</strong> se revierte {{ moneda(doc.total_devuelto) }} (incluye IVA {{ moneda(doc.itbis_devuelto) }}).</li>
           @if (doc.total_cambio) {
-            <li><strong>Nueva venta / entrega:</strong> {{ moneda(doc.total_cambio) }} (ITBIS {{ moneda(doc.itbis_cambio) }}).</li>
+            <li><strong>Nueva venta / entrega:</strong> {{ moneda(doc.total_cambio) }} (IVA {{ moneda(doc.itbis_cambio) }}).</li>
           }
           @if (doc.reembolso) {
             <li><strong>Caja:</strong> egreso por reembolso {{ moneda(doc.reembolso) }}.</li>

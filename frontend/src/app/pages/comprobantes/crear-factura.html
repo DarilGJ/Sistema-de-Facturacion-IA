@@ -197,7 +197,7 @@
                 @for (item of productosFiltrados(); track item.id) {
                   <button type="button" (click)="agregarProducto(item, $event)">
                     <strong>{{ item.nombre }}</strong>
-                    <span>{{ item.sku }} · {{ item.precio_venta | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</span>
+                    <span>{{ item.sku }} · {{ item.precio_venta | currency: 'GTQ' : 'symbol-narrow' : '1.2-2' }}</span>
                   </button>
                 } @empty {
                   <p>No hay artículos en este catálogo.</p>
@@ -247,12 +247,12 @@
                     />
                   </td>
                   <td>
-                    <input class="cell qty" type="number" min="1" [ngModel]="linea.cantidad" (ngModelChange)="setCantidad(linea.uid!, $event)" />
+                    <input class="cell qty" type="number" min="0" [ngModel]="linea.cantidad" (ngModelChange)="setCantidad(linea.uid!, $event)" />
                   </td>
                   <td>
                     <input class="cell qty price" type="number" min="0" step="0.01" [ngModel]="linea.precio" (ngModelChange)="setPrecio(linea.uid!, $event)" />
                   </td>
-                  <td class="num">{{ linea.precio * linea.cantidad | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
+                  <td class="num">{{ linea.precio * linea.cantidad | currency: 'GTQ' : 'symbol-narrow' : '1.2-2' }}</td>
                 </tr>
               }
             </tbody>
@@ -285,24 +285,24 @@
           </label>
           <p class="metodos">
             <span>Total de métodos</span>
-            <strong>{{ total() | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</strong>
+            <strong>{{ total() | currency: 'GTQ' : 'symbol-narrow' : '1.2-2' }}</strong>
           </p>
           <button type="button" class="btn-process" (click)="procesar()" [disabled]="emitting()">
             {{ etiquetaAccion() }}
           </button>
         </div>
         <dl class="totales">
-          <div><dt>Sub Total</dt><dd>{{ subtotal() | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</dd></div>
+          <div><dt>Sub Total</dt><dd>{{ subtotal() | currency: 'GTQ' : 'symbol-narrow' : '1.2-2' }}</dd></div>
           <div>
             <dt>Descuento (-)</dt>
             <dd>
               <input class="cell qty price" type="number" min="0" step="0.01" [ngModel]="descuento()" (ngModelChange)="descuento.set(toNumber($event))" />
             </dd>
           </div>
-          <div><dt>Monto Bruto</dt><dd>{{ montoBruto() | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</dd></div>
-          <div><dt>Monto Gravable</dt><dd>{{ montoBruto() | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</dd></div>
-          <div><dt>IVA 18%</dt><dd>{{ iva() | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</dd></div>
-          <div class="grand"><dt>{{ esCotizacion() ? 'Total:' : 'Total a pagar:' }}</dt><dd>{{ total() | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</dd></div>
+          <div><dt>Monto Bruto</dt><dd>{{ montoBruto() | currency: 'GTQ' : 'symbol-narrow' : '1.2-2' }}</dd></div>
+          <div><dt>Monto Gravable</dt><dd>{{ montoBruto() | currency: 'GTQ' : 'symbol-narrow' : '1.2-2' }}</dd></div>
+          <div><dt>IVA 12%</dt><dd>{{ iva() | currency: 'GTQ' : 'symbol-narrow' : '1.2-2' }}</dd></div>
+          <div class="grand"><dt>{{ esCotizacion() ? 'Total:' : 'Total a pagar:' }}</dt><dd>{{ total() | currency: 'GTQ' : 'symbol-narrow' : '1.2-2' }}</dd></div>
         </dl>
       </div>
     }

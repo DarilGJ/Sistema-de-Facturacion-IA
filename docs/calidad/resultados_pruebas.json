@@ -1,0 +1,358 @@
+{
+  "ejecutado": "2026-11-06T17:56:27",
+  "api": "http://localhost:3000/api",
+  "total": 35,
+  "pasan": 35,
+  "casos": [
+    {
+      "id": "CP-01",
+      "funcion": "Inicio de sesión",
+      "tecnica": "Clases de equivalencia (válida)",
+      "cuadrante": "Q2",
+      "entrada": "Credenciales correctas",
+      "esperado": "200 y token JWT",
+      "obtenido": "200, token=sí",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-02",
+      "funcion": "Inicio de sesión",
+      "tecnica": "Clases de equivalencia (inválida)",
+      "cuadrante": "Q2",
+      "entrada": "Contraseña incorrecta",
+      "esperado": "401",
+      "obtenido": "401",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-03",
+      "funcion": "Inicio de sesión",
+      "tecnica": "Clases de equivalencia (inválida)",
+      "cuadrante": "Q2",
+      "entrada": "Correo no registrado",
+      "esperado": "401",
+      "obtenido": "401",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-04",
+      "funcion": "Inicio de sesión",
+      "tecnica": "Valores frontera (cadena vacía)",
+      "cuadrante": "Q2",
+      "entrada": "Correo y contraseña vacíos",
+      "esperado": "400",
+      "obtenido": "400",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-05",
+      "funcion": "Inicio de sesión",
+      "tecnica": "Clases de equivalencia (formato inválido)",
+      "cuadrante": "Q4",
+      "entrada": "JSON mal formado",
+      "esperado": "400 (error del cliente)",
+      "obtenido": "400",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-06",
+      "funcion": "Inicio de sesión",
+      "tecnica": "Riesgo (fuerza bruta)",
+      "cuadrante": "Q4",
+      "entrada": "20 intentos fallidos seguidos",
+      "esperado": "Bloqueo o 429 antes del intento 20",
+      "obtenido": "códigos=[401, 429]",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-07",
+      "funcion": "Control de acceso",
+      "tecnica": "Clases de equivalencia (sin token)",
+      "cuadrante": "Q4",
+      "entrada": "GET /clientes sin token",
+      "esperado": "401",
+      "obtenido": "401",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-08",
+      "funcion": "Control de acceso",
+      "tecnica": "Clases de equivalencia (token alterado)",
+      "cuadrante": "Q4",
+      "entrada": "Token con firma alterada",
+      "esperado": "401",
+      "obtenido": "401",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-09",
+      "funcion": "Registro de cliente (NIT)",
+      "tecnica": "Clases de equivalencia (válida)",
+      "cuadrante": "Q2",
+      "entrada": "NIT con formato válido",
+      "esperado": "201",
+      "obtenido": "201",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-10",
+      "funcion": "Registro de cliente (NIT)",
+      "tecnica": "Clases de equivalencia (inválida)",
+      "cuadrante": "Q2",
+      "entrada": "NIT con letras 'ABC-…'",
+      "esperado": "400 (NIT inválido)",
+      "obtenido": "400",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-11",
+      "funcion": "Registro de cliente (NIT)",
+      "tecnica": "Valores frontera (cadena vacía)",
+      "cuadrante": "Q2",
+      "entrada": "NIT vacío",
+      "esperado": "400",
+      "obtenido": "400",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-12",
+      "funcion": "Emisión de factura (cantidad)",
+      "tecnica": "Valores frontera",
+      "cuadrante": "Q2",
+      "entrada": "cantidad = 0 (frontera inferior inválida)",
+      "esperado": "400",
+      "obtenido": "400; stock=10",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-13",
+      "funcion": "Emisión de factura (cantidad)",
+      "tecnica": "Valores frontera",
+      "cuadrante": "Q2",
+      "entrada": "cantidad = -1",
+      "esperado": "400",
+      "obtenido": "400; stock=10",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-14",
+      "funcion": "Emisión de factura (cantidad)",
+      "tecnica": "Valores frontera",
+      "cuadrante": "Q2",
+      "entrada": "cantidad = 1 (frontera inferior válida)",
+      "esperado": "201",
+      "obtenido": "201; stock=9",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-15",
+      "funcion": "Emisión de factura (cantidad)",
+      "tecnica": "Valores frontera",
+      "cuadrante": "Q2",
+      "entrada": "cantidad = 9 = stock restante",
+      "esperado": "201",
+      "obtenido": "201; stock=0",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-16",
+      "funcion": "Emisión de factura (cantidad)",
+      "tecnica": "Valores frontera",
+      "cuadrante": "Q2",
+      "entrada": "cantidad = 1 con stock 0 (stock + 1)",
+      "esperado": "400",
+      "obtenido": "400; stock=0",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-17",
+      "funcion": "Emisión de factura (cantidad)",
+      "tecnica": "Valores frontera",
+      "cuadrante": "Q2",
+      "entrada": "cantidad = 2.5 (no entera)",
+      "esperado": "400",
+      "obtenido": "400; stock=0",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-18",
+      "funcion": "Emisión de factura (cantidad)",
+      "tecnica": "Valores frontera (desbordamiento)",
+      "cuadrante": "Q4",
+      "entrada": "cantidad = 10^12",
+      "esperado": "400",
+      "obtenido": "400",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-19",
+      "funcion": "Emisión de factura (impuesto y precio)",
+      "tecnica": "Clases de equivalencia (cálculo)",
+      "cuadrante": "Q2",
+      "entrada": "1 unidad a Q100.00",
+      "esperado": "IVA 12 %: impuesto Q12.00, total Q112.00",
+      "obtenido": "impuesto Q12.00, total Q112.00 (campo 'itbis')",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-20",
+      "funcion": "Certificación FEL",
+      "tecnica": "Riesgo (cumplimiento SAT)",
+      "cuadrante": "Q2",
+      "entrada": "Factura emitida",
+      "esperado": "Sin UUID local: pendiente de la API FEL o autorización del certificador",
+      "obtenido": "autorizacion=vacía, tributacion=no_entregado",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-21",
+      "funcion": "Emisión de factura (impuesto y precio)",
+      "tecnica": "Valores frontera (precio = 0)",
+      "cuadrante": "Q4",
+      "entrada": "precio_unitario = 0 enviado por el cliente",
+      "esperado": "400 o precio del catálogo (Q100)",
+      "obtenido": "201, total Q112.00",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-22",
+      "funcion": "Control de stock al facturar",
+      "tecnica": "Tabla de decisión",
+      "cuadrante": "Q2",
+      "entrada": "bloquear=True, tipo=producto, stock suficiente",
+      "esperado": "201",
+      "obtenido": "201; stock final=2",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-23",
+      "funcion": "Control de stock al facturar",
+      "tecnica": "Tabla de decisión",
+      "cuadrante": "Q2",
+      "entrada": "bloquear=True, tipo=producto, stock insuficiente",
+      "esperado": "400",
+      "obtenido": "400; stock final=2",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-24",
+      "funcion": "Control de stock al facturar",
+      "tecnica": "Tabla de decisión",
+      "cuadrante": "Q2",
+      "entrada": "bloquear=False, tipo=producto, stock insuficiente",
+      "esperado": "201 pero sin stock negativo (venta bajo pedido registrada)",
+      "obtenido": "201; stock final=0",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-25",
+      "funcion": "Control de stock al facturar",
+      "tecnica": "Tabla de decisión",
+      "cuadrante": "Q2",
+      "entrada": "bloquear=True, tipo=servicio, stock insuficiente",
+      "esperado": "201",
+      "obtenido": "201; stock final=2",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-26",
+      "funcion": "Control de stock al facturar",
+      "tecnica": "Riesgo (líneas duplicadas)",
+      "cuadrante": "Q4",
+      "entrada": "Stock 6; dos líneas del mismo producto de 5",
+      "esperado": "400 (se piden 10 > 6)",
+      "obtenido": "400; stock final=6",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-27",
+      "funcion": "Ciclo de vida de la factura",
+      "tecnica": "Transición de estados (emitida → anulada)",
+      "cuadrante": "Q2",
+      "entrada": "Anular factura de 4 unidades",
+      "esperado": "200 y stock restituido (+4)",
+      "obtenido": "200; stock 6 → 10",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-28",
+      "funcion": "Ciclo de vida de la factura",
+      "tecnica": "Transición de estados (anulada → anulada)",
+      "cuadrante": "Q2",
+      "entrada": "Anular por segunda vez",
+      "esperado": "400",
+      "obtenido": "400",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-29",
+      "funcion": "Ciclo de vida de la factura",
+      "tecnica": "Transición de estados (desconocido → aceptadas)",
+      "cuadrante": "Q4",
+      "entrada": "PATCH tributacion='aceptadas' desde el cliente",
+      "esperado": "403/400: solo el certificador cambia ese estado",
+      "obtenido": "400; tributacion=-",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-30",
+      "funcion": "Conversión de cotización",
+      "tecnica": "Transición de estados (facturada → pendiente → facturada)",
+      "cuadrante": "Q2",
+      "entrada": "Reabrir una cotización ya facturada y facturarla otra vez",
+      "esperado": "La segunda conversión se rechaza (400)",
+      "obtenido": "1.ª=201, 2.ª=400",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-31",
+      "funcion": "Autorización por rol",
+      "tecnica": "Tabla de decisión (rol × operación)",
+      "cuadrante": "Q4",
+      "entrada": "Rol vendedor anula una factura",
+      "esperado": "403",
+      "obtenido": "403",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-32",
+      "funcion": "Autorización por rol",
+      "tecnica": "Tabla de decisión (rol × operación)",
+      "cuadrante": "Q4",
+      "entrada": "Rol vendedor desactiva 'bloquear ventas sin stock'",
+      "esperado": "403",
+      "obtenido": "403",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-33",
+      "funcion": "Registro de compra",
+      "tecnica": "Valores frontera (precio negativo)",
+      "cuadrante": "Q2",
+      "entrada": "precio_unitario = -50",
+      "esperado": "400",
+      "obtenido": "400; total=None",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-34",
+      "funcion": "Tiempo de respuesta",
+      "tecnica": "Riesgo (rendimiento)",
+      "cuadrante": "Q4",
+      "entrada": "30 GET /productos secuenciales",
+      "esperado": "p95 < 500 ms",
+      "obtenido": "mediana 15 ms, p95 22 ms",
+      "resultado": "PASA"
+    },
+    {
+      "id": "CP-35",
+      "funcion": "Facturación concurrente",
+      "tecnica": "Riesgo (concurrencia)",
+      "cuadrante": "Q4",
+      "entrada": "10 facturas simultáneas de 1 unidad",
+      "esperado": "10 × 201 en < 5 s, números únicos, stock 100 → 90",
+      "obtenido": "201=10/10, otros=[], respuesta más lenta 0.4 s, duplicados=0, stock=90",
+      "resultado": "PASA"
+    }
+  ]
+}

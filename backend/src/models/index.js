@@ -21,6 +21,7 @@ import { InventarioTrasladoItem } from './inventario-traslado-item.model.js';
 import { InventarioMovimiento } from './inventario-movimiento.model.js';
 import { InventarioDevolucion } from './inventario-devolucion.model.js';
 import { InventarioDevolucionItem } from './inventario-devolucion-item.model.js';
+import { Registro } from './registro.model.js';
 
 Proveedor.hasMany(Producto, {
   foreignKey: 'id_proveedor',
@@ -315,4 +316,5 @@ export {
   InventarioMovimiento,
   InventarioDevolucion,
   InventarioDevolucionItem,
+  Registro,
 };

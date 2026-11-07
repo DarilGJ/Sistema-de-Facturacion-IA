@@ -61,11 +61,12 @@ export const routes: Routes = [
       },
       {
         path: 'inventario/listas-precios',
-        loadComponent: () =>
-          import('./pages/inventario/inventario-placeholder').then((m) => m.InventarioPlaceholder),
+        loadComponent: () => import('./pages/operacion/operacion').then((m) => m.Operacion),
         data: {
+          kind: 'listas',
+          inventario: true,
           titulo: 'Listas de Precios',
-          subtitulo: 'Define precios por lista, cliente o canal de venta.',
+          subtitulo: 'Actualiza el precio de venta y las listas 2 y 3 de cada producto.',
         },
       },
       {
@@ -79,11 +80,12 @@ export const routes: Routes = [
       },
       {
         path: 'inventario/toma-fisica',
-        loadComponent: () =>
-          import('./pages/inventario/inventario-placeholder').then((m) => m.InventarioPlaceholder),
+        loadComponent: () => import('./pages/operacion/operacion').then((m) => m.Operacion),
         data: {
+          kind: 'toma',
+          inventario: true,
           titulo: 'Toma Física',
-          subtitulo: 'Registra el conteo físico y concilia contra el stock del sistema.',
+          subtitulo: 'Compara el conteo con el stock del sistema y genera el ajuste.',
         },
       },
       {
@@ -99,71 +101,106 @@ export const routes: Routes = [
       {
         path: 'inventario/reportes/alertas-stock',
         loadComponent: () =>
-          import('./pages/inventario/inventario-placeholder').then((m) => m.InventarioPlaceholder),
-        data: {
-          titulo: 'Alertas de stock',
-          subtitulo: 'Productos bajo mínimo o con existencias críticas.',
-        },
+          import('./pages/inventario/pedido-sugerido').then((m) => m.PedidoSugeridoPage),
       },
       {
         path: 'inventario/reportes/listado',
-        loadComponent: () =>
-          import('./pages/inventario/inventario-placeholder').then((m) => m.InventarioPlaceholder),
-        data: { titulo: 'Listado de Inventario', subtitulo: 'Consulta general de artículos y existencias.' },
+        loadComponent: () => import('./pages/operacion/operacion').then((m) => m.Operacion),
+        data: {
+          kind: 'reporte',
+          reporte: 'listado',
+          inventario: true,
+          titulo: 'Listado de Inventario',
+          subtitulo: 'Consulta general de artículos y existencias.',
+        },
       },
       {
         path: 'inventario/reportes/existencias-margen',
-        loadComponent: () =>
-          import('./pages/inventario/inventario-placeholder').then((m) => m.InventarioPlaceholder),
+        loadComponent: () => import('./pages/operacion/operacion').then((m) => m.Operacion),
         data: {
+          kind: 'reporte',
+          reporte: 'margen',
+          inventario: true,
           titulo: 'Existencias y Margen',
-          subtitulo: 'Stock actual junto al margen estimado por producto.',
+          subtitulo: 'Precio, costo y margen estimado por producto.',
         },
       },
       {
         path: 'inventario/reportes/valorizacion',
-        loadComponent: () =>
-          import('./pages/inventario/inventario-placeholder').then((m) => m.InventarioPlaceholder),
-        data: { titulo: 'Valorización', subtitulo: 'Valor del inventario según costo y existencias.' },
+        loadComponent: () => import('./pages/operacion/operacion').then((m) => m.Operacion),
+        data: {
+          kind: 'reporte',
+          reporte: 'valorizacion',
+          inventario: true,
+          titulo: 'Valorización',
+          subtitulo: 'Valor del inventario según costo y existencias.',
+        },
       },
       {
         path: 'inventario/reportes/vencimientos',
-        loadComponent: () =>
-          import('./pages/inventario/inventario-placeholder').then((m) => m.InventarioPlaceholder),
-        data: { titulo: 'Vencimientos', subtitulo: 'Lotes y productos próximos a vencer.' },
+        loadComponent: () => import('./pages/operacion/operacion').then((m) => m.Operacion),
+        data: {
+          kind: 'reporte',
+          reporte: 'vencimientos',
+          inventario: true,
+          titulo: 'Vencimientos',
+          subtitulo: 'Productos del catálogo y su fecha de lote, cuando existe.',
+        },
       },
       {
         path: 'inventario/reportes/kardex',
-        loadComponent: () =>
-          import('./pages/inventario/inventario-placeholder').then((m) => m.InventarioPlaceholder),
-        data: { titulo: 'Kardex', subtitulo: 'Movimientos detallados por producto.' },
+        loadComponent: () => import('./pages/operacion/operacion').then((m) => m.Operacion),
+        data: {
+          kind: 'reporte',
+          reporte: 'kardex',
+          inventario: true,
+          titulo: 'Kardex',
+          subtitulo: 'Movimientos detallados por producto.',
+        },
       },
       {
         path: 'inventario/reportes/historial-acumulado',
-        loadComponent: () =>
-          import('./pages/inventario/inventario-placeholder').then((m) => m.InventarioPlaceholder),
-        data: { titulo: 'Historial Acumulado', subtitulo: 'Entradas y salidas acumuladas en el período.' },
+        loadComponent: () => import('./pages/operacion/operacion').then((m) => m.Operacion),
+        data: {
+          kind: 'reporte',
+          reporte: 'historial',
+          inventario: true,
+          titulo: 'Historial Acumulado',
+          subtitulo: 'Entradas y salidas acumuladas por producto.',
+        },
       },
       {
         path: 'inventario/reportes/historico-ventas',
-        loadComponent: () =>
-          import('./pages/inventario/inventario-placeholder').then((m) => m.InventarioPlaceholder),
-        data: { titulo: 'Histórico de Ventas', subtitulo: 'Unidades vendidas por producto y fecha.' },
+        loadComponent: () => import('./pages/operacion/operacion').then((m) => m.Operacion),
+        data: {
+          kind: 'reporte',
+          reporte: 'ventas',
+          inventario: true,
+          titulo: 'Histórico de Ventas',
+          subtitulo: 'Unidades vendidas por producto.',
+        },
       },
       {
         path: 'inventario/reportes/rentabilidad',
-        loadComponent: () =>
-          import('./pages/inventario/inventario-placeholder').then((m) => m.InventarioPlaceholder),
+        loadComponent: () => import('./pages/operacion/operacion').then((m) => m.Operacion),
         data: {
+          kind: 'reporte',
+          reporte: 'rentabilidad',
+          inventario: true,
           titulo: 'Rentabilidad por Categoría',
-          subtitulo: 'Margen y contribución de cada categoría del catálogo.',
+          subtitulo: 'Margen y contribución de cada categoría a partir de las ventas.',
         },
       },
       {
         path: 'inventario/reportes/rotacion-abc',
-        loadComponent: () =>
-          import('./pages/inventario/inventario-placeholder').then((m) => m.InventarioPlaceholder),
-        data: { titulo: 'Rotación (ABC)', subtitulo: 'Clasifica productos por rotación e importancia.' },
+        loadComponent: () => import('./pages/operacion/operacion').then((m) => m.Operacion),
+        data: {
+          kind: 'reporte',
+          reporte: 'abc',
+          inventario: true,
+          titulo: 'Rotación (ABC)',
+          subtitulo: 'Clasifica el inventario por valor acumulado.',
+        },
       },
       {
         path: 'comprobantes/facturas/crear',
@@ -188,12 +225,12 @@ export const routes: Routes = [
       },
       {
         path: 'comprobantes/notas/credito',
-        loadComponent: () =>
-          import('./pages/comprobantes/listado-comprobantes').then((m) => m.ListadoComprobantes),
+        loadComponent: () => import('./pages/operacion/operacion').then((m) => m.Operacion),
         data: {
-          modo: 'nc',
+          kind: 'notas',
+          notas: 'credito',
           titulo: 'Listado Nota Crédito',
-          subtitulo: 'Consulta y gestiona tus notas de crédito.',
+          subtitulo: 'Notas generadas por las devoluciones de venta.',
         },
       },
       {
@@ -208,12 +245,13 @@ export const routes: Routes = [
       },
       {
         path: 'comprobantes/notas/debito',
-        loadComponent: () =>
-          import('./pages/comprobantes/listado-comprobantes').then((m) => m.ListadoComprobantes),
+        loadComponent: () => import('./pages/operacion/operacion').then((m) => m.Operacion),
         data: {
-          modo: 'nd',
+          kind: 'notas',
+          notas: 'debito',
+          tipo: 'nota_debito',
           titulo: 'Listado Nota Débito',
-          subtitulo: 'Consulta y gestiona tus notas de débito.',
+          subtitulo: 'Cargos adicionales registrados contra una factura.',
         },
       },
       {
@@ -229,13 +267,13 @@ export const routes: Routes = [
       },
       {
         path: 'recurrentes/crear',
-        loadComponent: () => import('./pages/modulo/modulo-placeholder').then((m) => m.ModuloPlaceholder),
-        data: { titulo: 'Crear recurrente', subtitulo: 'Programa facturas o cobros que se repiten.' },
+        loadComponent: () => import('./pages/operacion/operacion').then((m) => m.Operacion),
+        data: { kind: 'registro', tipo: 'recurrente', titulo: 'Crear recurrente', subtitulo: 'Programa facturas o cobros que se repiten.' },
       },
       {
         path: 'recurrentes',
-        loadComponent: () => import('./pages/modulo/modulo-placeholder').then((m) => m.ModuloPlaceholder),
-        data: { titulo: 'Listado de recurrentes', subtitulo: 'Consulta los documentos programados.' },
+        loadComponent: () => import('./pages/operacion/operacion').then((m) => m.Operacion),
+        data: { kind: 'registro', tipo: 'recurrente', titulo: 'Listado de recurrentes', subtitulo: 'Consulta los documentos programados.' },
       },
       {
         path: 'egresos/compras/crear',
@@ -247,68 +285,64 @@ export const routes: Routes = [
       },
       {
         path: 'egresos/gastos/tipos',
-        loadComponent: () => import('./pages/modulo/modulo-placeholder').then((m) => m.ModuloPlaceholder),
-        data: { titulo: 'Gastos (Tipos)', subtitulo: 'Clasifica los tipos de gasto de la empresa.' },
+        loadComponent: () => import('./pages/operacion/operacion').then((m) => m.Operacion),
+        data: { kind: 'registro', tipo: 'gasto_tipo', titulo: 'Gastos (Tipos)', subtitulo: 'Clasifica los tipos de gasto de la empresa.' },
       },
       {
         path: 'egresos/gastos/crear',
-        loadComponent: () => import('./pages/modulo/modulo-placeholder').then((m) => m.ModuloPlaceholder),
-        data: { titulo: 'Crear gasto', subtitulo: 'Registra un gasto operativo.' },
+        loadComponent: () => import('./pages/operacion/operacion').then((m) => m.Operacion),
+        data: { kind: 'registro', tipo: 'gasto', titulo: 'Crear gasto', subtitulo: 'Registra un gasto operativo.' },
       },
       {
         path: 'egresos/gastos',
-        loadComponent: () => import('./pages/modulo/modulo-placeholder').then((m) => m.ModuloPlaceholder),
-        data: { titulo: 'Listado de gastos', subtitulo: 'Consulta los gastos registrados.' },
+        loadComponent: () => import('./pages/operacion/operacion').then((m) => m.Operacion),
+        data: { kind: 'registro', tipo: 'gasto', titulo: 'Listado de gastos', subtitulo: 'Consulta los gastos registrados.' },
       },
       {
         path: 'anticipos',
-        loadComponent: () => import('./pages/modulo/modulo-placeholder').then((m) => m.ModuloPlaceholder),
-        data: { titulo: 'Anticipos', subtitulo: 'Administra anticipos de clientes o proveedores.' },
+        loadComponent: () => import('./pages/operacion/operacion').then((m) => m.Operacion),
+        data: { kind: 'registro', tipo: 'anticipo', titulo: 'Anticipos', subtitulo: 'Administra anticipos de clientes o proveedores.' },
       },
       {
         path: 'cuentas/cobrar',
-        loadComponent: () => import('./pages/modulo/modulo-placeholder').then((m) => m.ModuloPlaceholder),
-        data: { titulo: 'Cuentas por cobrar', subtitulo: 'Saldos pendientes de tus clientes.' },
+        loadComponent: () => import('./pages/operacion/operacion').then((m) => m.Operacion),
+        data: { kind: 'cuentas', tipo: 'cobrar', titulo: 'Cuentas por cobrar', subtitulo: 'Saldos pendientes de tus clientes.' },
       },
       {
         path: 'cuentas/pagar',
-        loadComponent: () => import('./pages/modulo/modulo-placeholder').then((m) => m.ModuloPlaceholder),
-        data: { titulo: 'Cuentas por pagar', subtitulo: 'Saldos pendientes con proveedores.' },
+        loadComponent: () => import('./pages/operacion/operacion').then((m) => m.Operacion),
+        data: { kind: 'cuentas', tipo: 'pagar', titulo: 'Cuentas por pagar', subtitulo: 'Saldos pendientes con proveedores.' },
       },
       {
         path: 'pos/cajas',
-        loadComponent: () => import('./pages/modulo/modulo-placeholder').then((m) => m.ModuloPlaceholder),
-        data: { titulo: 'Cajas registradoras', subtitulo: 'Apertura, cierre y control de cajas.' },
+        loadComponent: () => import('./pages/operacion/operacion').then((m) => m.Operacion),
+        data: { kind: 'registro', tipo: 'caja', titulo: 'Cajas registradoras', subtitulo: 'Apertura, cierre y control de cajas.' },
       },
-      {
-        path: 'pos/tiquetes',
-        loadComponent: () => import('./pages/modulo/modulo-placeholder').then((m) => m.ModuloPlaceholder),
-        data: { titulo: 'Listado de tiquetes', subtitulo: 'Consulta los tiquetes emitidos en el POS.' },
-      },
+      { path: 'pos/tiquetes', redirectTo: 'comprobantes/facturas', pathMatch: 'full' },
       {
         path: 'opciones/sat',
-        loadComponent: () => import('./pages/modulo/modulo-placeholder').then((m) => m.ModuloPlaceholder),
-        data: { titulo: 'Estado SAT', subtitulo: 'Consulta el estado de tus documentos ante la autoridad fiscal.' },
+        loadComponent: () => import('./pages/operacion/operacion').then((m) => m.Operacion),
+        data: { kind: 'sat', titulo: 'Estado SAT', subtitulo: 'La autorización sale solo de la API del certificador FEL.' },
       },
       {
         path: 'opciones/reportes',
-        loadComponent: () => import('./pages/modulo/modulo-placeholder').then((m) => m.ModuloPlaceholder),
-        data: { titulo: 'Reportes', subtitulo: 'Reportes de ventas, inventario y cuentas.' },
+        loadComponent: () => import('./pages/operacion/operacion').then((m) => m.Operacion),
+        data: { kind: 'reporte', reporte: 'general', titulo: 'Reportes', subtitulo: 'Ventas, IVA, compras e inventario.' },
       },
       {
         path: 'opciones/calendario',
-        loadComponent: () => import('./pages/modulo/modulo-placeholder').then((m) => m.ModuloPlaceholder),
-        data: { titulo: 'Calendario', subtitulo: 'Vencimientos, cobros y actividades programadas.' },
+        loadComponent: () => import('./pages/operacion/operacion').then((m) => m.Operacion),
+        data: { kind: 'calendario', titulo: 'Calendario', subtitulo: 'Cobros y pagos pendientes.' },
       },
       {
         path: 'opciones/configuracion',
-        loadComponent: () => import('./pages/modulo/modulo-placeholder').then((m) => m.ModuloPlaceholder),
-        data: { titulo: 'Configuraciones', subtitulo: 'Empresa, usuarios, sucursales y preferencias.' },
+        loadComponent: () => import('./pages/operacion/operacion').then((m) => m.Operacion),
+        data: { kind: 'config', titulo: 'Configuraciones', subtitulo: 'Datos de la empresa emisora.' },
       },
       {
         path: 'opciones/soporte',
-        loadComponent: () => import('./pages/modulo/modulo-placeholder').then((m) => m.ModuloPlaceholder),
-        data: { titulo: 'Soporte técnico', subtitulo: 'Ayuda, contacto y estado del sistema.' },
+        loadComponent: () => import('./pages/operacion/operacion').then((m) => m.Operacion),
+        data: { kind: 'soporte', titulo: 'Soporte técnico', subtitulo: 'Salud de la API y estado de la conexión FEL.' },
       },
     ],
   },

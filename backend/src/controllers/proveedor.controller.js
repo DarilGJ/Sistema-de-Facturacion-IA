@@ -1,5 +1,6 @@
 import { Proveedor, Producto } from '../models/index.js';
 import { handleSequelizeError } from '../utils/http-error.js';
+import { nitGuatemalaValido } from '../utils/nit.js';
 
 const TIPOS_IDENTIFICACION = ['nit', 'cui_dpi', 'consumidor_final', 'extranjero'];
 const TIPOS_PERSONA = ['juridico', 'individual'];
@@ -124,6 +125,12 @@ export async function crear(req, res) {
 
     if (!payload.nit) {
       return res.status(400).json({ message: 'El número de identificación es requerido' });
+    }
+
+    if (payload.tipo_identificacion !== 'extranjero' && payload.tipo_identificacion !== 'cui_dpi') {
+      if (!nitGuatemalaValido(payload.nit)) {
+        return res.status(400).json({ message: 'NIT inválido. Usa solo dígitos, con o sin guion, o CF.' });
+      }
     }
 
     const proveedor = await Proveedor.create({

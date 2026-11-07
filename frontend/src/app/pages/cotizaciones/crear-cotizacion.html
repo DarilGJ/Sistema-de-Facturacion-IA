@@ -1,7 +1,7 @@
 <section class="pos">
   <header class="page-header">
     <h1>Crear cotización</h1>
-    <p>Arma el documento, elige el receptor y guarda la cotización. El ITBIS (18%) se calcula automáticamente.</p>
+    <p>Arma el documento, elige el receptor y guarda la cotización. El IVA (12%) se calcula automáticamente.</p>
   </header>
 
   <div class="pos-grid">
@@ -25,7 +25,7 @@
             <button type="button" class="product-card" (click)="agregar(item)">
               <span class="sku">{{ item.sku }}</span>
               <strong>{{ item.nombre }}</strong>
-              <span class="price">{{ precio(item) | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</span>
+              <span class="price">{{ precio(item) | currency: 'GTQ' : 'symbol-narrow' : '1.2-2' }}</span>
             </button>
           }
         </div>
@@ -60,7 +60,7 @@
       @if (cotizaciones.ultima(); as ultima) {
         <p class="ok">
           Cotización {{ ultima.numero }} guardada ·
-          {{ ultima.total | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}
+          {{ ultima.total | currency: 'GTQ' : 'symbol-narrow' : '1.2-2' }}
           <a routerLink="/cotizaciones">Ver listado</a>
         </p>
       }
@@ -73,7 +73,7 @@
             <li>
               <div>
                 <strong>{{ linea.nombre }}</strong>
-                <small>{{ linea.sku }} · {{ linea.precio | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</small>
+                <small>{{ linea.sku }} · {{ linea.precio | currency: 'GTQ' : 'symbol-narrow' : '1.2-2' }}</small>
               </div>
               <div class="qty">
                 <button type="button" (click)="cambiarCantidad(linea.id_producto, -1)">−</button>
@@ -89,15 +89,15 @@
       <dl class="totales">
         <div>
           <dt>Subtotal</dt>
-          <dd>{{ subtotal() | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</dd>
+          <dd>{{ subtotal() | currency: 'GTQ' : 'symbol-narrow' : '1.2-2' }}</dd>
         </div>
         <div>
-          <dt>ITBIS 18%</dt>
-          <dd>{{ itbis() | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</dd>
+          <dt>IVA 12%</dt>
+          <dd>{{ iva() | currency: 'GTQ' : 'symbol-narrow' : '1.2-2' }}</dd>
         </div>
         <div class="grand">
           <dt>Total</dt>
-          <dd>{{ total() | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</dd>
+          <dd>{{ total() | currency: 'GTQ' : 'symbol-narrow' : '1.2-2' }}</dd>
         </div>
       </dl>
 
