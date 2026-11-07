@@ -22,7 +22,7 @@ export class Dashboard implements OnInit {
   readonly data = computed(() => this.dashboardApi.resumen());
 
   readonly anioActual = new Date().getFullYear();
-  readonly fechaLarga = new Intl.DateTimeFormat('es-DO', {
+  readonly fechaLarga = new Intl.DateTimeFormat('es-GT', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -69,27 +69,27 @@ export class Dashboard implements OnInit {
   }
 
   moneda(valor: number | undefined): string {
-    return `RD$ ${(Number(valor) || 0).toLocaleString('es-DO', {
+    return `Q ${(Number(valor) || 0).toLocaleString('es-GT', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })}`;
   }
 
   entero(valor: number | undefined): string {
-    return (Number(valor) || 0).toLocaleString('es-DO');
+    return (Number(valor) || 0).toLocaleString('es-GT');
   }
 
   porcentaje(valor: number | undefined): string {
     const n = Number(valor) || 0;
     const sign = n > 0 ? '+' : '';
-    return `${sign}${n.toLocaleString('es-DO', { maximumFractionDigits: 1 })}%`;
+    return `${sign}${n.toLocaleString('es-GT', { maximumFractionDigits: 1 })}%`;
   }
 
   fechaCorta(iso: string | undefined): string {
     if (!iso) {
       return '—';
     }
-    return new Intl.DateTimeFormat('es-DO', { day: '2-digit', month: 'short', year: 'numeric' }).format(
+    return new Intl.DateTimeFormat('es-GT', { day: '2-digit', month: 'short', year: 'numeric' }).format(
       new Date(iso)
     );
   }

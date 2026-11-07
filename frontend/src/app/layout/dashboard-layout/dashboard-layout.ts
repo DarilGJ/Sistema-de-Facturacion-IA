@@ -85,7 +85,7 @@ export class DashboardLayout implements OnInit {
 
   readonly modulos = [
     { path: '/pos', title: 'POS', text: 'Punto de venta y generación de facturas.' },
-    { path: '/contabilidad', title: 'Contabilidad', text: 'Libros, ITBIS y cuentas por cobrar.' },
+    { path: '/contabilidad', title: 'Contabilidad', text: 'Libros, IVA y cuentas por cobrar.' },
     { path: '/inventario', title: 'Inventario', text: 'Productos, stock, proveedores y clientes.' },
   ];
 

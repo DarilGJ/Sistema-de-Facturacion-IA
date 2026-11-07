@@ -226,7 +226,7 @@ export class ListadoComprobantes implements OnInit {
   tributacionLabel(item: Factura): string {
     const t = item.tributacion || 'desconocido';
     if (t === 'no_entregado') {
-      return 'No entregado';
+      return 'Pendiente FEL';
     }
     if (t === 'aceptadas') {
       return 'Aceptadas';

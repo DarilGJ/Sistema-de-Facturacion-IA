@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authRequired } from '../middleware/auth.middleware.js';
+import { authRequired, requireRole } from '../middleware/auth.middleware.js';
 import { actualizar, obtener } from '../controllers/inventario-config.controller.js';
 import {
   actualizar as actualizarCategoria,
@@ -39,6 +39,7 @@ import {
   obtener as obtenerTraslado,
 } from '../controllers/traslado.controller.js';
 import { listar as listarMovimientos } from '../controllers/movimiento.controller.js';
+import { sugerido as pedidoSugerido } from '../controllers/pedido.controller.js';
 import {
   crear as crearDevolucion,
   facturaDisponible,
@@ -50,7 +51,7 @@ const router = Router();
 
 router.use(authRequired);
 router.get('/config', obtener);
-router.put('/config', actualizar);
+router.put('/config', requireRole('admin'), actualizar);
 router.get('/categorias', listarCategorias);
 router.post('/categorias', crearCategoria);
 router.put('/categorias/:id', actualizarCategoria);
@@ -75,6 +76,7 @@ router.get('/traslados/:id/excel', descargarTrasladoExcel);
 router.post('/traslados/:id/anular', anularTraslado);
 router.get('/traslados/:id', obtenerTraslado);
 router.get('/movimientos', listarMovimientos);
+router.get('/pedidos/sugerido', pedidoSugerido);
 router.get('/devoluciones', listarDevoluciones);
 router.post('/devoluciones', crearDevolucion);
 router.get('/devoluciones/factura/:idFactura', facturaDisponible);

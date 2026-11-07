@@ -43,7 +43,7 @@ const RESOLUCION_LABEL: Record<ResolucionDevolucion, string> = {
   cambio: 'Cambio de producto',
 };
 
-const ITBIS = 0.18;
+const IVA = 0.12;
 
 @Component({
   selector: 'app-devoluciones',
@@ -134,7 +134,7 @@ export class DevolucionesInventario implements OnInit {
   readonly resumen = computed(() => {
     const activas = this.lineas().filter((item) => item.cantidad_devolver > 0);
     const subtotal = round(activas.reduce((sum, item) => sum + item.cantidad_devolver * item.precio_unitario, 0));
-    const itbis = round(subtotal * ITBIS);
+    const itbis = round(subtotal * IVA);
     const total = round(subtotal + itbis);
     let subtotalCambio = 0;
     if (this.esCambio()) {
@@ -142,7 +142,7 @@ export class DevolucionesInventario implements OnInit {
         activas.reduce((sum, item) => sum + item.cantidad_cambio * item.precio_cambio, 0)
       );
     }
-    const itbisCambio = round(subtotalCambio * ITBIS);
+    const itbisCambio = round(subtotalCambio * IVA);
     const totalCambio = round(subtotalCambio + itbisCambio);
     const diferencia = round(totalCambio - total);
     let reembolso = 0;
@@ -429,7 +429,7 @@ export class DevolucionesInventario implements OnInit {
   }
 
   moneda(value: number): string {
-    return `RD$ ${Number(value || 0).toLocaleString('es-DO', {
+    return `Q ${Number(value || 0).toLocaleString('es-GT', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })}`;

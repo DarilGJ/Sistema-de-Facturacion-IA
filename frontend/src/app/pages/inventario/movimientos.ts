@@ -29,6 +29,7 @@ const PROCESO_ETIQUETAS: Record<string, string> = {
   entrada_traslado_anular: 'Entrada (anulación traslado)',
   salida_traslado_anular: 'Salida (anulación traslado)',
   entrada_asignacion: 'Entrada (asignación)',
+  entrada_anulacion_venta: 'Entrada (anulación de venta)',
 };
 
 const DOCUMENTOS = [

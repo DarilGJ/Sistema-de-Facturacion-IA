@@ -1,7 +1,7 @@
 <section class="pos">
   <header class="page-header">
     <h1>Punto de venta</h1>
-    <p>Arma el ticket, elige el cliente y emite la factura. El ITBIS (18%) se calcula automáticamente.</p>
+    <p>Arma el ticket, elige el cliente y emite la factura. El IVA (12%) se calcula automáticamente.</p>
   </header>
 
   <div class="pos-grid">
@@ -30,7 +30,7 @@
             >
               <span class="sku">{{ item.sku }}</span>
               <strong>{{ item.nombre }}</strong>
-              <span class="price">{{ precio(item) | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</span>
+              <span class="price">{{ precio(item) | currency: 'GTQ' : 'symbol-narrow' : '1.2-2' }}</span>
               <span class="stock" [class.low]="item.stock_actual <= item.stock_minimo">
                 Stock: {{ item.stock_actual }}
               </span>
@@ -67,7 +67,7 @@
       }
 
       @if (facturas.ultima(); as ultima) {
-        <p class="ok">Factura {{ ultima.numero }} emitida · {{ ultima.total | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</p>
+        <p class="ok">Factura {{ ultima.numero }} emitida · {{ ultima.total | currency: 'GTQ' : 'symbol-narrow' : '1.2-2' }}</p>
       }
 
       @if (!carrito().length) {
@@ -78,7 +78,7 @@
             <li>
               <div>
                 <strong>{{ linea.nombre }}</strong>
-                <small>{{ linea.sku }} · {{ linea.precio | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</small>
+                <small>{{ linea.sku }} · {{ linea.precio | currency: 'GTQ' : 'symbol-narrow' : '1.2-2' }}</small>
               </div>
               <div class="qty">
                 <button type="button" (click)="cambiarCantidad(linea.id_producto, -1)">−</button>
@@ -94,15 +94,15 @@
       <dl class="totales">
         <div>
           <dt>Subtotal</dt>
-          <dd>{{ subtotal() | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</dd>
+          <dd>{{ subtotal() | currency: 'GTQ' : 'symbol-narrow' : '1.2-2' }}</dd>
         </div>
         <div>
-          <dt>ITBIS 18%</dt>
-          <dd>{{ itbis() | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</dd>
+          <dt>IVA 12%</dt>
+          <dd>{{ iva() | currency: 'GTQ' : 'symbol-narrow' : '1.2-2' }}</dd>
         </div>
         <div class="grand">
           <dt>Total</dt>
-          <dd>{{ total() | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</dd>
+          <dd>{{ total() | currency: 'GTQ' : 'symbol-narrow' : '1.2-2' }}</dd>
         </div>
       </dl>
 
@@ -138,7 +138,7 @@
                 <td>{{ item.fecha | date: 'short' }}</td>
                 <td>{{ item.cliente?.nombre || '—' }}</td>
                 <td class="cap">{{ item.metodo_pago }}</td>
-                <td>{{ item.total | currency: 'DOP' : 'symbol-narrow' : '1.2-2' }}</td>
+                <td>{{ item.total | currency: 'GTQ' : 'symbol-narrow' : '1.2-2' }}</td>
               </tr>
             }
           </tbody>

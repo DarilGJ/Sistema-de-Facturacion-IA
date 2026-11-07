@@ -9,7 +9,7 @@
     <form class="login-form" [formGroup]="form" (ngSubmit)="onSubmit()">
       <label>
         <span>Email</span>
-        <input type="email" formControlName="email" autocomplete="username" placeholder="admin@demo.com" />
+        <input type="email" formControlName="email" autocomplete="username" placeholder="correo@empresa.com" />
       </label>
 
       <label>
@@ -30,7 +30,5 @@
         {{ loading() ? 'Entrando...' : 'Entrar' }}
       </button>
     </form>
-
-    <p class="hint">Demo: admin@demo.com / Admin123!</p>
   </div>
 </section>

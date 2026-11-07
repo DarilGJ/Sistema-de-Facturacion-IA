@@ -65,7 +65,7 @@ export class InventarioHome implements OnInit {
   }
 
   moneda(valor: number): string {
-    return `RD$ ${valor.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    return `Q ${valor.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   }
 
   setVista(vista: 'estadistica' | 'auditoria'): void {

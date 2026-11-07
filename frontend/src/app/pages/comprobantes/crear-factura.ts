@@ -11,7 +11,7 @@ import { Cliente, Producto } from '../../core/models/inventario.model';
 import { apiErrorMessage } from '../../core/utils/api-error';
 import { UiIcon } from '../../shared/ui-icon/ui-icon';
 
-const IVA = 0.18;
+const IVA = 0.12;
 
 @Component({
   selector: 'app-crear-factura',
@@ -298,7 +298,7 @@ export class CrearFactura implements OnInit {
   }
 
   setCantidad(uid: number, value: string): void {
-    const cantidad = Math.max(1, Math.floor(Number(value) || 1));
+    const cantidad = Math.max(0, Math.floor(Number(value) || 0));
     this.lineas.update((rows) =>
       rows.map((l) => {
         if (l.uid !== uid) {
@@ -553,7 +553,7 @@ export class CrearFactura implements OnInit {
       nombre: '',
       precio: 0,
       stock: 0,
-      cantidad: 1,
+      cantidad: 0,
     };
   }
 

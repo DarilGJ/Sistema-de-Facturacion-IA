@@ -73,7 +73,7 @@ export interface FacturaPatch {
   archivado?: boolean;
   correo_estado?: CorreoEstado;
   tributacion?: Tributacion;
-  estado?: 'anulada';
+  estado?: 'anulada' | 'cancelada';
 }
 
 export interface CarritoLinea {

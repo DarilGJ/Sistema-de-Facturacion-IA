@@ -1,0 +1,67 @@
+.banner {
+  margin: 0 0 1rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 10px;
+}
+
+.banner.error {
+  background: #fff1f2;
+  color: #9f1239;
+}
+
+.banner.ok {
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.notice {
+  margin: 0 0 1rem;
+  padding: 1rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.notice p {
+  margin: 0.35rem 0 0;
+  color: #475569;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 0.9rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.form-grid label {
+  display: grid;
+  gap: 0.3rem;
+  color: #334155;
+  font-size: 0.85rem;
+}
+
+.form-grid .wide {
+  grid-column: 1 / -1;
+}
+
+.form-grid input,
+.mini {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0.45rem 0.55rem;
+}
+
+.mini {
+  max-width: 120px;
+}
+
+.muted {
+  color: #64748b;
+}

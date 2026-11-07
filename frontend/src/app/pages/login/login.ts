@@ -21,8 +21,8 @@ export class Login {
     private readonly router: Router
   ) {
     this.form = this.fb.nonNullable.group({
-      email: ['admin@demo.com', [Validators.required, Validators.email]],
-      password: ['Admin123!', [Validators.required, Validators.minLength(6)]],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
     });
   }
 

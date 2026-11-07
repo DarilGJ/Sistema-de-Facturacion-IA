@@ -26,10 +26,11 @@ export function toInventarioConfigDto(row) {
   };
 }
 
-export async function getOrCreateInventarioConfig() {
+export async function getOrCreateInventarioConfig(transaction) {
   const [row] = await InventarioConfig.findOrCreate({
     where: { id: 1 },
     defaults: { id: 1, ...DEFAULT_INVENTARIO_CONFIG },
+    transaction,
   });
   return row;
 }

@@ -1,6 +1,8 @@
 import { Cliente, Factura, FacturaItem, Producto, sequelize } from '../models/index.js';
 import { handleSequelizeError } from '../utils/http-error.js';
 import { emitirFactura } from '../services/emitir-factura.js';
+import { revertirInventarioFactura } from '../services/anular-factura.js';
+import { anularEnFel, aplicarCertificacion } from '../services/fel.service.js';
 
 const includeFactura = [
   {
@@ -69,7 +71,10 @@ export async function crear(req, res) {
     });
     await t.commit();
     const creada = await Factura.findByPk(factura.id, { include: includeFactura });
-    return res.status(201).json(creada);
+    const fel = await aplicarCertificacion(creada);
+    const payload = creada.toJSON();
+    payload.fel = fel;
+    return res.status(201).json(payload);
   } catch (error) {
     await t.rollback();
     if (error.status === 400) {
@@ -80,33 +85,63 @@ export async function crear(req, res) {
 }
 
 export async function actualizar(req, res) {
+  const t = await sequelize.transaction();
   try {
-    const factura = await Factura.findByPk(req.params.id);
+    const factura = await Factura.findByPk(req.params.id, { transaction: t, lock: t.LOCK.UPDATE });
     if (!factura) {
+      await t.rollback();
       return res.status(404).json({ message: 'Factura no encontrada' });
     }
 
     const body = req.body || {};
+    if (body.tributacion !== undefined) {
+      await t.rollback();
+      return res.status(400).json({
+        message: 'El estado tributario solo lo actualiza el certificador FEL',
+      });
+    }
     if (body.archivado === true || body.archivado === false) {
       factura.archivado = body.archivado;
     }
     if (body.correo_estado === 'enviado' || body.correo_estado === 'no_entregado') {
       factura.correo_estado = body.correo_estado;
     }
-    if (body.tributacion && ['no_entregado', 'aceptadas', 'rechazadas', 'desconocido'].includes(body.tributacion)) {
-      factura.tributacion = body.tributacion;
+    if (body.estado === 'cancelada') {
+      if (!['admin', 'contador'].includes(req.user?.rol)) {
+        await t.rollback();
+        return res.status(403).json({ message: 'No tiene permisos para registrar el cobro' });
+      }
+      if (factura.estado !== 'pendiente') {
+        await t.rollback();
+        return res.status(400).json({ message: 'Solo se pueden cancelar facturas pendientes de cobro' });
+      }
+      factura.estado = 'cancelada';
     }
     if (body.estado === 'anulada') {
+      if (!['admin', 'contador'].includes(req.user?.rol)) {
+        await t.rollback();
+        return res.status(403).json({ message: 'No tiene permisos para anular facturas' });
+      }
       if (factura.estado === 'anulada') {
+        await t.rollback();
         return res.status(400).json({ message: 'La factura ya está anulada' });
       }
+      await anularEnFel(factura, body.motivo);
       factura.estado = 'anulada';
+      await revertirInventarioFactura(factura, req.user, t);
     }
 
-    await factura.save();
+    await factura.save({ transaction: t });
+    await t.commit();
     const actualizada = await Factura.findByPk(factura.id, { include: includeFactura });
     return res.status(200).json(actualizada);
   } catch (error) {
+    if (!t.finished) {
+      await t.rollback();
+    }
+    if (error.status && error.status < 500) {
+      return res.status(error.status).json({ message: error.message });
+    }
     return handleSequelizeError(error, res);
   }
 }

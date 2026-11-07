@@ -122,7 +122,19 @@ export async function crear(req, res) {
         await t.rollback();
         return res.status(400).json({ message: 'Uno de los productos no existe o está inactivo' });
       }
-      const precio = roundMoney(Number(item.precio_unitario ?? producto.costo_compra) || 0);
+      const precioRaw = Number(item.precio_unitario);
+      if (
+        item.precio_unitario !== undefined &&
+        item.precio_unitario !== null &&
+        item.precio_unitario !== '' &&
+        (!Number.isFinite(precioRaw) || precioRaw < 0)
+      ) {
+        await t.rollback();
+        return res.status(400).json({ message: 'El precio unitario no puede ser negativo' });
+      }
+      const precio = roundMoney(
+        Number.isFinite(precioRaw) && precioRaw >= 0 ? precioRaw : Number(producto.costo_compra) || 0
+      );
       const desc = roundMoney(Math.max(0, Number(item.descuento) || 0));
       const bruto = roundMoney(precio * cantidad);
       const gravable = roundMoney(Math.max(0, bruto - desc));

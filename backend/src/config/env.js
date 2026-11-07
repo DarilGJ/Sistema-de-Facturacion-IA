@@ -17,4 +17,11 @@ export const env = {
   },
   aiEngineUrl: process.env.AI_ENGINE_URL || 'http://localhost:8000',
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:4200',
+  fel: {
+    apiUrl: String(process.env.FEL_API_URL || '').trim(),
+    token: String(process.env.FEL_API_TOKEN || '').trim(),
+    nitEmisor: String(process.env.FEL_NIT_EMISOR || '').trim(),
+    nombreEmisor: String(process.env.FEL_NOMBRE_EMISOR || 'Librerías El Regalito').trim(),
+    establecimiento: String(process.env.FEL_ESTABLECIMIENTO || '1').trim(),
+  },
 };

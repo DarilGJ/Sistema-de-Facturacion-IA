@@ -5,24 +5,33 @@ import { env } from '../config/env.js';
 
 const router = Router();
 
+function proxyError(res, error) {
+  const status = error.response?.status || 502;
+  return res.status(status).json({
+    message: 'No se pudo contactar el motor de IA',
+    detail: error.response?.data || error.message,
+  });
+}
+
 /**
- * Proxy hacia el motor de IA en Python.
- * Ejemplo: POST /api/ai/predict { "texto": "..." }
+ * Proxy hacia el motor predictivo en Python.
+ * POST /api/ai/pronostico { sku, categoria, tiempo_entrega_dias, historial: [{ periodo, cantidad }] }
  */
-router.post('/predict', authRequired, async (req, res) => {
+router.post('/pronostico', authRequired, async (req, res) => {
   try {
-    const response = await axios.post(
-      `${env.aiEngineUrl}/predict`,
-      req.body,
-      { timeout: 30000 }
-    );
+    const response = await axios.post(`${env.aiEngineUrl}/pronostico`, req.body, { timeout: 30000 });
     return res.json(response.data);
   } catch (error) {
-    const status = error.response?.status || 502;
-    return res.status(status).json({
-      message: 'No se pudo contactar el motor de IA',
-      detail: error.response?.data || error.message,
-    });
+    return proxyError(res, error);
+  }
+});
+
+router.get('/modelo', authRequired, async (_req, res) => {
+  try {
+    const response = await axios.get(`${env.aiEngineUrl}/modelo`, { timeout: 10000 });
+    return res.json(response.data);
+  } catch (error) {
+    return proxyError(res, error);
   }
 });
 

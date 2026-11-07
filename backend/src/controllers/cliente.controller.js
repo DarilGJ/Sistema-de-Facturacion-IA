@@ -1,3 +1,4 @@
+import { nitGuatemalaValido } from '../utils/nit.js';
 import { Cliente } from '../models/index.js';
 import { handleSequelizeError } from '../utils/http-error.js';
 
@@ -127,6 +128,12 @@ export async function crear(req, res) {
 
     if (!payload.nombre || !payload.nit) {
       return res.status(400).json({ message: 'nombre y número de identificación son requeridos' });
+    }
+
+    if (payload.tipo_identificacion !== 'extranjero' && payload.tipo_identificacion !== 'cui_dpi') {
+      if (!nitGuatemalaValido(payload.nit)) {
+        return res.status(400).json({ message: 'NIT inválido. Usa solo dígitos, con o sin guion, o CF.' });
+      }
     }
 
     const cliente = await Cliente.create({
