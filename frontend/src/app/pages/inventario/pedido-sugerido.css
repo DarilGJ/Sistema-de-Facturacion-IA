@@ -153,6 +153,11 @@
   font-size: 0.72rem;
 }
 
+.motivo.motivo-riesgo {
+  background: #ffedd5;
+  color: #9a3412;
+}
+
 .clase[data-clase='A'] {
   background: #fef3c7;
   color: #92400e;

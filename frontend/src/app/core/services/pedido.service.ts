@@ -28,6 +28,7 @@ export interface LineaPedido {
   movimientoDiario: number;
   pedir: number;
   excedente: number;
+  deshacer?: boolean;
   costo: number;
   inversion: number;
   clasificacion: 'A' | 'B' | 'C';
