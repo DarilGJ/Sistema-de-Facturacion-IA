@@ -32,7 +32,7 @@ export class PedidoSugeridoPage implements OnInit {
     const q = this.busqueda().trim().toLowerCase();
     const origen = this.vista() === 'central' ? this.pedido()?.central || [] : this.bodegaActiva()?.lineas || [];
     return origen.filter((linea) => {
-      if (this.soloPedir() && linea.pedir <= 0) {
+      if (this.soloPedir() && linea.pedir <= 0 && !linea.deshacer) {
         return false;
       }
       if (!q) {
@@ -97,5 +97,9 @@ export class PedidoSugeridoPage implements OnInit {
 
   reparto(linea: LineaPedido): string {
     return (linea.reparto || []).map((parte) => `${parte.bodega} ${parte.pedir}`).join(' · ');
+  }
+
+  esRiesgo(motivo: string): boolean {
+    return motivo.toLowerCase().includes('arruin');
   }
 }

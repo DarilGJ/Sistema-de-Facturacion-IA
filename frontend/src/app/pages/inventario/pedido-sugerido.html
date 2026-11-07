@@ -104,7 +104,7 @@
             <tr>
               <th>Producto</th>
               <th class="num">Existencia</th>
-              <th class="num">Temporada</th>
+              <th class="num">Temporada anterior</th>
               <th class="num">Demanda / mes</th>
               <th class="num">Pedir</th>
               <th class="num">Excedente</th>
@@ -131,7 +131,7 @@
                 <td>
                   <span class="clase" [attr.data-clase]="linea.clasificacion">{{ linea.clasificacion }}</span>
                   @for (motivo of linea.motivos; track motivo) {
-                    <span class="motivo">{{ motivo }}</span>
+                    <span class="motivo" [class.motivo-riesgo]="esRiesgo(motivo)">{{ motivo }}</span>
                   }
                 </td>
               </tr>
